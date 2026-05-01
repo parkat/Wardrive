@@ -1,0 +1,51 @@
+[20:32:16Z] ===========================================
+[20:32:16Z] Wardrive session: 20260425T203216Z
+[20:32:16Z] Output dir:       /home/parkat/warDrive/capture/raw/20260425T203216Z_first-real-run
+[20:32:16Z] ===========================================
+[20:32:20Z] Starting WiFi collector on wlan1...
+[20:32:24Z] Monitor interface: wlan1mon
+[20:32:24Z] Kismet started (pid 69365) — logs in /home/parkat/warDrive/capture/raw/20260425T203216Z_first-real-run/wifi
+[20:32:24Z] Starting SDR collector (rtl_433)...
+[20:32:24Z] rtl_433 started (pid 69384) — output: /home/parkat/warDrive/capture/raw/20260425T203216Z_first-real-run/sdr/rtl433.ndjson
+[20:32:24Z] GPS collector: SKIPPED (no puck connected yet)
+[20:32:24Z]   When puck arrives: enable in config/wardrive.conf and edit this script
+[20:32:24Z]   Will log NMEA + computed positions to ${SESSION_DIR}/gps/
+[20:32:24Z] ESP32 collector: SKIPPED (sensors not yet deployed)
+[20:32:24Z]   Future: receive serial/MQTT stream from ESP32 sniffer fleet
+[20:32:24Z] All active collectors running. Press Ctrl-C to stop.
+[20:32:24Z] 
+[20:32:54Z] Heartbeat: 2/2 collectors alive
+[20:33:24Z] Heartbeat: 2/2 collectors alive
+[20:33:54Z] Heartbeat: 2/2 collectors alive
+[20:34:24Z] Heartbeat: 2/2 collectors alive
+[20:34:54Z] Heartbeat: 2/2 collectors alive
+[20:35:24Z] Heartbeat: 2/2 collectors alive
+[20:35:54Z] Heartbeat: 2/2 collectors alive
+[20:36:24Z] Heartbeat: 2/2 collectors alive
+[20:36:54Z] Heartbeat: 2/2 collectors alive
+[20:37:24Z] Heartbeat: 2/2 collectors alive
+[20:37:54Z] Heartbeat: 2/2 collectors alive
+[20:38:24Z] Heartbeat: 2/2 collectors alive
+[20:38:54Z] Heartbeat: 2/2 collectors alive
+[20:39:24Z] Heartbeat: 2/2 collectors alive
+[20:39:54Z] Heartbeat: 2/2 collectors alive
+[20:40:24Z] Heartbeat: 2/2 collectors alive
+[20:40:54Z] Heartbeat: 2/2 collectors alive
+[20:41:24Z] Heartbeat: 2/2 collectors alive
+[20:41:54Z] Heartbeat: 2/2 collectors alive
+[20:42:24Z] Heartbeat: 2/2 collectors alive
+[20:42:54Z] Heartbeat: 2/2 collectors alive
+[20:43:24Z] Heartbeat: 2/2 collectors alive
+[20:43:54Z] Heartbeat: 2/2 collectors alive
+[20:44:24Z] Heartbeat: 2/2 collectors alive
+[20:44:54Z] Heartbeat: 2/2 collectors alive
+[20:45:24Z] Heartbeat: 2/2 collectors alive
+[20:45:54Z] Heartbeat: 2/2 collectors alive
+[20:46:24Z] Heartbeat: 2/2 collectors alive
+[20:46:54Z] Heartbeat: 2/2 collectors alive
+[20:47:13Z] Stopping session — cleaning up collectors...
+[20:47:15Z] Returning wlan1mon to managed mode...
+[20:47:17Z] Session 20260425T203216Z complete. Data in: /home/parkat/warDrive/capture/raw/20260425T203216Z_first-real-run
+[20:47:17Z] Stopping session — cleaning up collectors...
+[20:47:19Z] Returning wlan1mon to managed mode...
+[20:47:19Z] Session 20260425T203216Z complete. Data in: /home/parkat/warDrive/capture/raw/20260425T203216Z_first-real-run

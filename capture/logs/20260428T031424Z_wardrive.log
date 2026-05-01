@@ -1,0 +1,22 @@
+[wardrive] Session: 20260428T031424Z_wardrive
+[wardrive] Dir:     /home/parkat/warDrive/capture/raw/20260428T031424Z_wardrive
+[wardrive] Sleep/lid-close inhibited (pid 1398085)
+[wardrive] Laptop stays awake with lid closed until session ends
+[wardrive] Starting collectors with auto-restart supervisors…
+[gps] Waiting for fix (up to 30s, need 4+ sats)… ......
+[gps] WARNING: No fix after 30s — starting without GPS coordinates
+[gps]   Make sure the puck has sky view. lat/lon will be NULL in this session.
+[gps] Starting NMEA logger (under supervisor)
+[gps] supervisor: launching collector…
+[gps] supervisor PID 1399124
+[gps] Raw NMEA → /home/parkat/warDrive/capture/raw/20260428T031424Z_wardrive/gps/nmea.log
+[wifi] Disabled in config — skipping
+[sdr] Disabled in config — skipping
+[esp32] ERROR: No serial port found (GPS device /dev/ttyACM0 excluded)
+[esp32] Collector SKIPPED.
+[wardrive] All collectors running. Ctrl-C to stop.
+[wardrive] Heartbeat will log every 60 s.
+[wardrive] Each collector will auto-restart up to 10 times if it crashes.
+[wardrive] Sleep inhibitor released — normal lid/sleep behavior restored
+[wardrive] Shutting down collectors…
+[wardrive] Session closed: 20260428T031424Z_wardrive

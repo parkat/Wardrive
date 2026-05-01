@@ -1,0 +1,26 @@
+[wardrive] Session: 20260427T231020Z_wardrive
+[wardrive] Dir:     /home/parkat/warDrive/capture/raw/20260427T231020Z_wardrive
+[wardrive] Sleep/lid-close inhibited (pid 1259494)
+[wardrive] Laptop stays awake with lid closed until session ends
+[wardrive] Starting collectors with auto-restart supervisors…
+[wifi] Disabled in config — skipping
+[sdr] Disabled in config — skipping
+[esp32] Starting BLE reader on /dev/ttyUSB0 (under supervisor)
+[esp32] (Reader has internal reconnect for USB blips; supervisor restarts on hard crash.)
+[esp32] supervisor: launching collector…
+[esp32] supervisor PID 1259495
+[wardrive] All collectors running. Ctrl-C to stop.
+[wardrive] Heartbeat will log every 60 s.
+[wardrive] Each collector will auto-restart up to 10 times if it crashes.
+[esp32_reader] Opening /dev/ttyUSB0 @ 115200 baud
+[esp32_reader] Writing to /home/parkat/warDrive/capture/raw/20260427T231020Z_wardrive/bt/esp32_ble.ndjson
+[esp32_reader] Non-JSON line (#1): ED7C0F260BEF37FA2110A8","apple_tED7C0F260BEF37FA2110A8","apple_tED7C0F260BEF37FA
+[esp32_reader] 1000 records written
+[esp32_reader] 2000 records written
+[wardrive] heartbeat: 0/0 supervisors alive — 23:11:20Z
+[esp32_reader] 3000 records written
+[esp32_reader] 4000 records written
+[wardrive] Sleep inhibitor released — normal lid/sleep behavior restored
+[wardrive] Shutting down collectors…
+[esp32_reader] Shutdown. 4411 records written, 1 parse errors.
+[wardrive] Session closed: 20260427T231020Z_wardrive

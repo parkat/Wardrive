@@ -1,0 +1,16 @@
+body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: #f5f5f7; color: #1d1d1f; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+#status { font-size: 0.9em; color: #555; }
+main { max-width: 1200px; margin: 0 auto; }
+section { background: #fff; padding: 16px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.filter-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.filter-actions { display: flex; gap: 10px; margin-top: 10px; }
+select, input, button { padding: 8px; margin: 4px; border: 1px solid #ddd; border-radius: 4px; }
+button { background: #007bff; color: white; border: none; cursor: pointer; }
+button:hover { background: #0056b3; }
+button.secondary { background: #6c757d; }
+button.secondary:hover { background: #545b62; }
+table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+th { background: #f8f9fa; }
+.hidden { display: none; }

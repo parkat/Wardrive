@@ -1,0 +1,8 @@
+rtl_433 version 25.12 (2025-12-12) inputs file rtl_tcp RTL-SDR SoapySDR
+
+New defaults active, use "-Y classic -s 250k" if you need the old defaults
+
+Found Rafael Micro R820T tuner
+Exact sample rate is: 1000000.026491 Hz
+[R82XX] PLL not locked!
+Signal caught, exiting!

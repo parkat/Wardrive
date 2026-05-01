@@ -1,0 +1,82 @@
+INFO: Adding config override /etc/kismet/kismet_wardrive.conf
+INFO: Including sub-config file: /etc/kismet/kismet_httpd.conf
+INFO: Including sub-config file: /etc/kismet/kismet_memory.conf
+INFO: Including sub-config file: /etc/kismet/kismet_alerts.conf
+INFO: Including sub-config file: /etc/kismet/kismet_80211.conf
+INFO: Including sub-config file: /etc/kismet/kismet_logging.conf
+INFO: Including sub-config file: /etc/kismet/kismet_filter.conf
+INFO: Including sub-config file: /etc/kismet/kismet_uav.conf
+INFO: Loading config override file '/etc/kismet/kismet_package.conf'
+INFO: Optional sub-config file not present: /etc/kismet/kismet_package.conf
+INFO: Loading config override file '/etc/kismet/kismet_site.conf'
+INFO: Optional sub-config file not present: /etc/kismet/kismet_site.conf
+INFO: Loading config override file '/etc/kismet/kismet_wardrive.conf'
+INFO: Loading optional sub-config file: /etc/kismet/kismet_wardrive.conf
+INFO: Setting server UUID BC471298-403C-11F1-BD11-4B49534D4554
+INFO: Starting Beast webserver on 0.0.0.0:2501
+INFO: Opened OUI file '/usr/share/kismet/kismet_manuf.txt.gz
+INFO: Indexing manufacturer db
+INFO: Completed indexing manufacturer db, 37974 lines and 760 indexes.
+INFO: Saving devices to the Kismet database log every 30 seconds
+INFO: Using default rates of 10/min, 1/sec for alert 'DEVICEFOUND'
+INFO: Using default rates of 10/min, 1/sec for alert 'DEVICELOST'
+INFO: Registering support for DLT_PPI packet header decoding
+INFO: Registering support for DLT_RADIOTAP packet header decoding
+INFO: Registering support for DLT_BTLE_RADIO packet header decoding
+INFO: Using default rates of 10/min, 1/sec for alert 'BADFIXLENIE'
+INFO: PHY80211 will only process AP signal levels from beacons
+INFO: Allowing Kismet clients to view WEP keys
+DEBUG: ssid canary FooCanary:ssid="FoobarCanary"
+DEBUG: ssid canary FooCanart2:ssid="(?i:foobarcanary)"
+INFO: Not keeping EAPOL packets in memory, EAP replay WIDS and handshake downloads will not be available.
+INFO: Registered PHY handler 'IEEE802.11' as ID 0
+INFO: Registered PHY handler 'RFSENSOR' as ID 1
+INFO: Registered PHY handler 'Z-Wave' as ID 2
+INFO: Registered PHY handler 'Bluetooth' as ID 3
+DEBUG: reserve_fields home id 542 app id 543
+INFO: Registered PHY handler 'UAV' as ID 4
+INFO: Registered PHY handler 'NrfMousejack' as ID 5
+ERROR: Tried to re-register duplicate alert FLIPPERZERO
+INFO: Registered PHY handler 'BTLE' as ID 6
+INFO: Registered PHY handler 'METER' as ID 7
+INFO: Indexing ADSB ICAO db
+INFO: Completed indexing ADSB ICAO db, 341068 lines 6822 indexes
+INFO: Registered PHY handler 'ADSB' as ID 8
+INFO: Registered PHY handler '802.15.4' as ID 9
+INFO: Registered PHY handler 'RADIATION' as ID 10
+INFO: (HTTPD) Could not read session data file, skipping loading saved sessions.
+INFO: Serving static file content from /usr/share/kismet/httpd/
+INFO: Enabling channel hopping by default on sources which support channel control.
+INFO: Setting default channel hop rate to 5/sec
+INFO: Enabling channel list splitting on sources which share the same list of channels
+INFO: Enabling channel list shuffling to optimize overlaps
+INFO: Sources will be re-opened if they encounter an error
+INFO: Launching remote capture server on 127.0.0.1 3501
+INFO: Data sources passed on the command line (via -c source), ignoring source= definitions in the Kismet config file.
+INFO: Opened kismetdb log file '/home/parkat/warDrive/capture/raw/20260425T202701Z_first-real-run/wifi//session_20260425T202701Z-20260425-20-27-03-1.kismet'
+INFO: Saving packets to the Kismet database log.
+INFO: Opened wiglecsv log file '/home/parkat/warDrive/capture/raw/20260425T202701Z_first-real-run/wifi//session_20260425T202701Z-20260425-20-27-03-1.wiglecsv'
+INFO: GPS track will be logged to the Kismet logfile
+ALERT: WARDRIVING Kismet is in survey/wardriving mode.  This turns off tracking non-AP devices and most packet logging.
+ALERT: ROOTUSER Kismet is running as root; this is less secure.  If you are running Kismet at boot via systemd, make sure to use `systemctl edit kismet.service` to change the user.  For more information, see the Kismet README for setting up Kismet with minimal privileges.
+INFO: Starting Kismet web server...
+INFO: HTTP server listening on 0.0.0.0:2501
+INFO: Could not open system plugin directory (/usr/lib/x86_64-linux-gnu/kismet/), skipping: No such file or directory
+INFO: Did not find a user plugin directory (/root/.kismet//plugins/), skipping: No such file or directory
+INFO: alfa interface 'wlan1mon' is already in monitor mode
+INFO: alfa finished configuring wlan1mon/wlan1mon, ready to capture
+INFO: Data source 'wlan1mon:type=linuxwifi,name=alfa' launched successfully
+
+*** KISMET IS SHUTTING DOWN ***
+Shutting down plugins...
+WARNING: Kismet changes the configuration of network devices.
+         In most cases you will need to restart networking for
+         your interface (varies per distribution and OS), but 
+         typically one of:
+         sudo service networking restart
+         sudo /etc/init.d/networking restart
+         or
+         nmcli device set [device] managed true
+
+Kismet exiting.
+EXITING: Signal service thread complete.

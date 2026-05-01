@@ -1,0 +1,22 @@
+[20:08:00Z] ===========================================
+[20:08:00Z] Wardrive session: 20260425T200800Z
+[20:08:00Z] Output dir:       /home/parkat/warDrive/capture/raw/20260425T200800Z_neighborhood-pass-1
+[20:08:00Z] ===========================================
+[20:08:00Z] WARN: RTL-SDR not detected. SDR collector disabled.
+[20:08:00Z] Starting WiFi collector on wlan1...
+[20:08:04Z] Monitor interface: wlan1mon
+[20:08:04Z] Kismet started (pid 19205) — logs in /home/parkat/warDrive/capture/raw/20260425T200800Z_neighborhood-pass-1/wifi
+[20:08:04Z] GPS collector: SKIPPED (no puck connected yet)
+[20:08:04Z]   When puck arrives: enable in config/wardrive.conf and edit this script
+[20:08:04Z]   Will log NMEA + computed positions to ${SESSION_DIR}/gps/
+[20:08:04Z] ESP32 collector: SKIPPED (sensors not yet deployed)
+[20:08:04Z]   Future: receive serial/MQTT stream from ESP32 sniffer fleet
+[20:08:04Z] All active collectors running. Press Ctrl-C to stop.
+[20:08:04Z] 
+[20:08:34Z] Heartbeat: 1/1 collectors alive
+[20:09:01Z] Stopping session — cleaning up collectors...
+[20:09:03Z] Returning wlan1mon to managed mode...
+[20:09:05Z] Session 20260425T200800Z complete. Data in: /home/parkat/warDrive/capture/raw/20260425T200800Z_neighborhood-pass-1
+[20:09:05Z] Stopping session — cleaning up collectors...
+[20:09:07Z] Returning wlan1mon to managed mode...
+[20:09:07Z] Session 20260425T200800Z complete. Data in: /home/parkat/warDrive/capture/raw/20260425T200800Z_neighborhood-pass-1

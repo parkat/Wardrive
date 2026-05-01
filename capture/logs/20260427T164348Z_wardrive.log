@@ -1,0 +1,545 @@
+[wardrive] Session: 20260427T164348Z_wardrive
+[wardrive] Dir:     /home/parkat/warDrive/capture/raw/20260427T164348Z_wardrive
+[wardrive] Sleep/lid-close inhibited (pid 1117726)
+[wardrive] Laptop stays awake with lid closed until session ends
+[wardrive] Starting collectors…
+[wifi] Starting Kismet on wlan1
+INFO: Including sub-config file: /etc/kismet/kismet_httpd.conf
+INFO: Including sub-config file: /etc/kismet/kismet_memory.conf
+INFO: Including sub-config file: /etc/kismet/kismet_alerts.conf
+INFO: Including sub-config file: /etc/kismet/kismet_80211.conf
+INFO: Including sub-config file: /etc/kismet/kismet_logging.conf
+INFO: Including sub-config file: /etc/kismet/kismet_filter.conf
+INFO: Including sub-config file: /etc/kismet/kismet_uav.conf
+INFO: Loading config override file '/etc/kismet/kismet_package.conf'
+INFO: Optional sub-config file not present: /etc/kismet/kismet_package.conf
+INFO: Loading config override file '/etc/kismet/kismet_site.conf'
+INFO: Optional sub-config file not present: /etc/kismet/kismet_site.conf
+INFO: Setting server UUID BC471298-403C-11F1-BD11-4B49534D4554
+INFO: Starting Beast webserver on 0.0.0.0:2501
+INFO: Opened OUI file '/usr/share/kismet/kismet_manuf.txt.gz
+INFO: Indexing manufacturer db
+INFO: Completed indexing manufacturer db, 37974 lines and 760 indexes.
+INFO: Saving devices to the Kismet database log every 30 seconds
+INFO: Using default rates of 10/min, 1/sec for alert 'DEVICEFOUND'
+INFO: Using default rates of 10/min, 1/sec for alert 'DEVICELOST'
+INFO: Registering support for DLT_PPI packet header decoding
+INFO: Registering support for DLT_RADIOTAP packet header decoding
+INFO: Registering support for DLT_BTLE_RADIO packet header decoding
+INFO: Using default rates of 10/min, 1/sec for alert 'BADFIXLENIE'
+INFO: PHY80211 will only process AP signal levels from beacons
+INFO: Allowing Kismet clients to view WEP keys
+DEBUG: ssid canary FooCanary:ssid="FoobarCanary"
+DEBUG: ssid canary FooCanart2:ssid="(?i:foobarcanary)"
+INFO: Keeping EAPOL packets in memory for easy download and WIDS functionality; this can use more RAM.
+INFO: Registered PHY handler 'IEEE802.11' as ID 0
+DEBUG: reserve_fields home id 542 app id 543
+INFO: Registered PHY handler 'RFSENSOR' as ID 1
+INFO: Registered PHY handler 'Z-Wave' as ID 2
+INFO: Registered PHY handler 'Bluetooth' as ID 3
+INFO: Registered PHY handler 'UAV' as ID 4
+INFO: Registered PHY handler 'NrfMousejack' as ID 5
+ERROR: Tried to re-register duplicate alert FLIPPERZERO
+INFO: Registered PHY handler 'BTLE' as ID 6
+INFO: Registered PHY handler 'METER' as ID 7
+INFO: Indexing ADSB ICAO db
+[wifi] PID 1117727
+[sdr] Disabled in config — skipping
+[esp32] ERROR: Serial port not found (tried auto). Is the ESP32 plugged in?
+[esp32] Collector SKIPPED — continuing without BLE data.
+[wardrive] All collectors running. Ctrl-C to stop.
+[wardrive] Heartbeat will log every 60 s to confirm collectors are alive.
+INFO: Completed indexing ADSB ICAO db, 341068 lines 6822 indexes
+INFO: Registered PHY handler 'ADSB' as ID 8
+INFO: Registered PHY handler '802.15.4' as ID 9
+INFO: Registered PHY handler 'RADIATION' as ID 10
+INFO: (HTTPD) Could not read session data file, skipping loading saved sessions.
+INFO: Serving static file content from /usr/share/kismet/httpd/
+INFO: Enabling channel hopping by default on sources which support channel control.
+INFO: Setting default channel hop rate to 5/sec
+INFO: Enabling channel list splitting on sources which share the same list of channels
+INFO: Enabling channel list shuffling to optimize overlaps
+INFO: Sources will be re-opened if they encounter an error
+INFO: Saving datasources to the Kismet database log every 30 seconds
+INFO: Launching remote capture server on 127.0.0.1 3501
+INFO: Data sources passed on the command line (via -c source), ignoring source= definitions in the Kismet config file.
+INFO: Probing interface 'wlan1' to find datasource type
+INFO: Opened kismetdb log file '/home/parkat/warDrive/capture/raw/20260427T164348Z_wardrive/wifi//Kismet-20260427-16-43-48-1.kismet'
+INFO: Saving packets to the Kismet database log.
+INFO: Opened pcapng log file '/home/parkat/warDrive/capture/raw/20260427T164348Z_wardrive/wifi//Kismet-20260427-16-43-48-1.pcapng'
+INFO: GPS track will be logged to the Kismet logfile
+ALERT: ROOTUSER Kismet is running as root; this is less secure.  If you are running Kismet at boot via systemd, make sure to use `systemctl edit kismet.service` to change the user.  For more information, see the Kismet README for setting up Kismet with minimal privileges.
+INFO: Starting Kismet web server...
+INFO: HTTP server listening on 0.0.0.0:2501
+INFO: Could not open system plugin directory (/usr/lib/x86_64-linux-gnu/kismet/), skipping: No such file or directory
+INFO: Did not find a user plugin directory (/root/.kismet//plugins/), skipping: No such file or directory
+INFO: Found type 'linuxwifi' for 'wlan1'
+INFO: wlan1 bringing down parent interface 'wlan1'
+INFO: wlan1 finished configuring wlan1/wlan1mon, ready to capture
+INFO: Data source 'wlan1' launched successfully
+INFO: Detected new 802.11 Wi-Fi access point FC:98:16:C3:CB:56
+INFO: 802.11 Wi-Fi device FC:98:16:C3:CB:56 advertising SSID 'Smartphone_connect_c3cb56'
+INFO: Detected new 802.11 Wi-Fi access point 02:1F:05:72:37:BA
+INFO: 802.11 Wi-Fi device 02:1F:05:72:37:BA advertising SSID 'SpectrumSetup-AD_EXT_5G'
+[wardrive] heartbeat: 1/1 collectors alive — 16:44:48Z
+INFO: Detected new 802.11 Wi-Fi access point AA:B5:7C:D9:1D:3D
+INFO: 802.11 Wi-Fi device AA:B5:7C:D9:1D:3D advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 5A:E4:03:8E:57:6B
+INFO: 802.11 Wi-Fi device 5A:E4:03:8E:57:6B advertising SSID 'DIRECT-11-AndroidAP'
+INFO: Detected new 802.11 Wi-Fi access point 80:3F:5D:69:C6:7A
+INFO: 802.11 Wi-Fi device 80:3F:5D:69:C6:7A advertising SSID 'Palomar-02_EXT5G'
+[wardrive] heartbeat: 1/1 collectors alive — 16:45:48Z
+INFO: Detected new 802.11 Wi-Fi access point BC:10:B3:02:7B:B8
+INFO: 802.11 Wi-Fi device BC:10:B3:02:7B:B8 advertising SSID 'PND_7BB7'
+INFO: Detected new 802.11 Wi-Fi access point 80:3F:5D:69:D3:4A
+INFO: 802.11 Wi-Fi device 80:3F:5D:69:D3:4A advertising SSID 'SpectrumSetup-B6_EXT2G_EXT5G'
+INFO: Detected new 802.11 Wi-Fi access point B8:82:F2:DE:35:37
+INFO: 802.11 Wi-Fi device B8:82:F2:DE:35:37 advertising SSID 'Verizon_7JR9B3'
+INFO: Detected new 802.11 Wi-Fi device B8:82:F2:DE:35:35
+INFO: Detected new 802.11 Wi-Fi device 02:8D:08:1C:BC:B4
+INFO: Detected new 802.11 Wi-Fi access point 00:54:AF:29:98:0B
+INFO: 802.11 Wi-Fi device 00:54:AF:29:98:0B advertising SSID 'Hotspot980B'
+[wardrive] heartbeat: 1/1 collectors alive — 16:46:48Z
+INFO: Detected new 802.11 Wi-Fi access point 12:32:2C:B2:DE:CE
+INFO: 802.11 Wi-Fi device 12:32:2C:B2:DE:CE advertising SSID 'My VW 0640'
+INFO: Detected new 802.11 Wi-Fi device B6:37:68:55:88:74
+[wardrive] heartbeat: 1/1 collectors alive — 16:47:48Z
+INFO: Detected new 802.11 Wi-Fi access point 26:04:61:AD:63:B3
+INFO: 802.11 Wi-Fi device 26:04:61:AD:63:B3 advertising SSID 'ATTYkxx4S2'
+INFO: Detected new 802.11 Wi-Fi access point 0C:F5:A4:96:4A:8C
+INFO: 802.11 Wi-Fi device 0C:F5:A4:96:4A:8C advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 0C:F5:A4:96:4A:8F
+INFO: 802.11 Wi-Fi device 0C:F5:A4:96:4A:8F advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 0C:F5:A4:96:AE:00
+INFO: 802.11 Wi-Fi device 0C:F5:A4:96:AE:00 advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 0C:F5:A4:96:AE:0C
+INFO: 802.11 Wi-Fi device 0C:F5:A4:96:AE:0C advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 0C:F5:A4:96:AE:0F
+INFO: 802.11 Wi-Fi device 0C:F5:A4:96:AE:0F advertising SSID 'CoxWiFi'
+[wardrive] heartbeat: 1/1 collectors alive — 16:48:48Z
+INFO: Detected new 802.11 Wi-Fi access point 0C:9D:92:1D:2E:50
+INFO: 802.11 Wi-Fi device 0C:9D:92:1D:2E:50 advertising SSID 'PK9 Secured'
+INFO: Detected new 802.11 Wi-Fi access point 0C:9D:92:1D:2E:54
+INFO: 802.11 Wi-Fi device 0C:9D:92:1D:2E:54 advertising SSID 'PK9 Secured'
+INFO: Detected new 802.11 Wi-Fi access point D4:5D:64:79:F3:14
+INFO: 802.11 Wi-Fi device D4:5D:64:79:F3:14 advertising SSID 'PK9 Secured'
+INFO: Detected new 802.11 Wi-Fi device 7A:6C:1A:FC:B3:E1
+INFO: Detected new 802.11 Wi-Fi access point 2A:38:5C:DF:6C:09
+INFO: 802.11 Wi-Fi device 2A:38:5C:DF:6C:09 advertising SSID 'PROJdf6c09'
+[wardrive] heartbeat: 1/1 collectors alive — 16:49:48Z
+INFO: Detected new 802.11 Wi-Fi device B2:85:39:DB:F8:51
+INFO: Detected new 802.11 Wi-Fi device 22:C8:91:9D:D1:16
+INFO: Detected new 802.11 Wi-Fi access point 86:37:B8:EE:E6:93
+INFO: 802.11 Wi-Fi device 86:37:B8:EE:E6:93 advertising SSID 'Guest'
+INFO: Detected new 802.11 Wi-Fi access point 0E:58:F0:34:13:D0
+INFO: 802.11 Wi-Fi device 0E:58:F0:34:13:D0 advertising SSID 'Platinum'
+INFO: Detected new 802.11 Wi-Fi device 7A:E7:CC:AA:18:D3
+[wardrive] heartbeat: 1/1 collectors alive — 16:50:48Z
+INFO: Detected new 802.11 Wi-Fi device 76:86:E4:ED:42:1B
+INFO: Detected new 802.11 Wi-Fi device CA:20:1E:B4:BE:60
+INFO: Detected new 802.11 Wi-Fi access point FA:6D:CC:B5:A6:33
+INFO: 802.11 Wi-Fi device FA:6D:CC:B5:A6:33 advertising SSID 'myChevrolet A633'
+[wardrive] heartbeat: 1/1 collectors alive — 16:51:48Z
+INFO: Detected new 802.11 Wi-Fi access point 62:3C:68:0A:EB:CB
+INFO: 802.11 Wi-Fi device 62:3C:68:0A:EB:CB advertising SSID 'MINI 93959'
+INFO: 802.11 Wi-Fi device 62:3C:68:0A:EB:CB advertising SSID 'MINI 93959'
+INFO: Detected new 802.11 Wi-Fi device AE:BE:9A:C4:DB:88
+INFO: Detected new 802.11 Wi-Fi access point 7E:E7:12:31:40:55
+INFO: 802.11 Wi-Fi device 7E:E7:12:31:40:55 advertising SSID 'DIRECT-EA-SC2038_357216578195167'
+[wardrive] heartbeat: 1/1 collectors alive — 16:52:48Z
+INFO: Detected new 802.11 Wi-Fi access point 76:85:71:47:F7:2A
+INFO: 802.11 Wi-Fi device 76:85:71:47:F7:2A advertising SSID 'Rolling Roots'
+INFO: Detected new 802.11 Wi-Fi access point 76:85:71:77:F7:2A
+INFO: 802.11 Wi-Fi device 76:85:71:77:F7:2A advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device 42:74:E6:C0:5B:4E
+INFO: Detected new 802.11 Wi-Fi device 06:AC:28:3C:42:1D
+[wardrive] heartbeat: 1/1 collectors alive — 16:53:48Z
+INFO: Detected new 802.11 Wi-Fi access point 4A:BD:CE:8C:43:22
+INFO: 802.11 Wi-Fi device 4A:BD:CE:8C:43:22 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 4A:BD:CE:8C:43:26
+INFO: 802.11 Wi-Fi device 4A:BD:CE:8C:43:26 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 4A:BD:CE:8C:43:27
+INFO: 802.11 Wi-Fi device 4A:BD:CE:8C:43:27 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 4A:BD:CE:8C:43:21
+INFO: 802.11 Wi-Fi device 4A:BD:CE:8C:43:21 advertising SSID 'SETUP-431C'
+INFO: Detected new 802.11 Wi-Fi access point 8C:90:2D:0D:FB:8F
+INFO: 802.11 Wi-Fi device 8C:90:2D:0D:FB:8F advertising SSID 'Ganter Network Secured'
+INFO: Detected new 802.11 Wi-Fi access point 92:90:2D:0D:FB:8F
+INFO: 802.11 Wi-Fi device 92:90:2D:0D:FB:8F advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 70:7D:A1:BE:65:97
+INFO: 802.11 Wi-Fi device 70:7D:A1:BE:65:97 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 7A:7D:A1:BE:65:97
+INFO: 802.11 Wi-Fi device 7A:7D:A1:BE:65:97 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 7E:7D:A1:BE:65:97
+INFO: 802.11 Wi-Fi device 7E:7D:A1:BE:65:97 advertising SSID 'ATTu4v56WH'
+INFO: Detected new 802.11 Wi-Fi access point D6:BE:DC:51:75:C5
+INFO: 802.11 Wi-Fi device D6:BE:DC:51:75:C5 advertising a cloaked SSID
+[wardrive] heartbeat: 1/1 collectors alive — 16:54:48Z
+INFO: Detected new 802.11 Wi-Fi device D4:CA:6E:00:FA:D5
+INFO: Detected new 802.11 Wi-Fi access point 80:3F:5D:3C:2E:51
+INFO: 802.11 Wi-Fi device 80:3F:5D:3C:2E:51 advertising SSID 'WAVLINK-AC'
+INFO: Detected new 802.11 Wi-Fi access point 18:60:41:8C:AC:A2
+INFO: 802.11 Wi-Fi device 18:60:41:8C:AC:A2 advertising SSID 'TMOBILE-AC9F'
+INFO: Detected new 802.11 Wi-Fi device C2:C4:F9:C5:A9:AD
+INFO: Detected new 802.11 Wi-Fi device B6:68:CE:EE:A2:B7
+INFO: Detected new 802.11 Wi-Fi access point 1A:60:41:FC:AC:A2
+INFO: 802.11 Wi-Fi device 1A:60:41:FC:AC:A2 advertising a cloaked SSID
+INFO: 802.11 Wi-Fi device C2:C4:F9:C5:A9:AD advertising SSID 'myGMC A8AD'
+INFO: Detected new 802.11 Wi-Fi access point 02:92:A5:80:6A:19
+INFO: 802.11 Wi-Fi device 02:92:A5:80:6A:19 advertising SSID 'myCadillac 6a19'
+INFO: Detected new 802.11 Wi-Fi access point 3C:F0:83:EA:59:6D
+INFO: 802.11 Wi-Fi device 3C:F0:83:EA:59:6D advertising SSID 'TMOBILE-9F58'
+[wardrive] heartbeat: 1/1 collectors alive — 16:55:49Z
+INFO: Detected new 802.11 Wi-Fi access point AC:8B:A9:88:12:9E
+INFO: 802.11 Wi-Fi device AC:8B:A9:88:12:9E advertising SSID 'CALIFORNIAS_MEXICAN_RESTA_TOAST'
+INFO: Detected new 802.11 Wi-Fi access point B2:8B:A9:88:12:9E
+INFO: 802.11 Wi-Fi device B2:8B:A9:88:12:9E advertising SSID 'CALIFORNIAS_MEXICAN_RESTA_SECURE'
+INFO: Detected new 802.11 Wi-Fi access point A0:E7:AE:A8:8D:D0
+INFO: 802.11 Wi-Fi device A0:E7:AE:A8:8D:D0 advertising SSID 'ATT57cvA9G'
+INFO: Detected new 802.11 Wi-Fi device A0:E7:AE:A8:8D:D2
+INFO: Detected new 802.11 Wi-Fi device 0E:9E:17:DE:31:0F
+INFO: Detected new 802.11 Wi-Fi access point BA:5E:71:30:66:72
+INFO: 802.11 Wi-Fi device BA:5E:71:30:66:72 advertising SSID 'LP5801'
+INFO: Detected new 802.11 Wi-Fi access point BA:5E:71:30:66:75
+INFO: 802.11 Wi-Fi device BA:5E:71:30:66:75 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point BA:5E:71:30:66:74
+INFO: 802.11 Wi-Fi device BA:5E:71:30:66:74 advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point BA:5E:71:30:66:76
+INFO: 802.11 Wi-Fi device BA:5E:71:30:66:76 advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point BA:5E:71:30:66:77
+INFO: 802.11 Wi-Fi device BA:5E:71:30:66:77 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 24:41:FE:24:3B:CB
+INFO: 802.11 Wi-Fi device 24:41:FE:24:3B:CB advertising SSID 'Verizon_9KL4GL'
+INFO: Detected new 802.11 Wi-Fi access point 66:6A:1F:AA:9B:03
+INFO: 802.11 Wi-Fi device 66:6A:1F:AA:9B:03 advertising SSID 'Roost'
+INFO: Detected new 802.11 Wi-Fi access point 0C:F5:A4:97:08:EC
+INFO: 802.11 Wi-Fi device 0C:F5:A4:97:08:EC advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 0C:F5:A4:97:08:EF
+INFO: 802.11 Wi-Fi device 0C:F5:A4:97:08:EF advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point A0:8A:06:F4:33:5C
+INFO: 802.11 Wi-Fi device A0:8A:06:F4:33:5C advertising SSID 'ATT-WIFI-4803'
+INFO: Detected new 802.11 Wi-Fi access point A2:8A:06:D4:33:5C
+INFO: 802.11 Wi-Fi device A2:8A:06:D4:33:5C advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A0:E7:AE:A8:8D:D3
+INFO: 802.11 Wi-Fi device A0:E7:AE:A8:8D:D3 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A6:E7:AE:A8:8D:D3
+INFO: 802.11 Wi-Fi device A6:E7:AE:A8:8D:D3 advertising SSID 'ATT57cvA9G'
+INFO: Detected new 802.11 Wi-Fi access point 18:60:41:0A:C5:75
+INFO: 802.11 Wi-Fi device 18:60:41:0A:C5:75 advertising SSID '2BG46'
+INFO: Detected new 802.11 Wi-Fi device 2E:A1:66:A8:AC:45
+INFO: Detected new 802.11 Wi-Fi access point DC:7F:A4:26:37:2E
+INFO: 802.11 Wi-Fi device DC:7F:A4:26:37:2E advertising SSID 'ATT7Pu4egw'
+INFO: Detected new 802.11 Wi-Fi device 04:C9:D9:D9:51:93
+[wardrive] heartbeat: 1/1 collectors alive — 16:56:49Z
+INFO: Detected new 802.11 Wi-Fi access point 80:D0:4A:DE:AF:F8
+INFO: 802.11 Wi-Fi device 80:D0:4A:DE:AF:F8 advertising SSID 'SETUP-AFEC'
+INFO: Detected new 802.11 Wi-Fi access point 80:D0:4A:DE:AF:F9
+INFO: 802.11 Wi-Fi device 80:D0:4A:DE:AF:F9 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 80:D0:4A:DE:AF:FC
+INFO: 802.11 Wi-Fi device 80:D0:4A:DE:AF:FC advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 80:D0:4A:DE:AF:FD
+INFO: 802.11 Wi-Fi device 80:D0:4A:DE:AF:FD advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 70:03:7E:E1:BB:68
+INFO: 802.11 Wi-Fi device 70:03:7E:E1:BB:68 advertising SSID 'Natty111'
+INFO: Detected new 802.11 Wi-Fi access point 70:03:7E:E1:BB:6E
+INFO: 802.11 Wi-Fi device 70:03:7E:E1:BB:6E advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 70:03:7E:E1:BB:6B
+INFO: 802.11 Wi-Fi device 70:03:7E:E1:BB:6B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 9A:49:14:78:70:2C
+INFO: 802.11 Wi-Fi device 9A:49:14:78:70:2C advertising SSID 'DIRECT-BMW 96278'
+INFO: Detected new 802.11 Wi-Fi access point 70:03:7E:E1:BB:6D
+INFO: 802.11 Wi-Fi device 70:03:7E:E1:BB:6D advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 70:03:7E:E1:BB:6A
+INFO: 802.11 Wi-Fi device 70:03:7E:E1:BB:6A advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 80:D0:4A:DE:AF:FE
+INFO: 802.11 Wi-Fi device 80:D0:4A:DE:AF:FE advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 80:69:1A:B2:7F:60
+INFO: 802.11 Wi-Fi device 80:69:1A:B2:7F:60 advertising SSID 'Capernaum Fishing Network'
+INFO: Detected new 802.11 Wi-Fi access point 86:69:1A:B2:7F:60
+INFO: 802.11 Wi-Fi device 86:69:1A:B2:7F:60 advertising SSID '2383 Guest'
+INFO: Detected new 802.11 Wi-Fi access point C8:9E:43:63:75:73
+INFO: 802.11 Wi-Fi device C8:9E:43:63:75:73 advertising SSID 'ORBI66'
+INFO: Detected new 802.11 Wi-Fi access point AC:DF:9F:15:37:6B
+INFO: 802.11 Wi-Fi device AC:DF:9F:15:37:6B advertising SSID 'TMOBILE-3768'
+INFO: Detected new 802.11 Wi-Fi access point AC:DF:B9:1C:37:6B
+INFO: 802.11 Wi-Fi device AC:DF:B9:1C:37:6B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 2E:F5:A2:7D:4B:D5
+INFO: 802.11 Wi-Fi device 2E:F5:A2:7D:4B:D5 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 2A:F5:A2:7D:4B:D5
+INFO: 802.11 Wi-Fi device 2A:F5:A2:7D:4B:D5 advertising SSID 'dlink-guest'
+INFO: Detected new 802.11 Wi-Fi access point 24:F5:A2:7D:4B:D5
+INFO: 802.11 Wi-Fi device 24:F5:A2:7D:4B:D5 advertising SSID 'dlink'
+INFO: Detected new 802.11 Wi-Fi access point CC:F4:11:49:AF:CF
+INFO: 802.11 Wi-Fi device CC:F4:11:49:AF:CF advertising SSID 'Werner'
+INFO: Detected new 802.11 Wi-Fi device 32:48:D1:DA:1A:42
+INFO: Detected new 802.11 Wi-Fi access point E8:48:B8:20:37:73
+INFO: 802.11 Wi-Fi device E8:48:B8:20:37:73 advertising SSID 'basketball_5G'
+INFO: Detected new 802.11 Wi-Fi access point 7A:48:B8:20:37:75
+INFO: 802.11 Wi-Fi device 7A:48:B8:20:37:75 advertising a cloaked SSID
+[wardrive] heartbeat: 1/1 collectors alive — 16:57:49Z
+INFO: Detected new 802.11 Wi-Fi access point 32:D4:C5:8A:03:2E
+INFO: 802.11 Wi-Fi device 32:D4:C5:8A:03:2E advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 32:D4:C5:4A:03:2E
+INFO: 802.11 Wi-Fi device 32:D4:C5:4A:03:2E advertising SSID 'KaiKai'
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:74:1A
+INFO: 802.11 Wi-Fi device 72:13:01:E6:74:1A advertising SSID 'SETUP-7414'
+INFO: Detected new 802.11 Wi-Fi device A8:3B:76:01:FB:3D
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:74:1E
+INFO: 802.11 Wi-Fi device 72:13:01:E6:74:1E advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:74:1C
+INFO: 802.11 Wi-Fi device 72:13:01:E6:74:1C advertising SSID 'CoxWiFi'
+INFO: 802.11 Wi-Fi device 72:13:01:E6:74:1A advertising SSID 'SETUP-7414'
+INFO: 802.11 Wi-Fi device 72:13:01:E6:74:1C advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:74:1D
+INFO: 802.11 Wi-Fi device 72:13:01:E6:74:1D advertising a cloaked SSID
+INFO: 802.11 Wi-Fi device 72:13:01:E6:74:1E advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:74:1F
+INFO: 802.11 Wi-Fi device 72:13:01:E6:74:1F advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 92:28:AA:E8:4F:25
+INFO: 802.11 Wi-Fi device 92:28:AA:E8:4F:25 advertising SSID 'jabo'
+INFO: Detected new 802.11 Wi-Fi device CC:28:AA:E8:4F:24
+INFO: Detected new 802.11 Wi-Fi device A8:80:55:49:00:14
+INFO: Detected new 802.11 Wi-Fi access point A0:FF:70:6E:6E:93
+INFO: 802.11 Wi-Fi device A0:FF:70:6E:6E:93 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A0:FF:70:6E:6E:95
+INFO: 802.11 Wi-Fi device A0:FF:70:6E:6E:95 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A0:FF:70:6E:6E:96
+INFO: 802.11 Wi-Fi device A0:FF:70:6E:6E:96 advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 34:98:B5:B0:F8:2D
+INFO: 802.11 Wi-Fi device 34:98:B5:B0:F8:2D advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A0:FF:70:6E:6E:92
+INFO: 802.11 Wi-Fi device A0:FF:70:6E:6E:92 advertising SSID 'SETUP-6E86'
+INFO: Detected new 802.11 Wi-Fi access point A0:FF:70:6E:6E:98
+INFO: 802.11 Wi-Fi device A0:FF:70:6E:6E:98 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A0:FF:70:6E:6E:94
+INFO: 802.11 Wi-Fi device A0:FF:70:6E:6E:94 advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point A0:FF:70:6E:6E:97
+INFO: 802.11 Wi-Fi device A0:FF:70:6E:6E:97 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device 02:21:CC:24:89:67
+INFO: Detected new 802.11 Wi-Fi access point 3C:37:86:56:7B:79
+INFO: 802.11 Wi-Fi device 3C:37:86:56:7B:79 advertising SSID 'ARLO_VMB_5348855555'
+INFO: Detected new 802.11 Wi-Fi access point 34:98:B5:AF:9C:20
+INFO: 802.11 Wi-Fi device 34:98:B5:AF:9C:20 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 3A:98:B5:AF:9C:20
+INFO: 802.11 Wi-Fi device 3A:98:B5:AF:9C:20 advertising SSID 'ORBI63'
+INFO: Detected new 802.11 Wi-Fi access point 34:98:B5:AF:9C:21
+INFO: 802.11 Wi-Fi device 34:98:B5:AF:9C:21 advertising SSID 'ORBI63'
+INFO: Detected new 802.11 Wi-Fi access point 3C:37:86:56:7B:7A
+INFO: 802.11 Wi-Fi device 3C:37:86:56:7B:7A advertising SSID 'ARLO_VMB_5348855555'
+INFO: Detected new 802.11 Wi-Fi access point 8C:3B:AD:AD:82:E2
+INFO: 802.11 Wi-Fi device 8C:3B:AD:AD:82:E2 advertising SSID 'ORBI48'
+[wardrive] heartbeat: 1/1 collectors alive — 16:58:49Z
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:A3:30
+INFO: 802.11 Wi-Fi device 72:13:01:E6:A3:30 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:A3:32
+INFO: 802.11 Wi-Fi device 72:13:01:E6:A3:32 advertising SSID 'Cakes1Cox 2.4'
+INFO: Detected new 802.11 Wi-Fi access point 02:F4:8D:28:42:97
+INFO: 802.11 Wi-Fi device 02:F4:8D:28:42:97 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point BE:D7:D4:68:3F:4D
+INFO: 802.11 Wi-Fi device BE:D7:D4:68:3F:4D advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:A3:34
+INFO: 802.11 Wi-Fi device 72:13:01:E6:A3:34 advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:A3:35
+INFO: 802.11 Wi-Fi device 72:13:01:E6:A3:35 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:A3:36
+INFO: 802.11 Wi-Fi device 72:13:01:E6:A3:36 advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 10:E1:77:20:E2:81
+INFO: 802.11 Wi-Fi device 10:E1:77:20:E2:81 advertising SSID 'SETUP-E27C'
+INFO: Detected new 802.11 Wi-Fi access point 16:E1:77:20:E2:81
+INFO: 802.11 Wi-Fi device 16:E1:77:20:E2:81 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device 64:67:72:79:4B:A2
+INFO: Detected new 802.11 Wi-Fi access point 72:13:01:E6:A3:37
+INFO: 802.11 Wi-Fi device 72:13:01:E6:A3:37 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 0E:E1:77:20:E2:81
+INFO: 802.11 Wi-Fi device 0E:E1:77:20:E2:81 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 0A:E1:77:20:E2:81
+INFO: 802.11 Wi-Fi device 0A:E1:77:20:E2:81 advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 96:04:E3:A1:12:3A
+INFO: 802.11 Wi-Fi device 96:04:E3:A1:12:3A advertising SSID 'SETUP-1234'
+INFO: Detected new 802.11 Wi-Fi access point 96:04:E3:A1:12:3E
+INFO: 802.11 Wi-Fi device 96:04:E3:A1:12:3E advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 96:04:E3:A1:12:3D
+INFO: 802.11 Wi-Fi device 96:04:E3:A1:12:3D advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 96:04:E3:A1:12:3F
+INFO: 802.11 Wi-Fi device 96:04:E3:A1:12:3F advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 96:04:E3:A1:12:3C
+INFO: 802.11 Wi-Fi device 96:04:E3:A1:12:3C advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point BA:5E:71:53:D9:72
+INFO: 802.11 Wi-Fi device BA:5E:71:53:D9:72 advertising SSID 'SETUP-D96C'
+INFO: Detected new 802.11 Wi-Fi device AC:AE:19:AD:65:B5
+INFO: Detected new 802.11 Wi-Fi access point A4:56:CC:D5:DA:E8
+INFO: 802.11 Wi-Fi device A4:56:CC:D5:DA:E8 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A4:56:CC:D5:DA:EA
+INFO: 802.11 Wi-Fi device A4:56:CC:D5:DA:EA advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A4:56:CC:D5:DA:EB
+INFO: 802.11 Wi-Fi device A4:56:CC:D5:DA:EB advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point BA:5E:71:53:D9:75
+INFO: 802.11 Wi-Fi device BA:5E:71:53:D9:75 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A4:56:CC:D5:DA:E9
+INFO: 802.11 Wi-Fi device A4:56:CC:D5:DA:E9 advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 86:8F:CF:76:60:33
+INFO: 802.11 Wi-Fi device 86:8F:CF:76:60:33 advertising SSID 'Cam Reenie'
+INFO: Detected new 802.11 Wi-Fi access point A4:56:CC:D5:DA:E7
+INFO: 802.11 Wi-Fi device A4:56:CC:D5:DA:E7 advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi device AC:AE:19:AD:F4:0F
+INFO: Detected new 802.11 Wi-Fi access point BA:5E:71:53:D9:74
+INFO: 802.11 Wi-Fi device BA:5E:71:53:D9:74 advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 94:8F:CF:76:60:33
+INFO: 802.11 Wi-Fi device 94:8F:CF:76:60:33 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point BA:5E:71:53:D9:77
+INFO: 802.11 Wi-Fi device BA:5E:71:53:D9:77 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A4:56:CC:D5:DA:E6
+INFO: 802.11 Wi-Fi device A4:56:CC:D5:DA:E6 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A4:56:CC:D5:DA:E5
+INFO: 802.11 Wi-Fi device A4:56:CC:D5:DA:E5 advertising SSID 'SETUP-DAD9'
+[wardrive] heartbeat: 1/1 collectors alive — 16:59:49Z
+INFO: Detected new 802.11 Wi-Fi access point 90:CA:FA:06:5D:A4
+INFO: 802.11 Wi-Fi device 90:CA:FA:06:5D:A4 advertising SSID 'flyingkeisuke'
+INFO: Detected new 802.11 Wi-Fi device 08:36:C9:86:B2:FA
+INFO: Detected new 802.11 Wi-Fi device 1C:12:B0:3D:CC:83
+INFO: Detected new 802.11 Wi-Fi device 08:36:C9:86:33:EF
+INFO: Detected new 802.11 Wi-Fi access point 08:36:C9:86:B3:32
+INFO: 802.11 Wi-Fi device 08:36:C9:86:B3:32 advertising SSID 'janoo1'
+INFO: 802.11 Wi-Fi device 08:36:C9:86:B2:FA advertising SSID 'janoo1'
+INFO: Detected new 802.11 Wi-Fi access point 34:97:F6:6E:B9:24
+INFO: 802.11 Wi-Fi device 34:97:F6:6E:B9:24 advertising SSID 'San Luis Rey'
+INFO: Detected new 802.11 Wi-Fi access point E6:BF:FA:93:E4:EE
+INFO: 802.11 Wi-Fi device E6:BF:FA:93:E4:EE advertising SSID 'TURVEY5'
+INFO: Detected new 802.11 Wi-Fi access point 18:A5:FF:46:19:18
+INFO: 802.11 Wi-Fi device 18:A5:FF:46:19:18 advertising SSID 'TinoWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 94:2A:6F:16:04:72
+INFO: 802.11 Wi-Fi device 94:2A:6F:16:04:72 advertising SSID 'L&L’s House'
+INFO: Detected new 802.11 Wi-Fi access point 9A:2A:6F:16:04:72
+INFO: 802.11 Wi-Fi device 9A:2A:6F:16:04:72 advertising SSID 'I0T'
+INFO: Detected new 802.11 Wi-Fi access point 9E:2A:6F:16:04:72
+INFO: 802.11 Wi-Fi device 9E:2A:6F:16:04:72 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A2:2A:6F:16:04:72
+INFO: 802.11 Wi-Fi device A2:2A:6F:16:04:72 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A2:3D:D1:F1:B4:CC
+INFO: 802.11 Wi-Fi device A2:3D:D1:F1:B4:CC advertising SSID 'Martinezhouse2'
+INFO: Detected new 802.11 Wi-Fi access point A2:3D:D1:F1:B4:CD
+INFO: 802.11 Wi-Fi device A2:3D:D1:F1:B4:CD advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 26:21:5E:06:60:CA
+INFO: 802.11 Wi-Fi device 26:21:5E:06:60:CA advertising SSID 'TeslaPW_MZWDLK'
+[wardrive] heartbeat: 1/1 collectors alive — 17:00:49Z
+INFO: Detected new 802.11 Wi-Fi access point E6:BF:FA:7D:CC:48
+INFO: 802.11 Wi-Fi device E6:BF:FA:7D:CC:48 advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point E2:DB:D1:3E:F3:A6
+INFO: 802.11 Wi-Fi device E2:DB:D1:3E:F3:A6 advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point E2:DB:D1:3E:F3:A7
+INFO: 802.11 Wi-Fi device E2:DB:D1:3E:F3:A7 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E6:BF:FA:7D:CC:4B
+INFO: 802.11 Wi-Fi device E6:BF:FA:7D:CC:4B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 8E:6A:8D:4F:A3:69
+INFO: 802.11 Wi-Fi device 8E:6A:8D:4F:A3:69 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E2:DB:D1:3E:F3:A5
+INFO: 802.11 Wi-Fi device E2:DB:D1:3E:F3:A5 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E6:BF:FA:7D:CC:49
+INFO: 802.11 Wi-Fi device E6:BF:FA:7D:CC:49 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E6:BF:FA:7D:CC:4A
+INFO: 802.11 Wi-Fi device E6:BF:FA:7D:CC:4A advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 8E:6A:8D:4F:A3:6C
+INFO: 802.11 Wi-Fi device 8E:6A:8D:4F:A3:6C advertising SSID 'SETUP-A366'
+INFO: Detected new 802.11 Wi-Fi access point 8E:6A:8D:4F:A3:6D
+INFO: 802.11 Wi-Fi device 8E:6A:8D:4F:A3:6D advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E2:DB:D1:3E:F3:A2
+INFO: 802.11 Wi-Fi device E2:DB:D1:3E:F3:A2 advertising SSID 'ATT2hMk9Eq'
+INFO: Detected new 802.11 Wi-Fi access point 8E:6A:8D:4F:A3:68
+INFO: 802.11 Wi-Fi device 8E:6A:8D:4F:A3:68 advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point E2:DB:D1:3E:F3:A4
+INFO: 802.11 Wi-Fi device E2:DB:D1:3E:F3:A4 advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 8E:6A:8D:4F:A3:6E
+INFO: 802.11 Wi-Fi device 8E:6A:8D:4F:A3:6E advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 8E:6A:8D:4F:A3:6F
+INFO: 802.11 Wi-Fi device 8E:6A:8D:4F:A3:6F advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E6:BF:FA:7D:CC:4E
+INFO: 802.11 Wi-Fi device E6:BF:FA:7D:CC:4E advertising SSID 'SETUP-CC48'
+INFO: Detected new 802.11 Wi-Fi device F0:AF:85:FE:CE:60
+INFO: Detected new 802.11 Wi-Fi access point E2:DB:D1:C6:55:9B
+INFO: 802.11 Wi-Fi device E2:DB:D1:C6:55:9B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 42:37:86:34:25:6F
+INFO: 802.11 Wi-Fi device 42:37:86:34:25:6F advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E2:DB:D1:C6:55:9C
+INFO: 802.11 Wi-Fi device E2:DB:D1:C6:55:9C advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point E2:DB:D1:C6:55:98
+INFO: 802.11 Wi-Fi device E2:DB:D1:C6:55:98 advertising SSID 'Rexi42!'
+INFO: Detected new 802.11 Wi-Fi access point E2:DB:D1:C6:55:9A
+INFO: 802.11 Wi-Fi device E2:DB:D1:C6:55:9A advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point E2:DB:D1:C6:55:9D
+INFO: 802.11 Wi-Fi device E2:DB:D1:C6:55:9D advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:1E:62:D8
+INFO: 802.11 Wi-Fi device 98:9D:5D:1E:62:D8 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device 98:9D:5D:1E:62:D3
+INFO: Detected new 802.11 Wi-Fi access point E8:9F:80:E7:3E:79
+INFO: 802.11 Wi-Fi device E8:9F:80:E7:3E:79 advertising SSID 'E2EBF3'
+INFO: Detected new 802.11 Wi-Fi access point EE:9F:80:E7:3E:79
+INFO: 802.11 Wi-Fi device EE:9F:80:E7:3E:79 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 94:A6:7E:31:91:31
+INFO: 802.11 Wi-Fi device 94:A6:7E:31:91:31 advertising SSID 'NETGEAR_EXT'
+INFO: Detected new 802.11 Wi-Fi access point E8:9F:80:E7:3E:7A
+INFO: 802.11 Wi-Fi device E8:9F:80:E7:3E:7A advertising SSID 'E2EBF3'
+INFO: Detected new 802.11 Wi-Fi access point D4:5D:64:4B:A5:C4
+INFO: 802.11 Wi-Fi device D4:5D:64:4B:A5:C4 advertising SSID 'GRIMLOCK'
+INFO: Detected new 802.11 Wi-Fi access point 96:F7:BE:7E:99:B3
+INFO: 802.11 Wi-Fi device 96:F7:BE:7E:99:B3 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point D4:5D:64:4B:A5:C8
+INFO: 802.11 Wi-Fi device D4:5D:64:4B:A5:C8 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device 96:E9:0E:FE:57:AD
+INFO: Detected new 802.11 Wi-Fi access point BC:A5:11:97:21:B0
+INFO: 802.11 Wi-Fi device BC:A5:11:97:21:B0 advertising SSID 'ORBI62'
+INFO: Detected new 802.11 Wi-Fi access point 8C:76:3F:82:AA:63
+INFO: 802.11 Wi-Fi device 8C:76:3F:82:AA:63 advertising SSID 'Love house'
+INFO: Detected new 802.11 Wi-Fi device 04:7C:16:5A:8C:FC
+INFO: Detected new 802.11 Wi-Fi access point 8E:76:3F:82:AA:63
+INFO: 802.11 Wi-Fi device 8E:76:3F:82:AA:63 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 96:76:3F:82:AA:63
+INFO: 802.11 Wi-Fi device 96:76:3F:82:AA:63 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device EC:71:DB:9D:F7:0C
+[wardrive] heartbeat: 1/1 collectors alive — 17:01:49Z
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:23:FF
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:23:FF advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:24:02
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:24:02 advertising SSID 'Cox Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:23:FE
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:23:FE advertising SSID 'SETUP-23F2'
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:24:00
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:24:00 advertising SSID 'CoxWiFi'
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:24:03
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:24:03 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E0:22:02:35:B5:CA
+INFO: 802.11 Wi-Fi device E0:22:02:35:B5:CA advertising SSID 'ATT5VuP9Qf'
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:24:01
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:24:01 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:24:04
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:24:04 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 00:25:00:FF:94:73
+INFO: Detected new 802.11 Wi-Fi device AA:0A:04:C8:02:65
+INFO: Detected new 802.11 Wi-Fi access point B0:6A:41:9B:32:31
+INFO: 802.11 Wi-Fi device B0:6A:41:9B:32:31 advertising SSID 'Scrap New'
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:23:F9
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:23:F9 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:23:F7
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:23:F7 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:23:FB
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:23:FB advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 98:9D:5D:12:23:F6
+INFO: 802.11 Wi-Fi device 98:9D:5D:12:23:F6 advertising SSID 'SETUP-23F2'
+INFO: Detected new 802.11 Wi-Fi access point 00:13:EF:9F:9D:26
+INFO: 802.11 Wi-Fi device 00:13:EF:9F:9D:26 advertising SSID 'SETUP-23F2-EXT'
+[wardrive] Sleep inhibitor released — normal lid/sleep behavior restored
+[wardrive] Shutting down collectors…
+
+*** KISMET IS SHUTTING DOWN ***
+Shutting down plugins...
+WARNING: Kismet changes the configuration of network devices.
+         In most cases you will need to restart networking for
+         your interface (varies per distribution and OS), but 
+         typically one of:
+         sudo service networking restart
+         sudo /etc/init.d/networking restart
+         or
+         nmcli device set [device] managed true
+
+Kismet exiting.
+EXITING: Signal service thread complete.
+[wardrive] Session closed: 20260427T164348Z_wardrive

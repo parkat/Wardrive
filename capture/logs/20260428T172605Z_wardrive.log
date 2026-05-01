@@ -1,0 +1,23 @@
+[wardrive] Session: 20260428T172605Z_wardrive
+[wardrive] Dir:     /home/parkat/warDrive/capture/raw/20260428T172605Z_wardrive
+[wardrive] Starting collectors…
+[wifi] Starting Kismet on wlan1
+FATAL: Could not find override option 'wigle_file=false' as a file or in the Kismet config directory as '/etc/kismet/kismet_wigle_file=false.conf'.
+kismet failed with exit status 1.
+[wifi] PID 1704058
+[sdr] Starting rtl_433 on 433.92 MHz
+rtl_433 version 25.12 (2025-12-12) inputs file rtl_tcp RTL-SDR SoapySDR
+Use "-F log" if you want any messages, warnings, and errors in the console.
+[sdr] PID 1704077
+[esp32] Found ESP32 on /dev/ttyUSB0
+[esp32] Verifying device output…
+[esp32] Device verified ✓
+[esp32] PID 1704129 → /home/parkat/warDrive/capture/raw/20260428T172605Z_wardrive/bt/esp32_ble.ndjson
+[wardrive] All collectors running. Ctrl-C to stop.
+[esp32_reader] Opening /dev/ttyUSB0 @ 115200 baud
+[esp32_reader] Writing to /home/parkat/warDrive/capture/raw/20260428T172605Z_wardrive/bt/esp32_ble.ndjson
+[wardrive] Shutting down collectors…
+[esp32_reader] Shutdown. 878 records written, 0 parse errors, 0 reconnects.
+[wardrive] Session closed: 20260428T172605Z_wardrive
+[wardrive] Shutting down collectors…
+[wardrive] Session closed: 20260428T172605Z_wardrive

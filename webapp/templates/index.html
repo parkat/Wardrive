@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>warDrive Explorer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>warDrive Passive Capture Explorer</h1>
+        <div id="status">Checking database...</div>
+    </header>
+
+    <main>
+        <section id="filters">
+            <h2>Filters</h2>
+            <div class="filter-row">
+                <select id="table-selector">
+                    <option value="bt_devices">BLE Devices (bt_devices)</option>
+                    <option value="wifi_aps">WiFi APs (wifi_aps)</option>
+                    <option value="wifi_clients">WiFi Clients (wifi_clients)</option>
+                    <option value="rf_devices">RF Devices (rf_devices)</option>
+                </select>
+                <input type="text" id="vendor-filter" placeholder="Vendor (e.g., Apple)">
+            </div>
+            <div class="filter-row">
+                <input type="number" id="signal-filter" placeholder="Max RSSI (e.g., -60)">
+                <input type="date" id="date-filter">
+            </div>
+            <div class="filter-actions">
+                <button id="apply-filters">Apply</button>
+                <button id="reset-filters" class="secondary">Reset</button>
+            </div>
+        </section>
+
+        <section id="data-table">
+            <h2>Devices</h2>
+            <div id="table-container">
+                <table id="device-table">
+                    <thead><tr><th>MAC/Address</th><th>Vendor</th><th>RSSI</th><th>Last Seen</th><th>First Seen</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

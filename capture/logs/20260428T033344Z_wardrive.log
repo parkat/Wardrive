@@ -1,0 +1,218 @@
+[wardrive] Session: 20260428T033344Z_wardrive
+[wardrive] Dir:     /home/parkat/warDrive/capture/raw/20260428T033344Z_wardrive
+[wardrive] Sleep/lid-close inhibited (pid 1436490)
+[wardrive] Laptop stays awake with lid closed until session ends
+[wardrive] Starting collectors with auto-restart supervisors…
+[gps] Waiting for fix (up to 30s, need 4+ sats)… ......
+[gps] WARNING: No fix after 30s — starting without GPS coordinates
+[gps]   Make sure the puck has sky view. lat/lon will be NULL in this session.
+[gps] Starting NMEA logger (under supervisor)
+[gps] supervisor: launching collector…
+[gps] supervisor PID 1437554
+[gps] Raw NMEA → /home/parkat/warDrive/capture/raw/20260428T033344Z_wardrive/gps/nmea.log
+[wifi] Starting Kismet on wlan1 (under supervisor)
+[wifi] supervisor: launching collector…
+INFO: Including sub-config file: /etc/kismet/kismet_httpd.conf
+INFO: Including sub-config file: /etc/kismet/kismet_memory.conf
+INFO: Including sub-config file: /etc/kismet/kismet_alerts.conf
+INFO: Including sub-config file: /etc/kismet/kismet_80211.conf
+INFO: Including sub-config file: /etc/kismet/kismet_logging.conf
+INFO: Including sub-config file: /etc/kismet/kismet_filter.conf
+INFO: Including sub-config file: /etc/kismet/kismet_uav.conf
+INFO: Loading config override file '/etc/kismet/kismet_package.conf'
+INFO: Optional sub-config file not present: /etc/kismet/kismet_package.conf
+INFO: Loading config override file '/etc/kismet/kismet_site.conf'
+INFO: Optional sub-config file not present: /etc/kismet/kismet_site.conf
+INFO: Setting server UUID BC471298-403C-11F1-BD11-4B49534D4554
+INFO: Starting Beast webserver on 0.0.0.0:2501
+INFO: Opened OUI file '/usr/share/kismet/kismet_manuf.txt.gz
+INFO: Indexing manufacturer db
+[wifi] supervisor PID 1437558
+INFO: Completed indexing manufacturer db, 37974 lines and 760 indexes.
+INFO: Saving devices to the Kismet database log every 30 seconds
+INFO: Using default rates of 10/min, 1/sec for alert 'DEVICEFOUND'
+INFO: Using default rates of 10/min, 1/sec for alert 'DEVICELOST'
+INFO: Registering support for DLT_PPI packet header decoding
+INFO: Registering support for DLT_RADIOTAP packet header decoding
+INFO: Registering support for DLT_BTLE_RADIO packet header decoding
+INFO: Using default rates of 10/min, 1/sec for alert 'BADFIXLENIE'
+INFO: PHY80211 will only process AP signal levels from beacons
+INFO: Allowing Kismet clients to view WEP keys
+DEBUG: ssid canary FooCanary:ssid="FoobarCanary"
+DEBUG: ssid canary FooCanart2:ssid="(?i:foobarcanary)"
+INFO: Keeping EAPOL packets in memory for easy download and WIDS functionality; this can use more RAM.
+INFO: Registered PHY handler 'IEEE802.11' as ID 0
+INFO: Registered PHY handler 'RFSENSOR' as ID 1
+INFO: Registered PHY handler 'Z-Wave' as ID 2
+INFO: Registered PHY handler 'Bluetooth' as ID 3
+DEBUG: reserve_fields home id 542 app id 543
+INFO: Registered PHY handler 'UAV' as ID 4
+INFO: Registered PHY handler 'NrfMousejack' as ID 5
+ERROR: Tried to re-register duplicate alert FLIPPERZERO
+INFO: Registered PHY handler 'BTLE' as ID 6
+INFO: Registered PHY handler 'METER' as ID 7
+INFO: Indexing ADSB ICAO db
+INFO: Completed indexing ADSB ICAO db, 341068 lines 6822 indexes
+INFO: Registered PHY handler 'ADSB' as ID 8
+INFO: Registered PHY handler '802.15.4' as ID 9
+INFO: Registered PHY handler 'RADIATION' as ID 10
+INFO: (HTTPD) Could not read session data file, skipping loading saved sessions.
+INFO: Serving static file content from /usr/share/kismet/httpd/
+INFO: Enabling channel hopping by default on sources which support channel control.
+INFO: Setting default channel hop rate to 5/sec
+INFO: Enabling channel list splitting on sources which share the same list of channels
+INFO: Enabling channel list shuffling to optimize overlaps
+INFO: Sources will be re-opened if they encounter an error
+INFO: Saving datasources to the Kismet database log every 30 seconds
+INFO: Launching remote capture server on 127.0.0.1 3501
+INFO: Data sources passed on the command line (via -c source), ignoring source= definitions in the Kismet config file.
+INFO: Probing interface 'wlan1' to find datasource type
+INFO: Opened kismetdb log file '/home/parkat/warDrive/capture/raw/20260428T033344Z_wardrive/wifi//Kismet-20260428-03-34-17-1.kismet'
+INFO: Saving packets to the Kismet database log.
+INFO: Opened pcapng log file '/home/parkat/warDrive/capture/raw/20260428T033344Z_wardrive/wifi//Kismet-20260428-03-34-17-1.pcapng'
+INFO: GPS track will be logged to the Kismet logfile
+ALERT: ROOTUSER Kismet is running as root; this is less secure.  If you are running Kismet at boot via systemd, make sure to use `systemctl edit kismet.service` to change the user.  For more information, see the Kismet README for setting up Kismet with minimal privileges.
+INFO: Starting Kismet web server...
+INFO: HTTP server listening on 0.0.0.0:2501
+INFO: Could not open system plugin directory (/usr/lib/x86_64-linux-gnu/kismet/), skipping: No such file or directory
+INFO: Did not find a user plugin directory (/root/.kismet//plugins/), skipping: No such file or directory
+INFO: Found type 'linuxwifi' for 'wlan1'
+INFO: wlan1 telling NetworkManager not to control interface 'wlan1': you may need to re-initialize this interface later or tell NetworkManager to control it again via 'nmcli'
+INFO: wlan1 bringing down parent interface 'wlan1'
+INFO: wlan1 finished configuring wlan1/wlan1mon, ready to capture
+INFO: Data source 'wlan1' launched successfully
+INFO: Detected new 802.11 Wi-Fi access point DC:08:DA:CC:74:90
+INFO: 802.11 Wi-Fi device DC:08:DA:CC:74:90 advertising SSID 'SpectrumSetup-AA'
+INFO: Detected new 802.11 Wi-Fi device CC:BA:BD:8D:87:46
+INFO: Detected new 802.11 Wi-Fi device 7A:27:3C:12:1A:06
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:87:4A
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:4A advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:86:C2
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:86:C2 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:86:C2
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:86:C2 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point 5E:08:DA:CC:74:90
+INFO: 802.11 Wi-Fi device 5E:08:DA:CC:74:90 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 6E:08:DA:CC:74:90
+INFO: 802.11 Wi-Fi device 6E:08:DA:CC:74:90 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:87:4A
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:87:4A advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device C8:9E:43:68:AD:59
+INFO: Detected new 802.11 Wi-Fi device 2C:00:AB:4A:19:70
+INFO: Detected new 802.11 Wi-Fi device 2C:00:AB:4A:19:72
+[sdr] Starting rtl_433 on 433.92 MHz (under supervisor)
+[sdr] supervisor: launching collector…
+rtl_433 version 25.12 (2025-12-12) inputs file rtl_tcp RTL-SDR SoapySDR
+Use "-F log" if you want any messages, warnings, and errors in the console.
+[sdr] supervisor PID 1438019
+[esp32] Starting BLE reader on /dev/ttyUSB0 (under supervisor)
+[esp32] GPS injection enabled — BLE records will include lat/lon
+[esp32] supervisor: launching collector…
+[esp32] supervisor PID 1438025
+[wardrive] All collectors running. Ctrl-C to stop.
+[wardrive] Heartbeat will log every 60 s.
+[wardrive] Each collector will auto-restart up to 10 times if it crashes.
+[gps_thread] Started — polling gpsd for position
+[esp32_reader] Waiting up to 5s for initial GPS fix…
+Found Rafael Micro R820T tuner
+Exact sample rate is: 250000.000414 Hz
+[R82XX] PLL not locked!
+INFO: Detected new 802.11 Wi-Fi access point 5E:1A:0F:FC:E7:66
+INFO: 802.11 Wi-Fi device 5E:1A:0F:FC:E7:66 advertising SSID 'Malicious White Boy'
+INFO: Detected new 802.11 Wi-Fi access point 18:58:80:C1:BE:2F
+INFO: 802.11 Wi-Fi device 18:58:80:C1:BE:2F advertising SSID 'TunTavern'
+INFO: Detected new 802.11 Wi-Fi device D4:AB:CD:54:D3:1E
+INFO: 802.11 Wi-Fi device 2C:00:AB:4A:19:70 advertising SSID 'The Force'
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:46 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:87:4B
+[esp32_reader] No GPS fix yet — coordinates will be added as fix arrives
+[esp32_reader] Opening /dev/ttyUSB0 @ 115200 baud
+[esp32_reader] Writing to /home/parkat/warDrive/capture/raw/20260428T033344Z_wardrive/bt/esp32_ble.ndjson
+[esp32_reader] Non-JSON line (#1): 86944FAC486ED17E5C67E5CE5E3FC7436F1C9E698"}
+INFO: Detected new 802.11 Wi-Fi access point 2C:00:AB:4A:19:73
+INFO: 802.11 Wi-Fi device 2C:00:AB:4A:19:73 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 26:00:AB:4A:19:73
+INFO: 802.11 Wi-Fi device 26:00:AB:4A:19:73 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point 58:96:71:63:B2:B0
+INFO: 802.11 Wi-Fi device 58:96:71:63:B2:B0 advertising SSID 'ATT2WG288U'
+INFO: Detected new 802.11 Wi-Fi access point BC:96:E5:7E:A2:63
+INFO: 802.11 Wi-Fi device BC:96:E5:7E:A2:63 advertising SSID 'SpectrumSetup-A25F'
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:86:C3
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:86:C3 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi device 06:6D:CC:94:F3:E8
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:86:C3
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:86:C3 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:87:47
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:47 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:87:4B
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:87:4B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:87:47
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:87:47 advertising a cloaked SSID
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:4B advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi device CC:BA:BD:8D:87:44
+INFO: Detected new 802.11 Wi-Fi device CC:BA:BD:8D:86:C0
+INFO: Detected new 802.11 Wi-Fi device CC:8C:BF:73:48:9D
+INFO: Detected new 802.11 Wi-Fi device C8:9E:43:68:AD:57
+INFO: Detected new 802.11 Wi-Fi device F4:CF:A2:19:38:09
+INFO: Detected new 802.11 Wi-Fi access point C6:A5:11:37:CC:D1
+INFO: 802.11 Wi-Fi device C6:A5:11:37:CC:D1 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point C2:A5:11:37:CC:D1
+INFO: 802.11 Wi-Fi device C2:A5:11:37:CC:D1 advertising SSID 'TheSide'
+INFO: Detected new 802.11 Wi-Fi device 7C:2E:BD:89:1B:98
+INFO: Detected new 802.11 Wi-Fi device 72:77:5E:4A:9E:B9
+INFO: 802.11 Wi-Fi device 7C:2E:BD:89:1B:98 advertising SSID 'pampazuzu'
+INFO: Detected new 802.11 Wi-Fi device D2:2E:4B:83:36:62
+[esp32_reader] 1000 records written, 0 with GPS coords
+INFO: Detected new 802.11 Wi-Fi device 18:58:80:C1:BE:2D
+INFO: Detected new 802.11 Wi-Fi device 54:67:E6:94:2D:74
+INFO: Detected new 802.11 Wi-Fi access point 98:03:8E:37:37:4E
+INFO: 802.11 Wi-Fi device 98:03:8E:37:37:4E advertising SSID 'Domo 5G_2.4G_EXT'
+INFO: Detected new 802.11 Wi-Fi device 16:E3:60:C9:38:C1
+[wardrive] heartbeat: 3/3 supervisors alive — 03:35:26Z | GPS: NO FIX
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:87:46
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:87:46 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point B6:B6:86:50:95:2C
+INFO: 802.11 Wi-Fi device B6:B6:86:50:95:2C advertising SSID 'DIRECT-2C-HP OfficeJet Pro 7740'
+INFO: Detected new 802.11 Wi-Fi device 16:35:B7:12:03:64
+INFO: Detected new 802.11 Wi-Fi device 10:4A:7D:1B:0A:99
+INFO: Detected new 802.11 Wi-Fi access point B0:BE:76:44:A9:4B
+INFO: 802.11 Wi-Fi device B0:BE:76:44:A9:4B advertising SSID 'Lujan1'
+INFO: Detected new 802.11 Wi-Fi device B0:5D:D4:D2:42:40
+INFO: Detected new 802.11 Wi-Fi device B0:5D:D4:D2:42:42
+INFO: 802.11 Wi-Fi device 18:58:80:C1:BE:2F advertising SSID 'TunTavern'
+INFO: Detected new 802.11 Wi-Fi device A4:53:EE:B2:A6:46
+INFO: 802.11 Wi-Fi device 2C:00:AB:4A:19:70 advertising SSID 'The Force'
+[esp32_reader] 2000 records written, 1 with GPS coords
+INFO: Detected new 802.11 Wi-Fi device CC:8C:BF:7A:DD:E1
+INFO: Detected new 802.11 Wi-Fi access point C0:C5:22:F8:7C:D5
+INFO: 802.11 Wi-Fi device C0:C5:22:F8:7C:D5 advertising SSID 'Slow Internet'
+INFO: Detected new 802.11 Wi-Fi access point 2C:EA:DC:FD:A3:75
+INFO: 802.11 Wi-Fi device 2C:EA:DC:FD:A3:75 advertising SSID 'SpectrumSetup-77'
+INFO: Detected new 802.11 Wi-Fi device 00:0D:97:09:36:5A
+INFO: 802.11 Wi-Fi device 00:0D:97:09:36:5A advertising SSID 'BLACKHOLE'
+INFO: Detected new 802.11 Wi-Fi device EC:B5:FA:84:47:11
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:4A advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi device E0:E1:A9:F7:73:F0
+[esp32_reader] Non-JSON line (#2): ����������������������������������������������������������������:9E:53","addr_ty
+[wardrive] heartbeat: 3/3 supervisors alive — 03:36:29Z | GPS: NO FIX
+[esp32_reader] 3000 records written, 1 with GPS coords
+INFO: 802.11 Wi-Fi device B0:5D:D4:D2:42:40 advertising SSID 'ATTIWcdVna'
+Signal caught, exiting!
+[wardrive] Sleep inhibitor released — normal lid/sleep behavior restored
+[wardrive] Shutting down collectors…
+[esp32_reader] Shutdown. 3621 records written, 1 with GPS coords, 2 parse errors, 0 reconnects.
+
+*** KISMET IS SHUTTING DOWN ***
+Shutting down plugins...
+WARNING: Kismet changes the configuration of network devices.
+         In most cases you will need to restart networking for
+         your interface (varies per distribution and OS), but 
+         typically one of:
+         sudo service networking restart
+         sudo /etc/init.d/networking restart
+         or
+         nmcli device set [device] managed true
+
+Kismet exiting.
+EXITING: Signal service thread complete.
+[wardrive] Session closed: 20260428T033344Z_wardrive

@@ -1,0 +1,17 @@
+[wardrive] Session: 20260427T050933Z_wardrive
+[wardrive] Dir:     /home/parkat/warDrive/capture/raw/20260427T050933Z_wardrive
+[wardrive] Starting collectors…
+[wifi] Disabled in config — skipping
+[sdr] Disabled in config — skipping
+[esp32] Found ESP32 on /dev/ttyUSB0
+[esp32] Verifying device output…
+[esp32] Device verified ✓
+[esp32] PID 910281 → /home/parkat/warDrive/capture/raw/20260427T050933Z_wardrive/bt/esp32_ble.ndjson
+[wardrive] All collectors running. Ctrl-C to stop.
+[esp32_reader] Opening /dev/ttyUSB0 @ 921600 baud
+[esp32_reader] Writing to /home/parkat/warDrive/capture/raw/20260427T050933Z_wardrive/bt/esp32_ble.ndjson
+[wardrive] Shutting down collectors…
+[wardrive] Session closed: 20260427T050933Z_wardrive
+[wardrive] Shutting down collectors…
+[esp32_reader] Shutdown. 776 records written, 0 parse errors.
+[wardrive] Session closed: 20260427T050933Z_wardrive

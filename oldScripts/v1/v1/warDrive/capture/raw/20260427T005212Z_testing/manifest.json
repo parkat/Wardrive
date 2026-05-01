@@ -1,0 +1,17 @@
+{
+  "session_id": "20260427T005212Z_testing",
+  "started_at_utc": "2026-04-27T00:52:17Z",
+  "hostname": "parkers-kali-thinkpad",
+  "kernel": "6.18.12+kali-amd64",
+  "collectors": {
+    "wifi": false,
+    "sdr":  true,
+    "gps":  false,
+    "esp32": false
+  },
+  "wifi_interface": "wlan1",
+  "sdr_device_index": 0,
+  "rtl433_freqs_hz": [433920000,315000000,868000000,915000000],
+  "schema_version": 1,
+  "notes": "Raw capture session. Process with processing/enrich.py to produce queryable output."
+}

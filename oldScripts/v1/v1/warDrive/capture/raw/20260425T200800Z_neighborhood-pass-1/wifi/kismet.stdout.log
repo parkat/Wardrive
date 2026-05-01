@@ -1,0 +1,226 @@
+INFO: Adding config override /etc/kismet/kismet_wardrive.conf
+INFO: Including sub-config file: /etc/kismet/kismet_httpd.conf
+INFO: Including sub-config file: /etc/kismet/kismet_memory.conf
+INFO: Including sub-config file: /etc/kismet/kismet_alerts.conf
+INFO: Including sub-config file: /etc/kismet/kismet_80211.conf
+INFO: Including sub-config file: /etc/kismet/kismet_logging.conf
+INFO: Including sub-config file: /etc/kismet/kismet_filter.conf
+INFO: Including sub-config file: /etc/kismet/kismet_uav.conf
+INFO: Loading config override file '/etc/kismet/kismet_package.conf'
+INFO: Optional sub-config file not present: /etc/kismet/kismet_package.conf
+INFO: Loading config override file '/etc/kismet/kismet_site.conf'
+INFO: Optional sub-config file not present: /etc/kismet/kismet_site.conf
+INFO: Loading config override file '/etc/kismet/kismet_wardrive.conf'
+INFO: Loading optional sub-config file: /etc/kismet/kismet_wardrive.conf
+INFO: Setting server UUID BC471298-403C-11F1-BD11-4B49534D4554
+INFO: Starting Beast webserver on 0.0.0.0:2501
+INFO: Opened OUI file '/usr/share/kismet/kismet_manuf.txt.gz
+INFO: Indexing manufacturer db
+INFO: Completed indexing manufacturer db, 37974 lines and 760 indexes.
+INFO: Saving devices to the Kismet database log every 30 seconds
+INFO: Using default rates of 10/min, 1/sec for alert 'DEVICEFOUND'
+INFO: Using default rates of 10/min, 1/sec for alert 'DEVICELOST'
+INFO: Registering support for DLT_PPI packet header decoding
+INFO: Registering support for DLT_RADIOTAP packet header decoding
+INFO: Registering support for DLT_BTLE_RADIO packet header decoding
+INFO: Using default rates of 10/min, 1/sec for alert 'BADFIXLENIE'
+INFO: PHY80211 will only process AP signal levels from beacons
+INFO: Allowing Kismet clients to view WEP keys
+DEBUG: ssid canary FooCanary:ssid="FoobarCanary"
+DEBUG: ssid canary FooCanart2:ssid="(?i:foobarcanary)"
+INFO: Not keeping EAPOL packets in memory, EAP replay WIDS and handshake downloads will not be available.
+INFO: Registered PHY handler 'IEEE802.11' as ID 0
+INFO: Registered PHY handler 'RFSENSOR' as ID 1
+INFO: Registered PHY handler 'Z-Wave' as ID 2
+INFO: Registered PHY handler 'Bluetooth' as ID 3
+DEBUG: reserve_fields home id 542 app id 543
+INFO: Registered PHY handler 'UAV' as ID 4
+INFO: Registered PHY handler 'NrfMousejack' as ID 5
+ERROR: Tried to re-register duplicate alert FLIPPERZERO
+INFO: Registered PHY handler 'BTLE' as ID 6
+INFO: Registered PHY handler 'METER' as ID 7
+INFO: Indexing ADSB ICAO db
+INFO: Completed indexing ADSB ICAO db, 341068 lines 6822 indexes
+INFO: Registered PHY handler 'ADSB' as ID 8
+INFO: Registered PHY handler '802.15.4' as ID 9
+INFO: Registered PHY handler 'RADIATION' as ID 10
+INFO: (HTTPD) Could not read session data file, skipping loading saved sessions.
+INFO: Serving static file content from /usr/share/kismet/httpd/
+INFO: Enabling channel hopping by default on sources which support channel control.
+INFO: Setting default channel hop rate to 5/sec
+INFO: Enabling channel list splitting on sources which share the same list of channels
+INFO: Enabling channel list shuffling to optimize overlaps
+INFO: Sources will be re-opened if they encounter an error
+INFO: Launching remote capture server on 127.0.0.1 3501
+INFO: Data sources passed on the command line (via -c source), ignoring source= definitions in the Kismet config file.
+INFO: Opened kismetdb log file '/home/parkat/warDrive/capture/raw/20260425T200800Z_neighborhood-pass-1/wifi//session_20260425T200800Z-20260425-20-08-04-1.kismet'
+INFO: Saving packets to the Kismet database log.
+INFO: Opened wiglecsv log file '/home/parkat/warDrive/capture/raw/20260425T200800Z_neighborhood-pass-1/wifi//session_20260425T200800Z-20260425-20-08-04-1.wiglecsv'
+INFO: GPS track will be logged to the Kismet logfile
+ALERT: WARDRIVING Kismet is in survey/wardriving mode.  This turns off tracking non-AP devices and most packet logging.
+ALERT: ROOTUSER Kismet is running as root; this is less secure.  If you are running Kismet at boot via systemd, make sure to use `systemctl edit kismet.service` to change the user.  For more information, see the Kismet README for setting up Kismet with minimal privileges.
+INFO: Starting Kismet web server...
+INFO: HTTP server listening on 0.0.0.0:2501
+INFO: Could not open system plugin directory (/usr/lib/x86_64-linux-gnu/kismet/), skipping: No such file or directory
+INFO: Did not find a user plugin directory (/root/.kismet//plugins/), skipping: No such file or directory
+INFO: alfa interface 'wlan1mon' is already in monitor mode
+INFO: alfa finished configuring wlan1mon/wlan1mon, ready to capture
+INFO: Data source 'wlan1mon:type=linuxwifi,name=alfa' launched successfully
+INFO: Detected new 802.11 Wi-Fi access point 8C:85:80:F9:A8:BD
+INFO: 802.11 Wi-Fi device 8C:85:80:F9:A8:BD advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 2C:00:AB:4A:19:70
+INFO: 802.11 Wi-Fi device 2C:00:AB:4A:19:70 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point DC:62:79:FA:F8:35
+INFO: 802.11 Wi-Fi device DC:62:79:FA:F8:35 advertising SSID 'NETGEAR35_DECCO'
+INFO: Detected new 802.11 Wi-Fi access point E2:62:79:FA:F8:3A
+INFO: 802.11 Wi-Fi device E2:62:79:FA:F8:3A advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 16:EA:14:E1:5C:7F
+INFO: 802.11 Wi-Fi device 16:EA:14:E1:5C:7F advertising SSID 'Guest'
+INFO: Detected new 802.11 Wi-Fi access point 1A:EA:14:81:FB:52
+INFO: 802.11 Wi-Fi device 1A:EA:14:81:FB:52 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 1A:EA:14:E1:5C:7F
+INFO: 802.11 Wi-Fi device 1A:EA:14:E1:5C:7F advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 16:EA:14:81:FB:52
+INFO: 802.11 Wi-Fi device 16:EA:14:81:FB:52 advertising SSID 'Guest'
+INFO: Detected new 802.11 Wi-Fi access point 2C:EA:DC:CF:84:AF
+INFO: 802.11 Wi-Fi device 2C:EA:DC:CF:84:AF advertising SSID 'SpectrumSetup-B1'
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:86:C2
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:86:C2 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point 90:D3:CF:2C:35:45
+INFO: 802.11 Wi-Fi device 90:D3:CF:2C:35:45 advertising SSID 'Sallies'
+INFO: Detected new 802.11 Wi-Fi access point DC:08:DA:62:DE:F6
+INFO: 802.11 Wi-Fi device DC:08:DA:62:DE:F6 advertising SSID 'Maceda304'
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:87:46
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:87:46 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point BC:96:E5:7E:A2:63
+INFO: 802.11 Wi-Fi device BC:96:E5:7E:A2:63 advertising SSID 'SpectrumSetup-A25F'
+INFO: Detected new 802.11 Wi-Fi access point 80:69:1A:98:99:65
+INFO: 802.11 Wi-Fi device 80:69:1A:98:99:65 advertising SSID 'Sallies'
+INFO: Detected new 802.11 Wi-Fi access point 64:67:72:5C:F8:93
+INFO: 802.11 Wi-Fi device 64:67:72:5C:F8:93 advertising SSID 'Snickers'
+INFO: Detected new 802.11 Wi-Fi access point 18:A5:FF:BE:5F:4A
+INFO: 802.11 Wi-Fi device 18:A5:FF:BE:5F:4A advertising SSID 'Mylab'
+INFO: Detected new 802.11 Wi-Fi access point 28:94:01:4C:47:21
+INFO: 802.11 Wi-Fi device 28:94:01:4C:47:21 advertising SSID 'NETGEAR35'
+INFO: Detected new 802.11 Wi-Fi access point 86:69:1A:98:99:65
+INFO: 802.11 Wi-Fi device 86:69:1A:98:99:65 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 3C:52:A1:20:55:C4
+INFO: 802.11 Wi-Fi device 3C:52:A1:20:55:C4 advertising SSID 'Slow Internet_EXT'
+INFO: Detected new 802.11 Wi-Fi access point A0:36:BC:82:EF:40
+INFO: 802.11 Wi-Fi device A0:36:BC:82:EF:40 advertising SSID 'mine'
+INFO: Detected new 802.11 Wi-Fi access point 12:EA:14:81:FB:52
+INFO: 802.11 Wi-Fi device 12:EA:14:81:FB:52 advertising SSID 'OT'
+INFO: Detected new 802.11 Wi-Fi access point E2:62:79:FA:F8:35
+INFO: 802.11 Wi-Fi device E2:62:79:FA:F8:35 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 60:D5:61:1D:D4:91
+INFO: 802.11 Wi-Fi device 60:D5:61:1D:D4:91 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point D4:5D:64:E8:BB:11
+INFO: 802.11 Wi-Fi device D4:5D:64:E8:BB:11 advertising SSID 'mine'
+INFO: Detected new 802.11 Wi-Fi access point 2C:30:33:EA:57:A1
+INFO: 802.11 Wi-Fi device 2C:30:33:EA:57:A1 advertising SSID 'NETGEAR37'
+INFO: Detected new 802.11 Wi-Fi access point 38:2C:4A:4B:37:71
+INFO: 802.11 Wi-Fi device 38:2C:4A:4B:37:71 advertising SSID 'mine'
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:86:C3
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:86:C3 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:87:47
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:87:47 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:86:C3
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:86:C3 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:87:47
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:47 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point 9C:C9:EB:CB:27:A8
+INFO: 802.11 Wi-Fi device 9C:C9:EB:CB:27:A8 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:87:4A
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:87:4A advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 58:96:71:63:B2:B0
+INFO: 802.11 Wi-Fi device 58:96:71:63:B2:B0 advertising SSID 'ATT2WG288U'
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:86:C2
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:86:C2 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:87:4A
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:4A advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:87:46
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:46 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point B6:B6:86:50:95:2C
+INFO: 802.11 Wi-Fi device B6:B6:86:50:95:2C advertising SSID 'DIRECT-2C-HP OfficeJet Pro 7740'
+INFO: Detected new 802.11 Wi-Fi access point 0C:EA:14:81:FB:52
+INFO: 802.11 Wi-Fi device 0C:EA:14:81:FB:52 advertising SSID 'Mine2'
+INFO: Detected new 802.11 Wi-Fi access point C0:C5:22:F8:7C:D5
+INFO: 802.11 Wi-Fi device C0:C5:22:F8:7C:D5 advertising SSID 'Slow Internet'
+INFO: Detected new 802.11 Wi-Fi access point 34:53:D2:3C:7A:3E
+INFO: 802.11 Wi-Fi device 34:53:D2:3C:7A:3E advertising SSID 'Kit-Bacons network'
+INFO: Detected new 802.11 Wi-Fi access point 74:93:DA:57:82:CD
+INFO: 802.11 Wi-Fi device 74:93:DA:57:82:CD advertising SSID 'reser'
+INFO: Detected new 802.11 Wi-Fi access point 32:5B:99:AC:6E:14
+INFO: 802.11 Wi-Fi device 32:5B:99:AC:6E:14 advertising SSID 'SpectrumSetup-6A0B'
+INFO: Detected new 802.11 Wi-Fi access point 12:EA:14:E1:5C:7F
+INFO: 802.11 Wi-Fi device 12:EA:14:E1:5C:7F advertising SSID 'OT'
+INFO: Detected new 802.11 Wi-Fi access point 18:A5:EF:C5:5F:4B
+INFO: 802.11 Wi-Fi device 18:A5:EF:C5:5F:4B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 18:A5:FF:BE:5F:4B
+INFO: 802.11 Wi-Fi device 18:A5:FF:BE:5F:4B advertising SSID 'Mylab'
+INFO: Detected new 802.11 Wi-Fi access point 9C:C9:EB:CB:27:A7
+INFO: 802.11 Wi-Fi device 9C:C9:EB:CB:27:A7 advertising SSID 'gsquadwifi'
+INFO: Detected new 802.11 Wi-Fi access point 58:96:71:63:B2:BF
+INFO: 802.11 Wi-Fi device 58:96:71:63:B2:BF advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 2C:00:AB:4A:19:73
+INFO: 802.11 Wi-Fi device 2C:00:AB:4A:19:73 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 26:00:AB:4A:19:73
+INFO: 802.11 Wi-Fi device 26:00:AB:4A:19:73 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point 58:96:71:63:B2:B8
+INFO: 802.11 Wi-Fi device 58:96:71:63:B2:B8 advertising SSID 'ATT2WG288U'
+INFO: Detected new 802.11 Wi-Fi access point 86:69:1A:98:9A:5A
+INFO: 802.11 Wi-Fi device 86:69:1A:98:9A:5A advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point A6:C9:EB:CB:27:A5
+INFO: 802.11 Wi-Fi device A6:C9:EB:CB:27:A5 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 74:90:BC:13:5B:73
+INFO: 802.11 Wi-Fi device 74:90:BC:13:5B:73 advertising SSID 'Verizon_3TC7XV'
+INFO: Detected new 802.11 Wi-Fi access point 88:96:4E:51:3A:F0
+INFO: 802.11 Wi-Fi device 88:96:4E:51:3A:F0 advertising SSID 'ATTPUuu44I'
+INFO: Detected new 802.11 Wi-Fi access point 58:9B:4A:8E:6A:0F
+INFO: 802.11 Wi-Fi device 58:9B:4A:8E:6A:0F advertising SSID 'SpectrumSetup-6A0B'
+INFO: Detected new 802.11 Wi-Fi access point 28:BD:89:F3:5A:AC
+INFO: 802.11 Wi-Fi device 28:BD:89:F3:5A:AC advertising SSID 'Strizver Wifi'
+INFO: Detected new 802.11 Wi-Fi access point 0C:EA:14:E1:5C:7F
+INFO: 802.11 Wi-Fi device 0C:EA:14:E1:5C:7F advertising SSID 'Mine2'
+INFO: Detected new 802.11 Wi-Fi access point 2C:EA:DC:2D:E4:D1
+INFO: 802.11 Wi-Fi device 2C:EA:DC:2D:E4:D1 advertising SSID 'SpectrumSetup-D3'
+INFO: Detected new 802.11 Wi-Fi access point 42:84:6A:66:F8:12
+INFO: 802.11 Wi-Fi device 42:84:6A:66:F8:12 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point DC:62:79:FA:F8:36
+INFO: 802.11 Wi-Fi device DC:62:79:FA:F8:36 advertising SSID 'NETGEAR35_DECCO'
+INFO: Detected new 802.11 Wi-Fi access point E2:62:79:FA:F8:36
+INFO: 802.11 Wi-Fi device E2:62:79:FA:F8:36 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 80:69:1A:98:99:66
+INFO: 802.11 Wi-Fi device 80:69:1A:98:99:66 advertising SSID 'Sallies'
+INFO: Detected new 802.11 Wi-Fi access point 0C:EA:14:E1:8C:DB
+INFO: 802.11 Wi-Fi device 0C:EA:14:E1:8C:DB advertising SSID 'Mine2'
+INFO: Detected new 802.11 Wi-Fi access point D4:5D:64:E8:BB:14
+INFO: 802.11 Wi-Fi device D4:5D:64:E8:BB:14 advertising SSID 'mine'
+INFO: Detected new 802.11 Wi-Fi access point 60:FE:20:F6:2D:E2
+INFO: 802.11 Wi-Fi device 60:FE:20:F6:2D:E2 advertising SSID 'ATT441'
+INFO: Detected new 802.11 Wi-Fi access point 26:A4:3C:4D:AA:6F
+INFO: 802.11 Wi-Fi device 26:A4:3C:4D:AA:6F advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:87:4B
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:4B advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:87:4B
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:87:4B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 28:94:01:4C:47:20
+INFO: 802.11 Wi-Fi device 28:94:01:4C:47:20 advertising SSID 'NETGEAR35-5G'
+INFO: Detected new 802.11 Wi-Fi access point 0A:96:E5:7E:A2:66
+INFO: 802.11 Wi-Fi device 0A:96:E5:7E:A2:66 advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point FA:8F:CA:54:20:88
+INFO: 802.11 Wi-Fi device FA:8F:CA:54:20:88 advertising SSID 'HT-A5000.l066,'
+
+*** KISMET IS SHUTTING DOWN ***
+Shutting down plugins...
+WARNING: Kismet changes the configuration of network devices.
+         In most cases you will need to restart networking for
+         your interface (varies per distribution and OS), but 
+         typically one of:
+         sudo service networking restart
+         sudo /etc/init.d/networking restart
+         or
+         nmcli device set [device] managed true
+
+Kismet exiting.
+EXITING: Signal service thread complete.

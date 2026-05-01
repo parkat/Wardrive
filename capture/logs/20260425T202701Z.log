@@ -1,0 +1,21 @@
+[20:27:01Z] ===========================================
+[20:27:01Z] Wardrive session: 20260425T202701Z
+[20:27:01Z] Output dir:       /home/parkat/warDrive/capture/raw/20260425T202701Z_first-real-run
+[20:27:01Z] ===========================================
+[20:27:01Z] WARN: RTL-SDR not detected. SDR collector disabled.
+[20:27:01Z] Starting WiFi collector on wlan1...
+[20:27:03Z] Monitor interface: wlan1mon
+[20:27:03Z] Kismet started (pid 56908) — logs in /home/parkat/warDrive/capture/raw/20260425T202701Z_first-real-run/wifi
+[20:27:03Z] GPS collector: SKIPPED (no puck connected yet)
+[20:27:03Z]   When puck arrives: enable in config/wardrive.conf and edit this script
+[20:27:03Z]   Will log NMEA + computed positions to ${SESSION_DIR}/gps/
+[20:27:03Z] ESP32 collector: SKIPPED (sensors not yet deployed)
+[20:27:03Z]   Future: receive serial/MQTT stream from ESP32 sniffer fleet
+[20:27:03Z] All active collectors running. Press Ctrl-C to stop.
+[20:27:03Z] 
+[20:27:04Z] Stopping session — cleaning up collectors...
+[20:27:06Z] Returning wlan1mon to managed mode...
+[20:27:06Z] Session 20260425T202701Z complete. Data in: /home/parkat/warDrive/capture/raw/20260425T202701Z_first-real-run
+[20:27:06Z] Stopping session — cleaning up collectors...
+[20:27:08Z] Returning wlan1mon to managed mode...
+[20:27:08Z] Session 20260425T202701Z complete. Data in: /home/parkat/warDrive/capture/raw/20260425T202701Z_first-real-run

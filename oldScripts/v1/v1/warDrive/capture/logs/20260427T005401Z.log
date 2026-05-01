@@ -1,0 +1,26 @@
+[00:54:01Z] ===========================================
+[00:54:01Z] Wardrive session: 20260427T005401Z
+[00:54:01Z] Output dir:       /home/parkat/warDrive/capture/raw/20260427T005401Z_testing
+[00:54:01Z] ===========================================
+[00:54:22Z] Power management: sleep/lid-close inhibited (pid 405903)
+[00:54:22Z]   Laptop stays awake until script exits, even with lid closed
+[00:54:22Z] Starting WiFi collector on wlan1...
+[00:54:26Z] Monitor interface: wlan1mon
+[00:54:26Z] Kismet started (pid 406836) — logs in /home/parkat/warDrive/capture/raw/20260427T005401Z_testing/wifi
+[00:54:26Z] Starting SDR collector (rtl_433)...
+[00:54:26Z] rtl_433 started (pid 406864) — output: /home/parkat/warDrive/capture/raw/20260427T005401Z_testing/sdr/rtl433.ndjson
+[00:54:26Z] GPS collector: SKIPPED (no puck connected yet)
+[00:54:26Z]   When puck arrives: enable in config/wardrive.conf and edit this script
+[00:54:26Z]   Will log NMEA + computed positions to ${SESSION_DIR}/gps/
+[00:54:26Z] ESP32 collector: SKIPPED (sensors not yet deployed)
+[00:54:26Z]   Future: receive serial/MQTT stream from ESP32 sniffer fleet
+[00:54:26Z] All active collectors running. Press Ctrl-C to stop.
+[00:54:26Z] 
+[00:54:56Z] Heartbeat: 2/2 collectors alive
+[00:55:26Z] Heartbeat: 2/2 collectors alive
+[00:55:50Z] Stopping session — cleaning up collectors...
+[00:55:52Z] Returning wlan1mon to managed mode...
+[00:55:53Z] Session 20260427T005401Z complete. Data in: /home/parkat/warDrive/capture/raw/20260427T005401Z_testing
+[00:55:53Z] Stopping session — cleaning up collectors...
+[00:55:55Z] Returning wlan1mon to managed mode...
+[00:55:55Z] Session 20260427T005401Z complete. Data in: /home/parkat/warDrive/capture/raw/20260427T005401Z_testing

@@ -1,0 +1,11 @@
+[20:19:37Z] ===========================================
+[20:19:37Z] Wardrive session: 20260425T201937Z
+[20:19:37Z] Output dir:       /home/parkat/warDrive/capture/raw/20260425T201937Z_first-real-run
+[20:19:37Z] ===========================================
+[20:19:37Z] WARN: RTL-SDR not detected. SDR collector disabled.
+[20:19:37Z] Starting WiFi collector on wlan1...
+[20:19:40Z] Stopping session — cleaning up collectors...
+[20:19:42Z] Session 20260425T201937Z complete. Data in: /home/parkat/warDrive/capture/raw/20260425T201937Z_first-real-run
+[20:19:42Z] ERROR: failed to start monitor mode on wlan1
+[20:19:42Z] Stopping session — cleaning up collectors...
+[20:19:44Z] Session 20260425T201937Z complete. Data in: /home/parkat/warDrive/capture/raw/20260425T201937Z_first-real-run

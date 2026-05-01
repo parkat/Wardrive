@@ -1,0 +1,921 @@
+[wardrive] Session: 20260427T163310Z_wardrive
+[wardrive] Dir:     /home/parkat/warDrive/capture/raw/20260427T163310Z_wardrive
+[wardrive] Sleep/lid-close inhibited (pid 1095423)
+[wardrive] Laptop stays awake with lid closed until session ends
+[wardrive] Starting collectors…
+[wifi] Starting Kismet on wlan1
+INFO: Including sub-config file: /etc/kismet/kismet_httpd.conf
+INFO: Including sub-config file: /etc/kismet/kismet_memory.conf
+INFO: Including sub-config file: /etc/kismet/kismet_alerts.conf
+INFO: Including sub-config file: /etc/kismet/kismet_80211.conf
+INFO: Including sub-config file: /etc/kismet/kismet_logging.conf
+INFO: Including sub-config file: /etc/kismet/kismet_filter.conf
+INFO: Including sub-config file: /etc/kismet/kismet_uav.conf
+INFO: Loading config override file '/etc/kismet/kismet_package.conf'
+INFO: Optional sub-config file not present: /etc/kismet/kismet_package.conf
+INFO: Loading config override file '/etc/kismet/kismet_site.conf'
+INFO: Optional sub-config file not present: /etc/kismet/kismet_site.conf
+INFO: Setting server UUID BC471298-403C-11F1-BD11-4B49534D4554
+INFO: Starting Beast webserver on 0.0.0.0:2501
+INFO: Opened OUI file '/usr/share/kismet/kismet_manuf.txt.gz
+INFO: Indexing manufacturer db
+INFO: Completed indexing manufacturer db, 37974 lines and 760 indexes.
+INFO: Saving devices to the Kismet database log every 30 seconds
+INFO: Using default rates of 10/min, 1/sec for alert 'DEVICEFOUND'
+INFO: Using default rates of 10/min, 1/sec for alert 'DEVICELOST'
+INFO: Registering support for DLT_PPI packet header decoding
+INFO: Registering support for DLT_RADIOTAP packet header decoding
+INFO: Registering support for DLT_BTLE_RADIO packet header decoding
+INFO: Using default rates of 10/min, 1/sec for alert 'BADFIXLENIE'
+DEBUG: ssid canary FooCanary:ssid="FoobarCanary"
+DEBUG: ssid canary FooCanart2:ssid="(?i:foobarcanary)"
+DEBUG: reserve_fields home id 542 app id 543
+INFO: PHY80211 will only process AP signal levels from beacons
+INFO: Allowing Kismet clients to view WEP keys
+INFO: Keeping EAPOL packets in memory for easy download and WIDS functionality; this can use more RAM.
+INFO: Registered PHY handler 'IEEE802.11' as ID 0
+INFO: Registered PHY handler 'RFSENSOR' as ID 1
+INFO: Registered PHY handler 'Z-Wave' as ID 2
+INFO: Registered PHY handler 'Bluetooth' as ID 3
+INFO: Registered PHY handler 'UAV' as ID 4
+INFO: Registered PHY handler 'NrfMousejack' as ID 5
+ERROR: Tried to re-register duplicate alert FLIPPERZERO
+INFO: Registered PHY handler 'BTLE' as ID 6
+INFO: Registered PHY handler 'METER' as ID 7
+INFO: Indexing ADSB ICAO db
+[wifi] PID 1095424
+[sdr] Disabled in config — skipping
+[esp32] Found ESP32 on /dev/ttyUSB0
+[esp32] Verifying device output…
+INFO: Completed indexing ADSB ICAO db, 341068 lines 6822 indexes
+INFO: Registered PHY handler 'ADSB' as ID 8
+INFO: Registered PHY handler '802.15.4' as ID 9
+INFO: Registered PHY handler 'RADIATION' as ID 10
+INFO: (HTTPD) Could not read session data file, skipping loading saved sessions.
+INFO: Serving static file content from /usr/share/kismet/httpd/
+INFO: Enabling channel hopping by default on sources which support channel control.
+INFO: Setting default channel hop rate to 5/sec
+INFO: Enabling channel list splitting on sources which share the same list of channels
+INFO: Enabling channel list shuffling to optimize overlaps
+INFO: Sources will be re-opened if they encounter an error
+INFO: Saving datasources to the Kismet database log every 30 seconds
+INFO: Launching remote capture server on 127.0.0.1 3501
+INFO: Data sources passed on the command line (via -c source), ignoring source= definitions in the Kismet config file.
+INFO: Probing interface 'wlan1' to find datasource type
+INFO: Opened kismetdb log file '/home/parkat/warDrive/capture/raw/20260427T163310Z_wardrive/wifi//Kismet-20260427-16-33-10-1.kismet'
+INFO: Saving packets to the Kismet database log.
+INFO: Opened pcapng log file '/home/parkat/warDrive/capture/raw/20260427T163310Z_wardrive/wifi//Kismet-20260427-16-33-10-1.pcapng'
+INFO: GPS track will be logged to the Kismet logfile
+ALERT: ROOTUSER Kismet is running as root; this is less secure.  If you are running Kismet at boot via systemd, make sure to use `systemctl edit kismet.service` to change the user.  For more information, see the Kismet README for setting up Kismet with minimal privileges.
+INFO: Starting Kismet web server...
+INFO: HTTP server listening on 0.0.0.0:2501
+INFO: Could not open system plugin directory (/usr/lib/x86_64-linux-gnu/kismet/), skipping: No such file or directory
+INFO: Did not find a user plugin directory (/root/.kismet//plugins/), skipping: No such file or directory
+INFO: Found type 'linuxwifi' for 'wlan1'
+[esp32] Device verified ✓
+[esp32] PID 1095902 → /home/parkat/warDrive/capture/raw/20260427T163310Z_wardrive/bt/esp32_ble.ndjson
+[wardrive] All collectors running. Ctrl-C to stop.
+[wardrive] Heartbeat will log every 60 s to confirm collectors are alive.
+[esp32_reader] Opening /dev/ttyUSB0 @ 921600 baud
+[esp32_reader] Writing to /home/parkat/warDrive/capture/raw/20260427T163310Z_wardrive/bt/esp32_ble.ndjson
+INFO: wlan1 telling NetworkManager not to control interface 'wlan1': you may need to re-initialize this interface later or tell NetworkManager to control it again via 'nmcli'
+INFO: wlan1 bringing down parent interface 'wlan1'
+INFO: wlan1 finished configuring wlan1/wlan1mon, ready to capture
+INFO: Data source 'wlan1' launched successfully
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:87:46
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:46 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:87:46
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:87:46 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 16:F5:F6:AC:6A:74
+INFO: 802.11 Wi-Fi device 16:F5:F6:AC:6A:74 advertising SSID 'Malicious White Boy'
+INFO: Detected new 802.11 Wi-Fi access point 2C:00:AB:4A:19:70
+INFO: 802.11 Wi-Fi device 2C:00:AB:4A:19:70 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi device B0:A7:B9:67:CD:29
+INFO: Detected new 802.11 Wi-Fi device D4:AB:CD:54:D3:1E
+INFO: Detected new 802.11 Wi-Fi access point 2C:00:AB:4A:19:73
+INFO: 802.11 Wi-Fi device 2C:00:AB:4A:19:73 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 26:00:AB:4A:19:73
+INFO: 802.11 Wi-Fi device 26:00:AB:4A:19:73 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:87:47
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:47 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:87:47
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:87:47 advertising a cloaked SSID
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:47 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi device CC:BA:BD:8D:86:C3
+INFO: Detected new 802.11 Wi-Fi device 7A:27:3C:12:1A:06
+INFO: Detected new 802.11 Wi-Fi access point D2:BA:BD:8D:86:C3
+INFO: 802.11 Wi-Fi device D2:BA:BD:8D:86:C3 advertising a cloaked SSID
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:86:C3 advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi device D8:A0:11:71:0E:4A
+INFO: Detected new 802.11 Wi-Fi device 2C:00:AB:4A:19:72
+[wardrive] heartbeat: 2/2 collectors alive — 16:34:11Z
+INFO: Detected new 802.11 Wi-Fi device CC:BA:BD:8D:86:C0
+INFO: Detected new 802.11 Wi-Fi access point B6:B6:86:50:95:2C
+INFO: 802.11 Wi-Fi device B6:B6:86:50:95:2C advertising SSID 'DIRECT-2C-HP OfficeJet Pro 7740'
+INFO: Detected new 802.11 Wi-Fi device 50:2B:73:EB:E5:69
+INFO: Detected new 802.11 Wi-Fi device 00:25:00:FF:94:73
+INFO: Detected new 802.11 Wi-Fi device 1A:BA:95:AD:E9:EF
+[esp32_reader] 1000 records written
+INFO: Detected new 802.11 Wi-Fi device D2:2E:4B:83:36:62
+[esp32_reader] 2000 records written
+[wardrive] heartbeat: 2/2 collectors alive — 16:35:11Z
+INFO: Detected new 802.11 Wi-Fi device 10:4A:7D:1B:0A:99
+INFO: Detected new 802.11 Wi-Fi access point D4:5D:64:E8:BB:14
+INFO: 802.11 Wi-Fi device D4:5D:64:E8:BB:14 advertising SSID 'mine'
+INFO: Detected new 802.11 Wi-Fi access point 58:96:71:63:B2:BF
+INFO: 802.11 Wi-Fi device 58:96:71:63:B2:BF advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point DC:62:79:FA:F8:3B
+INFO: 802.11 Wi-Fi device DC:62:79:FA:F8:3B advertising SSID 'NETGEAR35_DECCO'
+INFO: Detected new 802.11 Wi-Fi device 04:7B:CB:EB:63:E4
+INFO: Detected new 802.11 Wi-Fi access point 80:69:1A:98:99:66
+INFO: 802.11 Wi-Fi device 80:69:1A:98:99:66 advertising SSID 'Sallies'
+INFO: Detected new 802.11 Wi-Fi access point E2:62:79:FA:F8:36
+INFO: 802.11 Wi-Fi device E2:62:79:FA:F8:36 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E2:62:79:FA:F8:3B
+INFO: 802.11 Wi-Fi device E2:62:79:FA:F8:3B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point DC:62:79:FA:F8:36
+INFO: 802.11 Wi-Fi device DC:62:79:FA:F8:36 advertising SSID 'NETGEAR35_DECCO'
+INFO: 802.11 Wi-Fi device DC:62:79:FA:F8:3B advertising SSID 'NETGEAR35_DECCO'
+INFO: Detected new 802.11 Wi-Fi access point 18:A5:EF:C5:5F:4B
+INFO: 802.11 Wi-Fi device 18:A5:EF:C5:5F:4B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 18:A5:FF:BE:5F:4B
+INFO: 802.11 Wi-Fi device 18:A5:FF:BE:5F:4B advertising SSID 'Mylab'
+INFO: Detected new 802.11 Wi-Fi access point 9C:C9:EB:CB:27:A7
+INFO: 802.11 Wi-Fi device 9C:C9:EB:CB:27:A7 advertising SSID 'gsquadwifi'
+INFO: Detected new 802.11 Wi-Fi device D6:33:98:C2:85:78
+INFO: Detected new 802.11 Wi-Fi access point 28:94:01:4C:47:20
+INFO: 802.11 Wi-Fi device 28:94:01:4C:47:20 advertising SSID 'NETGEAR35-5G'
+INFO: Detected new 802.11 Wi-Fi access point CC:BA:BD:8D:87:4B
+INFO: 802.11 Wi-Fi device CC:BA:BD:8D:87:4B advertising SSID 'The Force'
+INFO: Detected new 802.11 Wi-Fi access point 0C:EA:14:E1:8C:DC
+INFO: 802.11 Wi-Fi device 0C:EA:14:E1:8C:DC advertising SSID 'Mine2'
+INFO: Detected new 802.11 Wi-Fi access point A0:36:BC:82:EF:44
+INFO: 802.11 Wi-Fi device A0:36:BC:82:EF:44 advertising SSID 'mine'
+INFO: Detected new 802.11 Wi-Fi access point 38:2C:4A:4B:37:74
+INFO: 802.11 Wi-Fi device 38:2C:4A:4B:37:74 advertising SSID 'mine'
+INFO: Detected new 802.11 Wi-Fi access point 12:EA:14:E1:8C:DC
+INFO: 802.11 Wi-Fi device 12:EA:14:E1:8C:DC advertising SSID 'Guest'
+INFO: Detected new 802.11 Wi-Fi access point 1A:EA:14:81:FB:53
+INFO: 802.11 Wi-Fi device 1A:EA:14:81:FB:53 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 16:EA:14:81:FB:53
+INFO: 802.11 Wi-Fi device 16:EA:14:81:FB:53 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device DC:62:79:FA:F8:38
+INFO: Detected new 802.11 Wi-Fi device 86:69:1A:98:9A:5B
+[wardrive] heartbeat: 2/2 collectors alive — 16:36:11Z
+INFO: Detected new 802.11 Wi-Fi access point 0C:EA:14:81:FB:53
+INFO: 802.11 Wi-Fi device 0C:EA:14:81:FB:53 advertising SSID 'Mine2'
+INFO: Detected new 802.11 Wi-Fi device 1A:EA:14:E1:8C:DC
+INFO: Detected new 802.11 Wi-Fi device 1A:EA:14:E1:5C:80
+INFO: Detected new 802.11 Wi-Fi access point 12:EA:14:81:FB:53
+INFO: 802.11 Wi-Fi device 12:EA:14:81:FB:53 advertising SSID 'Guest'
+INFO: Detected new 802.11 Wi-Fi access point 58:96:71:63:B2:B8
+INFO: 802.11 Wi-Fi device 58:96:71:63:B2:B8 advertising SSID 'ATT2WG288U'
+INFO: Detected new 802.11 Wi-Fi access point BC:96:E5:7E:A2:63
+INFO: 802.11 Wi-Fi device BC:96:E5:7E:A2:63 advertising SSID 'SpectrumSetup-A25F'
+INFO: Detected new 802.11 Wi-Fi access point D4:04:CD:A7:88:70
+INFO: 802.11 Wi-Fi device D4:04:CD:A7:88:70 advertising SSID 'ATTAymSVS2'
+INFO: Detected new 802.11 Wi-Fi access point D6:04:CD:A7:88:71
+INFO: 802.11 Wi-Fi device D6:04:CD:A7:88:71 advertising SSID 'Camera Only'
+INFO: Detected new 802.11 Wi-Fi access point E0:46:EE:96:57:A7
+INFO: 802.11 Wi-Fi device E0:46:EE:96:57:A7 advertising SSID 'NETGEAR83-5G'
+INFO: Detected new 802.11 Wi-Fi access point D4:6E:0E:31:87:8D
+INFO: 802.11 Wi-Fi device D4:6E:0E:31:87:8D advertising SSID 'FullMetalWinry'
+INFO: Detected new 802.11 Wi-Fi access point 3C:04:61:97:E7:03
+INFO: 802.11 Wi-Fi device 3C:04:61:97:E7:03 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 26:04:61:97:E7:03
+INFO: 802.11 Wi-Fi device 26:04:61:97:E7:03 advertising SSID 'ATT2DYNjUI'
+INFO: Detected new 802.11 Wi-Fi access point 40:2B:50:52:8B:53
+INFO: 802.11 Wi-Fi device 40:2B:50:52:8B:53 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 46:2B:50:52:8B:53
+INFO: 802.11 Wi-Fi device 46:2B:50:52:8B:53 advertising SSID ':)'
+INFO: Detected new 802.11 Wi-Fi access point 3C:37:86:F2:D5:E0
+INFO: 802.11 Wi-Fi device 3C:37:86:F2:D5:E0 advertising SSID 'Bullet'
+INFO: Detected new 802.11 Wi-Fi access point D6:BE:DC:4E:A6:4D
+INFO: 802.11 Wi-Fi device D6:BE:DC:4E:A6:4D advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point C4:EB:42:8C:9D:C6
+INFO: 802.11 Wi-Fi device C4:EB:42:8C:9D:C6 advertising SSID 'Galihouse'
+INFO: Detected new 802.11 Wi-Fi access point E2:EB:42:8C:9D:C6
+INFO: 802.11 Wi-Fi device E2:EB:42:8C:9D:C6 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 7C:7E:F9:B5:12:23
+INFO: 802.11 Wi-Fi device 7C:7E:F9:B5:12:23 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 7C:7E:F9:B5:12:25
+INFO: 802.11 Wi-Fi device 7C:7E:F9:B5:12:25 advertising SSID 'FrogButt58'
+INFO: Detected new 802.11 Wi-Fi access point 7C:7E:F9:B5:12:27
+INFO: 802.11 Wi-Fi device 7C:7E:F9:B5:12:27 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 4A:B4:22:2D:28:83
+INFO: 802.11 Wi-Fi device 4A:B4:22:2D:28:83 advertising SSID 'SpectrumSetup-85'
+INFO: Detected new 802.11 Wi-Fi access point 74:37:5F:DB:6C:6F
+INFO: 802.11 Wi-Fi device 74:37:5F:DB:6C:6F advertising SSID 'SpectrumSetup-6D'
+INFO: Detected new 802.11 Wi-Fi access point 74:37:5F:DB:6C:6E
+INFO: 802.11 Wi-Fi device 74:37:5F:DB:6C:6E advertising SSID 'SpectrumSetup-6D'
+INFO: Detected new 802.11 Wi-Fi access point 6E:5A:25:CA:46:8E
+INFO: 802.11 Wi-Fi device 6E:5A:25:CA:46:8E advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 16:37:5F:DB:6C:6E
+INFO: 802.11 Wi-Fi device 16:37:5F:DB:6C:6E advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 0E:5A:25:CA:46:8E
+INFO: 802.11 Wi-Fi device 0E:5A:25:CA:46:8E advertising SSID 'SpectrumSetup-8C'
+INFO: Detected new 802.11 Wi-Fi access point 58:96:71:09:90:F0
+INFO: 802.11 Wi-Fi device 58:96:71:09:90:F0 advertising SSID 'ATTX6FSWcw'
+INFO: Detected new 802.11 Wi-Fi access point 58:96:71:09:90:F7
+INFO: 802.11 Wi-Fi device 58:96:71:09:90:F7 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point C4:41:1E:A9:38:D9
+INFO: 802.11 Wi-Fi device C4:41:1E:A9:38:D9 advertising SSID 'Where is Waldo?'
+ERROR: Data source 'wlan1 / wlan1' ('wlan1') encountered an error: IPC connection closed
+ALERT: SOURCEERROR Source wlan1 (5FE308BD-0000-0000-0000-00C0CAB88C05) has encountered an error (IPC connection closed) Kismet will attempt to re-open the source in 5 seconds.  (1 failures)
+ERROR: Source wlan1 (5FE308BD-0000-0000-0000-00C0CAB88C05) has encountered an error (IPC connection closed) Kismet will attempt to re-open the source in 5 seconds.  (1 failures)
+INFO: Attempting to re-open source wlan1
+INFO: wlan1 telling NetworkManager not to control interface 'wlan1': you may need to re-initialize this interface later or tell NetworkManager to control it again via 'nmcli'
+INFO: wlan1 bringing down parent interface 'wlan1'
+INFO: wlan1 finished configuring wlan1/wlan1mon, ready to capture
+ALERT: SOURCEOPEN Source wlan1 (5FE308BD-0000-0000-0000-00C0CAB88C05) successfully re-opened
+ERROR: Data source 'wlan1 / wlan1' ('wlan1') encountered an error: IPC connection closed
+ALERT: SOURCEERROR Source wlan1 (5FE308BD-0000-0000-0000-00C0CAB88C05) has encountered an error (IPC connection closed) Kismet will attempt to re-open the source in 5 seconds.  (2 failures)
+ERROR: Source wlan1 (5FE308BD-0000-0000-0000-00C0CAB88C05) has encountered an error (IPC connection closed) Kismet will attempt to re-open the source in 5 seconds.  (2 failures)
+[esp32_reader] 3000 records written
+INFO: Attempting to re-open source wlan1
+INFO: wlan1 telling NetworkManager not to control interface 'wlan1': you may need to re-initialize this interface later or tell NetworkManager to control it again via 'nmcli'
+INFO: wlan1 bringing down parent interface 'wlan1'
+INFO: wlan1 finished configuring wlan1/wlan1mon, ready to capture
+ALERT: SOURCEOPEN Source wlan1 (5FE308BD-0000-0000-0000-00C0CAB88C05) successfully re-opened
+[wardrive] heartbeat: 2/2 collectors alive — 16:37:11Z
+INFO: Detected new 802.11 Wi-Fi access point 76:7D:A1:BC:8B:56
+INFO: 802.11 Wi-Fi device 76:7D:A1:BC:8B:56 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 7A:7D:A1:BC:8B:56
+INFO: 802.11 Wi-Fi device 7A:7D:A1:BC:8B:56 advertising SSID 'ATTtA8SN52_2G'
+INFO: Detected new 802.11 Wi-Fi device AA:34:09:2D:83:C8
+INFO: Detected new 802.11 Wi-Fi device 8A:15:54:AA:CF:88
+INFO: Detected new 802.11 Wi-Fi device 3C:A6:F6:4A:18:62
+INFO: Detected new 802.11 Wi-Fi access point B6:15:54:AA:CF:88
+INFO: 802.11 Wi-Fi device B6:15:54:AA:CF:88 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device 8E:15:54:AA:CF:88
+INFO: 802.11 Wi-Fi device 8E:15:54:AA:CF:88 advertising SSID 'FUESD_Students'
+INFO: 802.11 Wi-Fi device 8A:15:54:AA:CF:88 advertising SSID 'FUESD_Staff'
+INFO: Detected new 802.11 Wi-Fi device 5E:5A:4E:B2:88:76
+INFO: Detected new 802.11 Wi-Fi device EC:A9:07:09:0F:50
+INFO: Detected new 802.11 Wi-Fi access point 9E:15:54:AA:CF:88
+INFO: 802.11 Wi-Fi device 9E:15:54:AA:CF:88 advertising SSID 'AC'
+INFO: Detected new 802.11 Wi-Fi device EC:8E:77:60:4D:E8
+INFO: Detected new 802.11 Wi-Fi device 8E:AB:98:84:2E:99
+INFO: Detected new 802.11 Wi-Fi device 04:D3:B0:E1:F8:02
+INFO: Detected new 802.11 Wi-Fi access point 82:15:54:AA:CF:88
+INFO: 802.11 Wi-Fi device 82:15:54:AA:CF:88 advertising SSID 'FUESD_Visitor'
+INFO: Detected new 802.11 Wi-Fi device EC:A9:07:0E:62:12
+INFO: Detected new 802.11 Wi-Fi device 50:23:A2:CD:55:67
+INFO: Detected new 802.11 Wi-Fi device 5C:B4:7E:A8:C2:49
+INFO: Detected new 802.11 Wi-Fi device F0:B3:EC:40:E3:21
+INFO: Detected new 802.11 Wi-Fi device EC:A9:07:0D:A9:84
+INFO: Detected new 802.11 Wi-Fi device EC:A9:07:1B:71:08
+INFO: Detected new 802.11 Wi-Fi device 70:72:FE:B4:15:B8
+INFO: Detected new 802.11 Wi-Fi access point F8:F5:32:DC:47:80
+INFO: 802.11 Wi-Fi device F8:F5:32:DC:47:80 advertising SSID 'ATTecNxKmS'
+INFO: Detected new 802.11 Wi-Fi access point EC:D9:09:1E:DC:86
+INFO: 802.11 Wi-Fi device EC:D9:09:1E:DC:86 advertising SSID 'Smartphone_connect_1edc86'
+INFO: Detected new 802.11 Wi-Fi access point E6:F5:32:DC:47:83
+INFO: Detected new 802.11 Wi-Fi device EA:FE:A1:A7:12:66
+INFO: 802.11 Wi-Fi device E6:F5:32:DC:47:83 advertising SSID 'ATTecNxKmS'
+INFO: Detected new 802.11 Wi-Fi device 84:5C:F3:F9:E6:10
+INFO: Detected new 802.11 Wi-Fi access point F8:F5:32:DC:47:83
+INFO: 802.11 Wi-Fi device F8:F5:32:DC:47:83 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point F8:5B:3B:69:1D:00
+INFO: 802.11 Wi-Fi device F8:5B:3B:69:1D:00 advertising SSID 'SpectrumSetup-01'
+INFO: Detected new 802.11 Wi-Fi access point 8C:90:2D:B5:E9:53
+INFO: 802.11 Wi-Fi device 8C:90:2D:B5:E9:53 advertising SSID 'ATTecNxKms'
+INFO: Detected new 802.11 Wi-Fi device 8C:90:2D:B5:E9:4D
+INFO: Detected new 802.11 Wi-Fi device 8C:90:2D:B5:E9:50
+INFO: Detected new 802.11 Wi-Fi access point 92:90:2D:B5:E9:4D
+INFO: 802.11 Wi-Fi device 92:90:2D:B5:E9:4D advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 92:90:2D:B5:E9:53
+INFO: 802.11 Wi-Fi device 92:90:2D:B5:E9:53 advertising a cloaked SSID
+INFO: 802.11 Wi-Fi device 8C:90:2D:B5:E9:4D advertising SSID 'ATTecNxKms'
+INFO: Detected new 802.11 Wi-Fi device A8:97:CD:7F:E3:C3
+INFO: Detected new 802.11 Wi-Fi access point DA:5B:3B:69:1D:00
+INFO: 802.11 Wi-Fi device DA:5B:3B:69:1D:00 advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 5C:E9:31:0B:B5:77
+INFO: 802.11 Wi-Fi device 5C:E9:31:0B:B5:77 advertising SSID 'deco1'
+INFO: Detected new 802.11 Wi-Fi access point 2C:5D:93:55:10:17
+INFO: 802.11 Wi-Fi device 2C:5D:93:55:10:17 advertising SSID 'Configure.Me-151010'
+[wardrive] heartbeat: 2/2 collectors alive — 16:38:11Z
+INFO: Detected new 802.11 Wi-Fi access point F8:AA:3F:E9:3B:8F
+INFO: 802.11 Wi-Fi device F8:AA:3F:E9:3B:8F advertising SSID 'ACASCEU'
+INFO: Detected new 802.11 Wi-Fi device E6:80:F4:68:66:13
+INFO: Detected new 802.11 Wi-Fi access point BA:AA:3F:E9:3B:8F
+INFO: 802.11 Wi-Fi device BA:AA:3F:E9:3B:8F advertising SSID 'Vital Motion Chiro Patient WiFi'
+INFO: 802.11 Wi-Fi device BA:AA:3F:E9:3B:8F advertising SSID 'Vital Motion Chiro Patient WiFi'
+INFO: 802.11 Wi-Fi device F8:AA:3F:E9:3B:8F advertising SSID 'ACASCEU'
+INFO: Detected new 802.11 Wi-Fi access point B0:FC:88:2A:C5:3C
+INFO: 802.11 Wi-Fi device B0:FC:88:2A:C5:3C advertising SSID 'SpectrumSetup-36'
+INFO: Detected new 802.11 Wi-Fi device 44:BB:3B:03:A1:BF
+INFO: Detected new 802.11 Wi-Fi access point BA:AA:3F:E9:3B:8E
+INFO: 802.11 Wi-Fi device BA:AA:3F:E9:3B:8E advertising SSID 'Vital Motion Chiro Patient WiFi'
+INFO: Detected new 802.11 Wi-Fi access point 9A:AA:3F:E9:3B:8E
+INFO: 802.11 Wi-Fi device 9A:AA:3F:E9:3B:8E advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 16:FC:88:2A:C5:39
+INFO: 802.11 Wi-Fi device 16:FC:88:2A:C5:39 advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point B0:FC:88:2A:C5:3D
+INFO: 802.11 Wi-Fi device B0:FC:88:2A:C5:3D advertising SSID 'SpectrumSetup-36'
+INFO: Detected new 802.11 Wi-Fi access point 74:37:5F:CD:54:EA
+INFO: 802.11 Wi-Fi device 74:37:5F:CD:54:EA advertising SSID 'SpectrumSetup-E9'
+INFO: Detected new 802.11 Wi-Fi access point F8:AA:3F:E9:3B:8E
+INFO: Detected new 802.11 Wi-Fi device 8C:2A:85:BB:BF:04
+INFO: 802.11 Wi-Fi device F8:AA:3F:E9:3B:8E advertising SSID 'ACASCEU'
+INFO: Detected new 802.11 Wi-Fi access point 16:37:5F:CD:54:EA
+INFO: 802.11 Wi-Fi device 16:37:5F:CD:54:EA advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi device F8:AA:3F:E9:3B:8C
+INFO: Detected new 802.11 Wi-Fi device FC:E9:D8:2D:FC:57
+INFO: Detected new 802.11 Wi-Fi access point E2:CB:AC:92:0B:E8
+INFO: 802.11 Wi-Fi device E2:CB:AC:92:0B:E8 advertising SSID 'Starbucks WiFi'
+INFO: Detected new 802.11 Wi-Fi access point EA:CB:AC:92:0B:E8
+INFO: 802.11 Wi-Fi device EA:CB:AC:92:0B:E8 advertising SSID 'notes'
+INFO: Detected new 802.11 Wi-Fi access point B0:B8:67:D3:55:D1
+INFO: 802.11 Wi-Fi device B0:B8:67:D3:55:D1 advertising SSID 'KNET-Provisioning'
+INFO: Detected new 802.11 Wi-Fi access point B0:B8:67:D3:55:D3
+INFO: 802.11 Wi-Fi device B0:B8:67:D3:55:D3 advertising SSID 'KMANAGED'
+INFO: Detected new 802.11 Wi-Fi access point 6C:63:9C:D5:DB:53
+INFO: 802.11 Wi-Fi device 6C:63:9C:D5:DB:53 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 18:60:41:6D:B7:65
+INFO: 802.11 Wi-Fi device 18:60:41:6D:B7:65 advertising SSID 'TMOBILE-B762'
+INFO: Detected new 802.11 Wi-Fi device D4:F0:57:9C:46:1B
+INFO: Detected new 802.11 Wi-Fi device 66:63:9C:D5:DB:53
+INFO: 802.11 Wi-Fi device 66:63:9C:D5:DB:53 advertising SSID 'shell2'
+INFO: 802.11 Wi-Fi device 18:60:41:6D:B7:65 advertising SSID 'TMOBILE-B762'
+INFO: Detected new 802.11 Wi-Fi access point 88:DE:7C:B5:2A:94
+INFO: 802.11 Wi-Fi device 88:DE:7C:B5:2A:94 advertising SSID 'SpectrumSetup-96'
+INFO: Detected new 802.11 Wi-Fi access point 88:96:4E:CE:58:73
+INFO: 802.11 Wi-Fi device 88:96:4E:CE:58:73 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point EC:A9:40:E1:31:83
+INFO: 802.11 Wi-Fi device EC:A9:40:E1:31:83 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device 86:96:4E:CE:58:73
+INFO: Detected new 802.11 Wi-Fi device CE:8F:C3:12:5D:BA
+INFO: Detected new 802.11 Wi-Fi device 9C:B1:50:A5:E5:FB
+INFO: 802.11 Wi-Fi device 86:96:4E:CE:58:73 advertising SSID 'ATTnfqGHMS'
+INFO: Detected new 802.11 Wi-Fi device 4A:6D:9B:05:28:89
+INFO: Detected new 802.11 Wi-Fi access point CE:57:63:51:DB:BD
+INFO: Detected new 802.11 Wi-Fi device BA:7A:DE:44:1B:99
+INFO: Detected new 802.11 Wi-Fi access point 20:A6:CD:23:66:E2
+INFO: 802.11 Wi-Fi device 20:A6:CD:23:66:E2 advertising SSID 'eBOS'
+INFO: Detected new 802.11 Wi-Fi access point 20:A6:CD:23:66:E1
+INFO: 802.11 Wi-Fi device 20:A6:CD:23:66:E1 advertising SSID 'McDonalds Free WiFi'
+INFO: Detected new 802.11 Wi-Fi access point 9E:24:52:23:CD:F9
+INFO: 802.11 Wi-Fi device 9E:24:52:23:CD:F9 advertising SSID 'G Link'
+INFO: Detected new 802.11 Wi-Fi access point 9E:24:52:63:CD:F9
+INFO: 802.11 Wi-Fi device 9E:24:52:63:CD:F9 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 9E:24:52:43:CD:F9
+INFO: 802.11 Wi-Fi device 9E:24:52:43:CD:F9 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 8E:2A:A8:C5:04:D6
+INFO: 802.11 Wi-Fi device 8E:2A:A8:C5:04:D6 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 80:2A:A8:C5:04:D6
+INFO: 802.11 Wi-Fi device 80:2A:A8:C5:04:D6 advertising SSID 'DelReyAvo'
+INFO: Detected new 802.11 Wi-Fi access point 86:2A:A8:C5:04:D6
+INFO: 802.11 Wi-Fi device 86:2A:A8:C5:04:D6 advertising SSID 'DelRey'
+INFO: Detected new 802.11 Wi-Fi access point 8A:2A:A8:C5:04:D6
+INFO: 802.11 Wi-Fi device 8A:2A:A8:C5:04:D6 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 06:9B:4A:84:35:E5
+INFO: 802.11 Wi-Fi device 06:9B:4A:84:35:E5 advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 58:9B:4A:84:35:E1
+INFO: 802.11 Wi-Fi device 58:9B:4A:84:35:E1 advertising SSID 'SpectrumSetup-35DE'
+INFO: Detected new 802.11 Wi-Fi access point 2C:67:BE:7C:CC:50
+INFO: 802.11 Wi-Fi device 2C:67:BE:7C:CC:50 advertising SSID 'SpectrumSetup-11'
+INFO: Detected new 802.11 Wi-Fi access point 02:67:BE:7C:CC:54
+INFO: 802.11 Wi-Fi device 02:67:BE:7C:CC:54 advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 14:7D:05:0F:5F:47
+INFO: 802.11 Wi-Fi device 14:7D:05:0F:5F:47 advertising SSID 'SpectrumSetup-45'
+[wardrive] heartbeat: 2/2 collectors alive — 16:39:11Z
+INFO: Detected new 802.11 Wi-Fi access point 0E:65:9A:37:CC:3B
+INFO: 802.11 Wi-Fi device 0E:65:9A:37:CC:3B advertising SSID 'Smartphone_connect_37cc3b'
+INFO: Detected new 802.11 Wi-Fi access point 18:A5:FF:8A:02:CD
+INFO: 802.11 Wi-Fi device 18:A5:FF:8A:02:CD advertising SSID 'TMOBILE-02CA'
+INFO: Detected new 802.11 Wi-Fi access point 86:2A:A8:C5:01:C0
+INFO: 802.11 Wi-Fi device 86:2A:A8:C5:01:C0 advertising SSID 'DelRey'
+INFO: Detected new 802.11 Wi-Fi access point 80:2A:A8:C5:01:C0
+INFO: 802.11 Wi-Fi device 80:2A:A8:C5:01:C0 advertising SSID 'DelReyAvo'
+INFO: Detected new 802.11 Wi-Fi access point 8E:2A:A8:C5:01:C0
+INFO: 802.11 Wi-Fi device 8E:2A:A8:C5:01:C0 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 8A:2A:A8:C5:01:C0
+INFO: 802.11 Wi-Fi device 8A:2A:A8:C5:01:C0 advertising a cloaked SSID
+INFO: 802.11 Wi-Fi device CE:57:63:51:DB:BD advertising SSID 'Smartphone_connect_51dbbd'
+INFO: Detected new 802.11 Wi-Fi access point EC:8C:A2:66:4E:83
+INFO: 802.11 Wi-Fi device EC:8C:A2:66:4E:83 advertising SSID 'Recover.Me-264E80'
+INFO: Detected new 802.11 Wi-Fi device 84:B1:E4:24:F1:54
+INFO: 802.11 Wi-Fi device 80:2A:A8:C5:01:C0 advertising SSID 'DelReyAvo'
+INFO: Detected new 802.11 Wi-Fi access point 6C:63:F8:36:52:3C
+INFO: 802.11 Wi-Fi device 6C:63:F8:36:52:3C advertising SSID 'DelReyAvo'
+INFO: Detected new 802.11 Wi-Fi access point 72:63:F8:36:52:3C
+INFO: 802.11 Wi-Fi device 72:63:F8:36:52:3C advertising SSID 'DelRey'
+INFO: Detected new 802.11 Wi-Fi access point 76:63:F8:36:52:3C
+INFO: 802.11 Wi-Fi device 76:63:F8:36:52:3C advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device 02:66:CC:C2:C5:0D
+INFO: Detected new 802.11 Wi-Fi access point 0A:56:EE:C8:FB:D6
+INFO: 802.11 Wi-Fi device 0A:56:EE:C8:FB:D6 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point 86:97:33:AC:1D:1D
+INFO: 802.11 Wi-Fi device 86:97:33:AC:1D:1D advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point A4:97:33:AC:1D:1D
+INFO: 802.11 Wi-Fi device A4:97:33:AC:1D:1D advertising SSID 'rattatonggo13@spectrum.net'
+INFO: Detected new 802.11 Wi-Fi access point D0:57:94:FB:B0:1F
+INFO: 802.11 Wi-Fi device D0:57:94:FB:B0:1F advertising SSID 'MySpectrumWiFi18-5G'
+INFO: Detected new 802.11 Wi-Fi device 1C:30:08:E4:34:DB
+INFO: Detected new 802.11 Wi-Fi access point 06:93:97:1C:A5:E3
+INFO: 802.11 Wi-Fi device 06:93:97:1C:A5:E3 advertising SSID 'ATT8zXuDS2'
+INFO: Detected new 802.11 Wi-Fi access point D0:57:94:FB:B0:1E
+INFO: 802.11 Wi-Fi device D0:57:94:FB:B0:1E advertising SSID 'MySpectrumWiFi18-2G'
+INFO: 802.11 Wi-Fi device D0:57:94:FB:B0:1E advertising SSID 'MySpectrumWiFi18-2G'
+INFO: Detected new 802.11 Wi-Fi device F8:89:D2:12:B9:C1
+INFO: Detected new 802.11 Wi-Fi access point DC:08:DA:0F:32:4E
+INFO: 802.11 Wi-Fi device DC:08:DA:0F:32:4E advertising SSID 'FBI-ATF-DEA-CIA'
+INFO: Detected new 802.11 Wi-Fi access point DA:55:B8:B4:C9:3B
+INFO: 802.11 Wi-Fi device DA:55:B8:B4:C9:3B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E6:55:B8:B4:C9:3B
+INFO: 802.11 Wi-Fi device E6:55:B8:B4:C9:3B advertising SSID 'Jack_Wifi'
+INFO: Detected new 802.11 Wi-Fi device 2E:86:6F:45:BA:8B
+INFO: 802.11 Wi-Fi device E6:55:B8:B4:C9:3B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point DE:08:DA:1F:32:4E
+INFO: 802.11 Wi-Fi device DE:08:DA:1F:32:4E advertising a cloaked SSID
+INFO: 802.11 Wi-Fi device DC:08:DA:0F:32:4E advertising SSID 'FBI-ATF-DEA-CIA'
+INFO: Detected new 802.11 Wi-Fi device D4:12:43:D2:78:70
+INFO: Detected new 802.11 Wi-Fi access point EA:55:B8:B4:C9:3B
+INFO: 802.11 Wi-Fi device EA:55:B8:B4:C9:3B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E2:55:B8:B4:C9:3B
+INFO: 802.11 Wi-Fi device E2:55:B8:B4:C9:3B advertising SSID 'Jacks_Guest'
+INFO: Detected new 802.11 Wi-Fi device 1A:6F:0E:B9:84:D8
+INFO: Detected new 802.11 Wi-Fi access point EE:55:B8:B4:C9:3B
+INFO: 802.11 Wi-Fi device EE:55:B8:B4:C9:3B advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi access point E4:38:83:4B:6A:4C
+INFO: 802.11 Wi-Fi device E4:38:83:4B:6A:4C advertising SSID 'EJPSVC'
+INFO: Detected new 802.11 Wi-Fi access point EE:38:83:4B:6A:4C
+INFO: 802.11 Wi-Fi device EE:38:83:4B:6A:4C advertising SSID 'Guest'
+INFO: Detected new 802.11 Wi-Fi access point EA:38:83:4B:6A:4C
+INFO: 802.11 Wi-Fi device EA:38:83:4B:6A:4C advertising SSID 'EJPTECH'
+INFO: Detected new 802.11 Wi-Fi access point 5C:FA:25:EB:4D:06
+INFO: 802.11 Wi-Fi device 5C:FA:25:EB:4D:06 advertising SSID 'NCA'
+[wardrive] heartbeat: 2/2 collectors alive — 16:40:11Z
+INFO: Detected new 802.11 Wi-Fi access point 8C:3B:AD:42:55:12
+INFO: 802.11 Wi-Fi device 8C:3B:AD:42:55:12 advertising SSID 'NETGEAR_11AC'
+INFO: Detected new 802.11 Wi-Fi access point 28:80:88:48:59:39
+INFO: 802.11 Wi-Fi device 28:80:88:48:59:39 advertising SSID 'NETGEAR71-5G'
+INFO: Detected new 802.11 Wi-Fi access point C8:B4:22:7E:B6:39
+INFO: 802.11 Wi-Fi device C8:B4:22:7E:B6:39 advertising SSID 'MySpectrumWiFi3A-5G'
+INFO: Detected new 802.11 Wi-Fi access point F8:96:FE:2A:A4:39
+INFO: 802.11 Wi-Fi device F8:96:FE:2A:A4:39 advertising SSID 'Kia_hspv'
+INFO: Detected new 802.11 Wi-Fi access point DE:EC:5E:55:4B:F4
+INFO: 802.11 Wi-Fi device DE:EC:5E:55:4B:F4 advertising SSID 'viewifi'
+INFO: Detected new 802.11 Wi-Fi access point BC:9A:8E:85:7C:A8
+INFO: 802.11 Wi-Fi device BC:9A:8E:85:7C:A8 advertising SSID 'Perfect Hair'
+INFO: Detected new 802.11 Wi-Fi access point 74:93:DA:A5:86:E2
+INFO: 802.11 Wi-Fi device 74:93:DA:A5:86:E2 advertising SSID 'SpectrumSetup-E3'
+INFO: Detected new 802.11 Wi-Fi access point 56:93:DA:A5:86:E2
+INFO: 802.11 Wi-Fi device 56:93:DA:A5:86:E2 advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 36:93:DA:A5:86:E2
+INFO: 802.11 Wi-Fi device 36:93:DA:A5:86:E2 advertising SSID 'Whitley Insurance Guest'
+INFO: Detected new 802.11 Wi-Fi access point D8:EC:5E:55:4B:F4
+INFO: 802.11 Wi-Fi device D8:EC:5E:55:4B:F4 advertising SSID 'enet360'
+INFO: Detected new 802.11 Wi-Fi access point 90:D0:92:13:A1:C8
+INFO: 802.11 Wi-Fi device 90:D0:92:13:A1:C8 advertising SSID 'ATTsxSrFdT'
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[wardrive] heartbeat: 2/2 collectors alive — 16:41:11Z
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+INFO: Detected new 802.11 Wi-Fi access point 8C:7A:B3:63:A7:ED
+INFO: 802.11 Wi-Fi device 8C:7A:B3:63:A7:ED advertising SSID 'ROVE_R2-4K-DUAL_63a7ed'
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+INFO: Detected new 802.11 Wi-Fi device 76:FA:A6:04:17:08
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+INFO: Detected new 802.11 Wi-Fi access point 2C:EA:DC:B0:AF:8E
+INFO: 802.11 Wi-Fi device 2C:EA:DC:B0:AF:8E advertising SSID 'Jimenez'
+INFO: Detected new 802.11 Wi-Fi access point F4:52:46:FD:69:A5
+INFO: 802.11 Wi-Fi device F4:52:46:FD:69:A5 advertising SSID 'SpectrumSetup-69A7'
+INFO: Detected new 802.11 Wi-Fi access point 96:52:46:FD:69:A5
+INFO: 802.11 Wi-Fi device 96:52:46:FD:69:A5 advertising SSID 'Spectrum Mobile'
+INFO: Detected new 802.11 Wi-Fi access point 0E:EA:DC:B0:AF:8E
+INFO: 802.11 Wi-Fi device 0E:EA:DC:B0:AF:8E advertising SSID 'Spectrum Mobile'
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[wardrive] heartbeat: 2/2 collectors alive — 16:42:11Z
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+INFO: Detected new 802.11 Wi-Fi access point 74:37:5F:F6:F2:B9
+INFO: 802.11 Wi-Fi device 74:37:5F:F6:F2:B9 advertising SSID 'SpectrumSetup-B7'
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+INFO: Detected new 802.11 Wi-Fi access point 54:47:CC:28:8C:F6
+INFO: 802.11 Wi-Fi device 54:47:CC:28:8C:F6 advertising SSID 'TinyHome'
+INFO: Detected new 802.11 Wi-Fi access point 72:47:CC:28:8C:F6
+INFO: 802.11 Wi-Fi device 72:47:CC:28:8C:F6 advertising a cloaked SSID
+INFO: Detected new 802.11 Wi-Fi device 54:47:CC:28:8C:F1
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+INFO: Detected new 802.11 Wi-Fi access point D8:CF:61:3A:C6:76
+INFO: 802.11 Wi-Fi device D8:CF:61:3A:C6:76 advertising SSID 'Cally77'
+INFO: Detected new 802.11 Wi-Fi access point F6:CF:61:3A:C6:76
+INFO: 802.11 Wi-Fi device F6:CF:61:3A:C6:76 advertising a cloaked SSID
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[wardrive] heartbeat: 2/2 collectors alive — 16:43:11Z
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+ERROR: Data source 'wlan1 / wlan1' ('wlan1') encountered an error: IPC connection closed
+ALERT: SOURCEERROR Source wlan1 (5FE308BD-0000-0000-0000-00C0CAB88C05) has encountered an error (IPC connection closed) Kismet will attempt to re-open the source in 5 seconds.  (3 failures)
+ERROR: Source wlan1 (5FE308BD-0000-0000-0000-00C0CAB88C05) has encountered an error (IPC connection closed) Kismet will attempt to re-open the source in 5 seconds.  (3 failures)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+INFO: Attempting to re-open source wlan1
+FATAL:  Datasource helper (linuxwifi) failed, could not process incoming control packet.
+ERROR: Data source 'wlan1 / wlan1' ('wlan1') encountered an error: Could not fetch interface address from 'wlan1': failed to get HW addr from interface 'wlan1': No such device
+ALERT: SOURCEERROR Source wlan1 (5FE308BD-0000-0000-0000-00C0CAB88C05) has encountered an error (Could not fetch interface address from 'wlan1': failed to get HW addr from interface 'wlan1': No such device) Kismet will attempt to re-open the source in 5 seconds.  (4 failures)
+ERROR: Source wlan1 (5FE308BD-0000-0000-0000-00C0CAB88C05) has encountered an error (Could not fetch interface address from 'wlan1': failed to get HW addr from interface 'wlan1': No such device) Kismet will attempt to re-open the source in 5 seconds.  (4 failures)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+INFO: Attempting to re-open source wlan1
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[esp32_reader] Serial read error: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+[wardrive] Sleep inhibitor released — normal lid/sleep behavior restored
+[wardrive] Shutting down collectors…
+[esp32_reader] Shutdown. 3961 records written, 0 parse errors.
+
+*** KISMET IS SHUTTING DOWN ***
+Shutting down plugins...
+WARNING: Kismet changes the configuration of network devices.
+         In most cases you will need to restart networking for
+         your interface (varies per distribution and OS), but 
+         typically one of:
+         sudo service networking restart
+         sudo /etc/init.d/networking restart
+         or
+         nmcli device set [device] managed true
+
+Kismet exiting.
+EXITING: Signal service thread complete.
+[wardrive] Session closed: 20260427T163310Z_wardrive

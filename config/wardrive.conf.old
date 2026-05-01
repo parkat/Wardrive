@@ -1,0 +1,25 @@
+# wardrive.conf — sourced by wardrive.sh
+# Edit values here rather than editing the script.
+
+# WiFi adapter device name (check with: ip -br link)
+# Common values: wlan0, wlan1, wlx<MAC>
+WIFI_IFACE="wlan1"
+
+# RTL-SDR device index (0 if you only have one)
+SDR_DEVICE_INDEX=0
+
+# Frequencies for rtl_433 to hop between (Hz)
+# Defaults cover the most common ISM bands worldwide:
+#   433.92 MHz — EU/global ISM, weather stations, garage doors
+#   315.00 MHz — N. America TPMS (tire sensors), some keyfobs
+#   868.00 MHz — EU ISM, LoRaWAN, smart meters
+#   915.00 MHz — N. America ISM, LoRaWAN, Z-Wave, Flock backhaul
+RTL433_FREQS=(433920000 315000000 868000000 915000000)
+
+# When you add hardware, flip these to enable additional collectors.
+ENABLE_GPS=0
+ENABLE_ESP32=0
+
+# GPS device path (when puck arrives)
+# GPS_DEVICE="/dev/ttyUSB0"
+# GPS_BAUD=4800

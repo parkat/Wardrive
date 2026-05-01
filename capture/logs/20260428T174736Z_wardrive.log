@@ -1,0 +1,34 @@
+[wardrive] Session: 20260428T174736Z_wardrive
+[wardrive] Dir:     /home/parkat/warDrive/capture/raw/20260428T174736Z_wardrive
+
+[preflight] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[preflight] Pre-flight device checks
+[preflight] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[preflight] Checking GPS device (/dev/ttyACM0)…
+[preflight]   GPS: clear
+[preflight] Checking RTL-SDR…
+[preflight]   RTL-SDR not detected via lsusb — SDR collector will be skipped
+[preflight] Checking WiFi (wlan1)…
+[preflight]   Killing wpa_supplicant (pid 1739925): needs interface for monitor mode
+[preflight]   WiFi: clear
+[preflight] Checking ESP32 serial port…
+[preflight]   Found ESP32 port: /dev/ttyUSB0
+[preflight]   ESP32: clear on /dev/ttyUSB0
+[preflight] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[wardrive] Sleep/lid-close inhibited (pid 1747678)
+[wardrive] Laptop stays awake with lid closed until session ends
+[wardrive] Starting collectors with auto-restart supervisors…
+[gps] Waiting for fix (up to 30s, need 4+ sats)… ...
+[gps] WARNING: No fix after 30s — starting without GPS coordinates
+[gps]   lat/lon will be NULL in this session. Make sure puck has sky view.
+[gps] Starting NMEA logger (under supervisor)
+[gps] supervisor: launching collector…
+[gps] supervisor PID 1748933
+[gps] Raw NMEA → /home/parkat/warDrive/capture/raw/20260428T174736Z_wardrive/gps/nmea.log
+[wifi] Setting up monitor interface wlan1mon…
+RTNETLINK answers: Connection timed out
+[wifi] ERROR: could not bring up wlan1mon — WiFi collector SKIPPED
+[wardrive] Sleep inhibitor released — normal lid/sleep behavior restored
+[wardrive] Shutting down collectors…
+[wardrive] Session closed: 20260428T174736Z_wardrive

@@ -1,0 +1,17 @@
+[wardrive] Session: 20260427T162300Z_wardrive
+[wardrive] Dir:     /home/parkat/warDrive/capture/raw/20260427T162300Z_wardrive
+[wardrive] Sleep/lid-close inhibited (pid 1074369)
+[wardrive] Laptop stays awake with lid closed until session ends
+[wardrive] Starting collectors…
+[wifi] Starting Kismet on wlan1
+FATAL: Could not find override option 'wigle_file=false' as a file or in the Kismet config directory as '/etc/kismet/kismet_wigle_file=false.conf'.
+[wifi] PID 1074370
+[sdr] Disabled in config — skipping
+[esp32] ERROR: Serial port not found (tried auto). Is the ESP32 plugged in?
+[esp32] Collector SKIPPED — continuing without BLE data.
+[wardrive] All collectors running. Ctrl-C to stop.
+[wardrive] Sleep inhibitor released — normal lid/sleep behavior restored
+[wardrive] Shutting down collectors…
+[wardrive] Session closed: 20260427T162300Z_wardrive
+[wardrive] Shutting down collectors…
+[wardrive] Session closed: 20260427T162300Z_wardrive

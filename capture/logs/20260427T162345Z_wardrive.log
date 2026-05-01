@@ -1,0 +1,23 @@
+[wardrive] Session: 20260427T162345Z_wardrive
+[wardrive] Dir:     /home/parkat/warDrive/capture/raw/20260427T162345Z_wardrive
+[wardrive] Sleep/lid-close inhibited (pid 1076048)
+[wardrive] Laptop stays awake with lid closed until session ends
+[wardrive] Starting collectors…
+[wifi] Starting Kismet on wlan1
+FATAL: Could not find override option 'wigle_file=false' as a file or in the Kismet config directory as '/etc/kismet/kismet_wigle_file=false.conf'.
+[wifi] PID 1076049
+[sdr] Disabled in config — skipping
+[esp32] Found ESP32 on /dev/ttyUSB0
+[esp32] Verifying device output…
+[esp32] Device verified ✓
+[esp32] PID 1076064 → /home/parkat/warDrive/capture/raw/20260427T162345Z_wardrive/bt/esp32_ble.ndjson
+[wardrive] All collectors running. Ctrl-C to stop.
+[esp32_reader] Opening /dev/ttyUSB0 @ 921600 baud
+[esp32_reader] Writing to /home/parkat/warDrive/capture/raw/20260427T162345Z_wardrive/bt/esp32_ble.ndjson
+[esp32_reader] 1000 records written
+[wardrive] Sleep inhibitor released — normal lid/sleep behavior restored
+[wardrive] Shutting down collectors…
+[wardrive] Session closed: 20260427T162345Z_wardrive
+[wardrive] Shutting down collectors…
+[wardrive] Session closed: 20260427T162345Z_wardrive
+[esp32_reader] Shutdown. 1378 records written, 0 parse errors.

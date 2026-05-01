@@ -1,0 +1,4 @@
+sudo ./wardrive.sh wlan1mon /dev/ttyUSB0 hci0
+
+
+sudo systemctl start NetworkManager

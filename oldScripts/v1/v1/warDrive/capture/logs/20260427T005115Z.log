@@ -1,0 +1,23 @@
+[00:51:15Z] ===========================================
+[00:51:15Z] Wardrive session: 20260427T005115Z
+[00:51:15Z] Output dir:       /home/parkat/warDrive/capture/raw/20260427T005115Z_testing
+[00:51:15Z] ===========================================
+[00:51:15Z] WARN: WiFi interface 'wlan1' not found. Use --iface or edit config.
+[00:51:15Z]       Available interfaces:
+        wlan0
+        wlan1mon
+[00:51:20Z] Power management: sleep/lid-close inhibited (pid 399953)
+[00:51:20Z]   Laptop stays awake until script exits, even with lid closed
+[00:51:20Z] Starting SDR collector (rtl_433)...
+[00:51:20Z] rtl_433 started (pid 399965) — output: /home/parkat/warDrive/capture/raw/20260427T005115Z_testing/sdr/rtl433.ndjson
+[00:51:20Z] GPS collector: SKIPPED (no puck connected yet)
+[00:51:20Z]   When puck arrives: enable in config/wardrive.conf and edit this script
+[00:51:20Z]   Will log NMEA + computed positions to ${SESSION_DIR}/gps/
+[00:51:20Z] ESP32 collector: SKIPPED (sensors not yet deployed)
+[00:51:20Z]   Future: receive serial/MQTT stream from ESP32 sniffer fleet
+[00:51:20Z] All active collectors running. Press Ctrl-C to stop.
+[00:51:20Z] 
+[00:51:41Z] Stopping session — cleaning up collectors...
+[00:51:43Z] Session 20260427T005115Z complete. Data in: /home/parkat/warDrive/capture/raw/20260427T005115Z_testing
+[00:51:43Z] Stopping session — cleaning up collectors...
+[00:51:45Z] Session 20260427T005115Z complete. Data in: /home/parkat/warDrive/capture/raw/20260427T005115Z_testing
