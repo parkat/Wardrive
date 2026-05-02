@@ -68,20 +68,29 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 -- ── WiFi ──────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS wifi_aps (
-    bssid           TEXT PRIMARY KEY,
-    ssid            TEXT,
-    encryption      TEXT,
-    channel         INT,
-    max_signal_dbm  INT,
-    first_seen_utc  TEXT,
-    last_seen_utc   TEXT,
-    obs_count       INT DEFAULT 0
+    bssid                 TEXT PRIMARY KEY,
+    ssid                  TEXT,
+    encryption            TEXT,
+    channel               INT,
+    max_signal_dbm        INT,
+    first_seen_utc        TEXT,
+    last_seen_utc         TEXT,
+    manufacturer          TEXT,
+    wigle_lat             REAL,
+    wigle_lon             REAL,
+    wigle_first_seen      TEXT,
+    wigle_last_seen       TEXT,
+    wigle_sighting_count  INT,
+    device_type           TEXT,
+    obs_count             INT DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS wifi_clients (
     mac             TEXT PRIMARY KEY,
     probe_ssid      TEXT,
     first_seen_utc  TEXT,
     last_seen_utc   TEXT,
+    manufacturer    TEXT,
+    device_type     TEXT,
     obs_count       INT DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS wifi_obs (
@@ -105,6 +114,9 @@ CREATE TABLE IF NOT EXISTS rf_devices (
     frequency_mhz   REAL,
     first_seen_utc  TEXT,
     last_seen_utc   TEXT,
+    max_rssi_dbm    INT,
+    max_snr_db      REAL,
+    device_type     TEXT,
     obs_count       INT DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS rf_obs (
@@ -138,6 +150,7 @@ CREATE TABLE IF NOT EXISTS bt_devices (
     first_seen_utc          TEXT,
     last_seen_utc           TEXT,
     max_rssi_dbm            INT,
+    device_type             TEXT,               -- classified device type: Camera, Phone, Wearable, etc.
     obs_count               INT DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS bt_obs (
@@ -456,6 +469,132 @@ def lookup_wigle_ble(db: sqlite3.Connection, mac: str, api_key: str,
     return result
 
 # ═════════════════════════════════════════════════════════════════════════════
+# Wigle.net — WiFi AP sighting history (similar to BLE, but for APs)
+# ═════════════════════════════════════════════════════════════════════════════
+def lookup_wigle_wifi(db: sqlite3.Connection, bssid: str, api_key: str,
+                      verbose: bool = False) -> dict | None:
+    """Look up WiFi AP in Wigle.net. Skip broadcast/infrastructure MACs."""
+    global _wigle_last
+    if _wigle_breaker.is_open():
+        return None
+    # Skip broadcast MACs and all-zeros
+    if bssid in ("FF:FF:FF:FF:FF:FF", "00:00:00:00:00:00"):
+        return None
+    hit, cached = _cache_get(db, "wigle_wifi", bssid)
+    if hit:
+        if verbose and cached:
+            print(f"    wigle_wifi: cached — {cached.get('wigle_sighting_count', 'unknown')} sightings")
+        return cached
+    elapsed = time.time() - _wigle_last
+    if elapsed < 6.5:
+        time.sleep(6.5 - elapsed)
+    _wigle_last = time.time()
+    url = (
+        "https://api.wigle.net/api/v2/network/search"
+        f"?netid={urllib.parse.quote(bssid)}&first=0&resultsPerPage=1"
+    )
+    data = _http_get_json(url, headers={"Authorization": f"Basic {api_key}"},
+                          label="wigle_wifi", breaker=_wigle_breaker)
+    result = None
+    if data and data.get("success") and data.get("results"):
+        r = data["results"][0]
+        result = {
+            "wigle_lat":             r.get("trilat"),
+            "wigle_lon":             r.get("trilong"),
+            "wigle_first_seen":      r.get("firsttime"),
+            "wigle_last_seen":       r.get("lasttime"),
+            "wigle_sighting_count":  data.get("totalResults"),
+        }
+        if verbose:
+            print(f"    wigle_wifi: found — {result['wigle_sighting_count']} sightings")
+    if result is not None or not _wigle_breaker.is_open():
+        _cache_set(db, "wigle_wifi", bssid, result)
+    return result
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Device type classifier — tags devices by likely function
+# ═════════════════════════════════════════════════════════════════════════════
+CAMERA_UUIDS = {"180a", "1812", "110c"}  # Environmental, HID, A2DP (for some cams)
+CAMERA_OUIS = {"Axis", "Hanwha", "Avigilon", "Dahua", "Hikvision", "Reolink", "Arlo", "Ring", "Nest", "Google", "Wyze", "Tuya", "IQinVision", "Uniview", "NETGEAR"}
+PHONE_OUIS = {"Apple", "Samsung", "Google", "OnePlus", "Motorola", "HTC", "LG"}
+ROUTER_OUIS = {"Cisco", "Ubiquiti", "Netgear", "TP-Link", "ASUS", "Linksys", "Aruba"}
+IOT_OUIS = {"Espressif", "Realtek", "Mediatek"}
+
+def classify_device_type(bt_data: dict = None, wifi_data: dict = None, rf_data: dict = None) -> str:
+    """Classify device by likely function based on available attributes."""
+    # BLE classification (has most context)
+    if bt_data:
+        apple_type = bt_data.get("apple_continuity_type")
+        manufacturer = bt_data.get("manufacturer", "")
+        appearance_name = bt_data.get("appearance_name", "").lower() if bt_data.get("appearance_name") else ""
+        services = bt_data.get("services", [])
+
+        if apple_type:
+            if "FindMy" in apple_type:
+                return "FindMy tracker"
+            if apple_type == "AirPods":
+                return "AirPods"
+            if apple_type in ("iPhone", "iPad", "Mac"):
+                return "Apple device"
+
+        if "Camera" in (bt_data.get("appearance_name") or ""):
+            return "Camera"
+
+        # Check camera OUIs and service UUIDs
+        if any(oui in manufacturer for oui in CAMERA_OUIS) or any(uuid in str(services).lower() for uuid in CAMERA_UUIDS):
+            return "Camera"
+
+        if manufacturer == "Apple":
+            return "Apple device"
+
+        if "watch" in appearance_name or "band" in appearance_name or "fitness" in appearance_name:
+            return "Wearable"
+
+        if "headphones" in appearance_name or "earphones" in appearance_name or any("a2dp" in str(s).lower() for s in (services or [])):
+            return "Headphones"
+
+        if any(oui in manufacturer for oui in PHONE_OUIS):
+            return "Phone"
+
+        if any(oui in manufacturer for oui in ("Ruuvi", "Nordic", "STMicroelectronics")):
+            return "IoT sensor"
+
+        return "Unknown"
+
+    # WiFi AP classification
+    if wifi_data:
+        ssid = (wifi_data.get("ssid") or "").lower()
+        manufacturer = wifi_data.get("manufacturer", "")
+
+        if any(pattern in ssid for pattern in ("flock", "ipc", "cam", "nvr", "axis", "hikvision", "dahua", "reolink", "arlo", "wyze")):
+            return "Camera"
+
+        if any(pattern in ssid for pattern in ("iphone", "galaxy", "android", "hotspot", "mobile")):
+            return "Mobile hotspot"
+
+        if any(oui in manufacturer for oui in CAMERA_OUIS):
+            return "Camera"
+
+        if any(oui in manufacturer for oui in ROUTER_OUIS):
+            return "Router/AP"
+
+        if any(oui in manufacturer for oui in IOT_OUIS):
+            return "IoT device"
+
+        return "Unknown"
+
+    # RF/SDR classification
+    if rf_data:
+        model = (rf_data.get("model") or "").lower()
+        if any(pattern in model for pattern in ("soil", "temperature", "humidity", "weather", "acurite", "sensor")):
+            return "IoT sensor"
+        if "door" in model or "motion" in model:
+            return "Door/Motion sensor"
+        return "Unknown"
+
+    return "Unknown"
+
+# ═════════════════════════════════════════════════════════════════════════════
 # BLE session processor
 # ═════════════════════════════════════════════════════════════════════════════
 def process_esp32_ble(
@@ -557,14 +696,23 @@ def process_esp32_ble(
             if wigle_api_key:
                 wigle = lookup_wigle_ble(db, addr, wigle_api_key, verbose=verbose)
                 if wigle: wigle_hits += 1
+
+            # Classify device type
+            device_type = classify_device_type(bt_data={
+                "apple_continuity_type": d["apple_type"],
+                "manufacturer": manufacturer,
+                "appearance_name": appearance_name,
+                "services": services_list,
+            })
+
             db.execute(
                 """INSERT INTO bt_devices
                        (address, address_type, name, is_randomized, manufacturer,
                         appearance, appearance_name, services, service_names,
                         apple_continuity_type,
                         wigle_first_seen, wigle_last_seen, wigle_ssid, wigle_sighting_count,
-                        first_seen_utc, last_seen_utc, max_rssi_dbm, obs_count)
-                   VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?,?, ?,?,?,?)
+                        first_seen_utc, last_seen_utc, max_rssi_dbm, obs_count, device_type)
+                   VALUES (?,?,?,?,?, ?,?,?,?,?, ?,?,?,?, ?,?,?,?,?)
                    ON CONFLICT(address) DO UPDATE SET
                        name                  = COALESCE(excluded.name, bt_devices.name),
                        manufacturer          = COALESCE(excluded.manufacturer, bt_devices.manufacturer),
@@ -579,6 +727,7 @@ def process_esp32_ble(
                        wigle_ssid            = COALESCE(excluded.wigle_ssid, bt_devices.wigle_ssid),
                        wigle_sighting_count  = COALESCE(excluded.wigle_sighting_count,
                                                          bt_devices.wigle_sighting_count),
+                       device_type           = COALESCE(excluded.device_type, bt_devices.device_type),
                        last_seen_utc         = MAX(bt_devices.last_seen_utc, excluded.last_seen_utc),
                        first_seen_utc        = MIN(bt_devices.first_seen_utc, excluded.first_seen_utc),
                        max_rssi_dbm          = MAX(bt_devices.max_rssi_dbm, excluded.max_rssi_dbm),
@@ -597,6 +746,7 @@ def process_esp32_ble(
                     d["first_seen"], d["last_seen"],
                     d["max_rssi"] if d["max_rssi"] > -999 else None,
                     d["obs_count"],
+                    device_type,
                 ),
             )
         db.commit()
@@ -631,84 +781,231 @@ def process_esp32_ble(
     return obs_count
 
 # ── Process WiFi (Kismet SQLite DB) ───────────────────────────────────
-def process_kismet(db: sqlite3.Connection, session_id: str, wifi_dir: Path) -> int:
+def process_kismet(db: sqlite3.Connection, session_id: str, wifi_dir: Path,
+                   wigle_api_key: str | None = None, online: bool = True, verbose: bool = False) -> int:
     kismet_files = list(wifi_dir.glob("Kismet-*.kismet"))
     if not kismet_files:
         print("  [wifi] No Kismet DB files found — skipping")
         return 0
-    
+
     print(f"  [wifi] Found {len(kismet_files)} .kismet SQLite file(s)...")
     obs_count = 0
+    ap_cache: dict = {}    # bssid → aggregated AP data
+    client_cache: dict = {}  # mac → aggregated client data
 
     for kf in kismet_files:
         try:
-            # Connect to the Kismet capture DB as a read-only client
-            with sqlite3.connect(f"file:{kf}?mode=ro", uri=True) as kdb:
+            with sqlite3.connect(str(kf)) as kdb:
                 kdb.row_factory = sqlite3.Row
-                
-                # 1️⃣ Access Points (device_type=1 in Kismet)
-                for ap in kdb.execute("""
-                    SELECT bssid, ssid, encryption, channel, max_signal, first_seen, last_seen, num_pkts
-                    FROM devices WHERE device_type=1
-                """):
-                    db.execute("""
-                        INSERT OR REPLACE INTO wifi_aps 
-                        (bssid, ssid, encryption, channel, max_signal_dbm, first_seen_utc, last_seen_utc, obs_count)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        ap["bssid"], 
-                        ap["ssid"], 
-                        ap["encryption"], 
-                        ap["channel"], 
-                        ap["max_signal"], 
-                        ap["first_seen"], 
-                        ap["last_seen"], 
-                        ap["num_pkts"]
-                    ))
 
-                # 2️⃣ WiFi Clients (device_type=2 in Kismet)
-                for cli in kdb.execute("""
-                    SELECT bssid, ssid, first_seen, last_seen, num_pkts
-                    FROM devices WHERE device_type=2
+                # ── 1️⃣ APs: Parse Kismet devices table (real schema) ──
+                for row in kdb.execute("""
+                    SELECT devmac, strongest_signal, first_time, last_time, type, device
+                    FROM devices
                 """):
-                    db.execute("""
-                        INSERT OR REPLACE INTO wifi_clients 
-                        (mac, probe_ssid, first_seen_utc, last_seen_utc, obs_count)
-                        VALUES (?, ?, ?, ?, ?)
-                    """, (
-                        cli["bssid"], 
-                        cli["ssid"] or "PROBE_REQUEST", 
-                        cli["first_seen"], 
-                        cli["last_seen"], 
-                        cli["num_pkts"]
-                    ))
+                    devmac, signal, first_time, last_time, dev_type, device_blob = row
 
-                # 3️⃣ WiFi Observations (packets table)
-                # Kismet's packets table is large. We cap at 50k per run to avoid blocking.
-                for obs in kdb.execute("""
-                    SELECT time, bssid, signal
+                    # Decode the device BLOB (JSON)
+                    try:
+                        d = json.loads(device_blob)
+                    except (json.JSONDecodeError, TypeError):
+                        continue
+
+                    # Skip non-APs
+                    if "AP" not in (dev_type or ""):
+                        continue
+
+                    bssid = devmac.upper()
+                    dot11 = d.get("dot11.device", {})
+                    ssid_map = dot11.get("dot11.device.advertised_ssid_map", [])
+
+                    # Primary SSID is the first (most recent) advertised
+                    if ssid_map:
+                        ssid = ssid_map[0].get("dot11.advertisedssid.ssid", "")
+                        encryption = ssid_map[0].get("dot11.advertisedssid.crypt_string", "")
+                        channel_str = ssid_map[0].get("dot11.advertisedssid.channel", "")
+                    else:
+                        ssid = ""
+                        encryption = ""
+                        channel_str = d.get("kismet.device.base.channel", "")
+
+                    # Parse channel (handle formats like "1", "36VHT80")
+                    channel = None
+                    try:
+                        channel = int(channel_str.split("V")[0]) if channel_str else None
+                    except (ValueError, AttributeError):
+                        pass
+
+                    # Get manufacturer from device BLOB
+                    manuf = d.get("kismet.device.base.manuf")
+
+                    # Convert epoch to ISO string
+                    try:
+                        first_seen = datetime.fromtimestamp(first_time, tz=timezone.utc).isoformat()
+                        last_seen = datetime.fromtimestamp(last_time, tz=timezone.utc).isoformat()
+                    except (TypeError, OSError, ValueError):
+                        first_seen = None
+                        last_seen = None
+
+                    if bssid not in ap_cache:
+                        ap_cache[bssid] = {
+                            "ssid": ssid,
+                            "encryption": encryption,
+                            "channel": channel,
+                            "manufacturer": manuf,
+                            "first_seen": first_seen,
+                            "last_seen": last_seen,
+                            "max_rssi": signal if signal is not None else -999,
+                        }
+                    else:
+                        ap = ap_cache[bssid]
+                        if signal is not None and signal > ap["max_rssi"]:
+                            ap["max_rssi"] = signal
+                        if first_seen and (not ap["first_seen"] or first_seen < ap["first_seen"]):
+                            ap["first_seen"] = first_seen
+                        if last_seen and (not ap["last_seen"] or last_seen > ap["last_seen"]):
+                            ap["last_seen"] = last_seen
+                        # Keep first observed SSID/encryption
+                        if not ap["ssid"] and ssid:
+                            ap["ssid"] = ssid
+                            ap["encryption"] = encryption
+                        if not ap["channel"] and channel:
+                            ap["channel"] = channel
+
+                # ── 2️⃣ Clients: Parse devices table for non-APs ──
+                for row in kdb.execute("""
+                    SELECT devmac, strongest_signal, first_time, last_time, device
+                    FROM devices
+                    WHERE type NOT LIKE '%AP%'
+                """):
+                    devmac, signal, first_time, last_time, device_blob = row
+                    mac = devmac.upper()
+
+                    try:
+                        d = json.loads(device_blob)
+                        manuf = d.get("kismet.device.base.manuf")
+                    except (json.JSONDecodeError, TypeError):
+                        manuf = None
+
+                    try:
+                        first_seen = datetime.fromtimestamp(first_time, tz=timezone.utc).isoformat()
+                        last_seen = datetime.fromtimestamp(last_time, tz=timezone.utc).isoformat()
+                    except (TypeError, OSError, ValueError):
+                        first_seen = None
+                        last_seen = None
+
+                    if mac not in client_cache:
+                        client_cache[mac] = {
+                            "manufacturer": manuf,
+                            "first_seen": first_seen,
+                            "last_seen": last_seen,
+                        }
+                    else:
+                        if first_seen and (not client_cache[mac]["first_seen"] or first_seen < client_cache[mac]["first_seen"]):
+                            client_cache[mac]["first_seen"] = first_seen
+                        if last_seen and (not client_cache[mac]["last_seen"] or last_seen > client_cache[mac]["last_seen"]):
+                            client_cache[mac]["last_seen"] = last_seen
+
+                # ── 3️⃣ Observations: Real packets table (actual columns) ──
+                for row in kdb.execute("""
+                    SELECT ts_sec, ts_usec, sourcemac, signal
                     FROM packets LIMIT 50000
                 """):
-                    db.execute("""
-                        INSERT INTO wifi_obs (session_id, timestamp_utc, bssid, signal_dbm)
-                        VALUES (?, ?, ?, ?)
-                    """, (
-                        session_id, 
-                        obs["time"], 
-                        obs["bssid"], 
-                        obs["signal"]
-                    ))
-                    obs_count += 1
-                    
-            db.commit()
-            print(f"  [wifi] ✅ {kf.name} parsed successfully")
-            
-        except sqlite3.DatabaseError as e:
-            print(f"  [wifi] ⚠️ Corrupted or locked Kismet DB: {kf.name} ({e})")
-        except Exception as e:
-            print(f"  [wifi] ⚠️ Unexpected error parsing {kf.name}: {e}")
+                    ts_sec, ts_usec, sourcemac, signal_dbm = row
+                    try:
+                        ts = datetime.fromtimestamp(ts_sec, tz=timezone.utc).isoformat()
+                    except (TypeError, OSError, ValueError):
+                        ts = None
+                    if ts:
+                        db.execute(
+                            """INSERT INTO wifi_obs (session_id, timestamp_utc, bssid, signal_dbm)
+                               VALUES (?, ?, ?, ?)""",
+                            (session_id, ts, sourcemac.upper() if sourcemac else None, signal_dbm)
+                        )
+                        obs_count += 1
 
-    print(f"  [wifi] Done. ~{obs_count} observations + AP/Client stats written.")
+        except sqlite3.DatabaseError as e:
+            print(f"  [wifi] ⚠️ Kismet DB error in {kf.name}: {e}")
+        except Exception as e:
+            print(f"  [wifi] ⚠️ Unexpected error in {kf.name}: {e}")
+
+    # ── Enrich and upsert APs ──
+    if online and ap_cache and wigle_api_key:
+        print(f"  [wifi] Enriching {len(ap_cache)} APs (OUI + Wigle)…")
+    for i, (bssid, ap) in enumerate(ap_cache.items(), 1):
+        if verbose or (i % 5 == 0):
+            print(f"  [wifi] AP {i}/{len(ap_cache)}: {bssid}")
+
+        # OUI lookup
+        if not ap.get("manufacturer"):
+            ap["manufacturer"] = get_manufacturer(db, bssid, mfg_id=None, verbose=verbose)
+
+        # Wigle lookup
+        wigle = None
+        if online and wigle_api_key:
+            wigle = lookup_wigle_wifi(db, bssid, wigle_api_key, verbose=verbose)
+
+        device_type = classify_device_type(wifi_data=ap)
+
+        db.execute(
+            """INSERT INTO wifi_aps
+                  (bssid, ssid, encryption, channel, max_signal_dbm, first_seen_utc, last_seen_utc,
+                   manufacturer, wigle_lat, wigle_lon, wigle_first_seen, wigle_last_seen,
+                   wigle_sighting_count, device_type, obs_count)
+               VALUES (?,?,?,?,?, ?,?,?, ?,?,?,?, ?,?,1)
+               ON CONFLICT(bssid) DO UPDATE SET
+                   ssid = COALESCE(excluded.ssid, wifi_aps.ssid),
+                   encryption = COALESCE(excluded.encryption, wifi_aps.encryption),
+                   channel = COALESCE(excluded.channel, wifi_aps.channel),
+                   manufacturer = COALESCE(excluded.manufacturer, wifi_aps.manufacturer),
+                   wigle_lat = COALESCE(excluded.wigle_lat, wifi_aps.wigle_lat),
+                   wigle_lon = COALESCE(excluded.wigle_lon, wifi_aps.wigle_lon),
+                   wigle_first_seen = COALESCE(excluded.wigle_first_seen, wifi_aps.wigle_first_seen),
+                   wigle_last_seen = COALESCE(excluded.wigle_last_seen, wifi_aps.wigle_last_seen),
+                   wigle_sighting_count = COALESCE(excluded.wigle_sighting_count, wifi_aps.wigle_sighting_count),
+                   device_type = COALESCE(excluded.device_type, wifi_aps.device_type),
+                   max_signal_dbm = MAX(wifi_aps.max_signal_dbm, excluded.max_signal_dbm),
+                   first_seen_utc = MIN(wifi_aps.first_seen_utc, excluded.first_seen_utc),
+                   last_seen_utc = MAX(wifi_aps.last_seen_utc, excluded.last_seen_utc),
+                   obs_count = wifi_aps.obs_count + excluded.obs_count
+            """,
+            (
+                bssid, ap["ssid"], ap["encryption"], ap["channel"], ap["max_rssi"],
+                ap["first_seen"], ap["last_seen"],
+                ap.get("manufacturer"),
+                wigle.get("wigle_lat") if wigle else None,
+                wigle.get("wigle_lon") if wigle else None,
+                wigle.get("wigle_first_seen") if wigle else None,
+                wigle.get("wigle_last_seen") if wigle else None,
+                wigle.get("wigle_sighting_count") if wigle else None,
+                device_type,
+            )
+        )
+
+    # ── Enrich and upsert Clients ──
+    for mac, client in client_cache.items():
+        # OUI lookup
+        if not client.get("manufacturer"):
+            client["manufacturer"] = get_manufacturer(db, mac, mfg_id=None, verbose=False)
+
+        device_type = classify_device_type(wifi_data=client)
+
+        db.execute(
+            """INSERT INTO wifi_clients
+                  (mac, manufacturer, device_type, first_seen_utc, last_seen_utc, obs_count)
+               VALUES (?,?,?, ?,?,1)
+               ON CONFLICT(mac) DO UPDATE SET
+                   manufacturer = COALESCE(excluded.manufacturer, wifi_clients.manufacturer),
+                   device_type = COALESCE(excluded.device_type, wifi_clients.device_type),
+                   first_seen_utc = MIN(wifi_clients.first_seen_utc, excluded.first_seen_utc),
+                   last_seen_utc = MAX(wifi_clients.last_seen_utc, excluded.last_seen_utc),
+                   obs_count = wifi_clients.obs_count + excluded.obs_count
+            """,
+            (mac, client.get("manufacturer"), device_type, client["first_seen"], client["last_seen"])
+        )
+
+    db.commit()
+    print(f"  [wifi] {len(ap_cache)} APs, {len(client_cache)} clients, {obs_count} observations")
     return obs_count
 
 # ── Process SDR (rtl_433) ──────────────────────────────────────────────────────
@@ -718,39 +1015,88 @@ def process_rtl433(db: sqlite3.Connection, session_id: str, sdr_dir: Path) -> in
         print("  [sdr] No NDJSON files found — skipping")
         return 0
     obs_count = 0
+    device_cache: dict = {}  # device_key → max rssi/snr
     for ndjson_path in ndjson_files:
         with open(ndjson_path) as f:
             for line in f:
                 line = line.strip()
-                if not line:
-                    continue
+                if not line or line.startswith("{"):
+                    # Skip header lines
+                    if '"enabled"' in line:
+                        continue
                 try:
                     rec = json.loads(line)
                 except json.JSONDecodeError:
                     continue
-                ts         = rec.get("time") or rec.get("timestamp_utc")
-                model      = rec.get("model")
-                freq       = rec.get("freq")
-                protocol   = rec.get("protocol")
+                # Skip non-device records (stats, errors)
+                if "model" not in rec:
+                    continue
+                ts       = rec.get("time") or rec.get("timestamp_utc")
+                model    = rec.get("model")
+                freq     = rec.get("freq")
+                protocol = rec.get("protocol")
+                rssi     = rec.get("rssi")
+                snr      = rec.get("snr")
                 device_key = f"{model}_{rec.get('id', 'unknown')}"
-                db.execute(
-                    """INSERT OR IGNORE INTO rf_devices
-                           (device_id, model, protocol, frequency_mhz,
-                            first_seen_utc, last_seen_utc, obs_count)
-                       VALUES (?,?,?,?,?,?,0)""",
-                    (device_key, model, str(protocol) if protocol else None, freq, ts, ts),
-                )
-                db.execute(
-                    "UPDATE rf_devices SET last_seen_utc=?,obs_count=obs_count+1 WHERE device_id=?",
-                    (ts, device_key),
-                )
+
+                # Track max signal levels in cache
+                if device_key not in device_cache:
+                    device_cache[device_key] = {
+                        "max_rssi": rssi if rssi is not None else -999,
+                        "max_snr": snr if snr is not None else -999,
+                        "first_seen": ts,
+                        "last_seen": ts,
+                    }
+                else:
+                    d = device_cache[device_key]
+                    if rssi is not None and rssi > d["max_rssi"]:
+                        d["max_rssi"] = rssi
+                    if snr is not None and snr > d["max_snr"]:
+                        d["max_snr"] = snr
+                    if ts and ts > d["last_seen"]:
+                        d["last_seen"] = ts
+
                 db.execute(
                     "INSERT INTO rf_obs (session_id,timestamp_utc,device_id,raw_json) VALUES(?,?,?,?)",
                     (session_id, ts, device_key, line),
                 )
                 obs_count += 1
+
+    # Upsert devices with aggregated signal levels
+    for device_key, d in device_cache.items():
+        parts = device_key.rsplit("_", 1)
+        model = parts[0] if parts else device_key
+        device_id = device_key
+        protocol = None
+        freq = None
+
+        # Try to extract protocol/freq from one of the observations (all have same values per device)
+        # This is a limitation — we don't track per-device metadata, just aggregate signals
+
+        device_type = classify_device_type(rf_data={"model": model})
+
+        db.execute(
+            """INSERT INTO rf_devices
+                  (device_id, model, protocol, frequency_mhz, first_seen_utc, last_seen_utc,
+                   max_rssi_dbm, max_snr_db, device_type, obs_count)
+               VALUES (?,?,?,?,?, ?,?, ?,?,1)
+               ON CONFLICT(device_id) DO UPDATE SET
+                   max_rssi_dbm = MAX(rf_devices.max_rssi_dbm, excluded.max_rssi_dbm),
+                   max_snr_db = MAX(rf_devices.max_snr_db, excluded.max_snr_db),
+                   device_type = COALESCE(excluded.device_type, rf_devices.device_type),
+                   first_seen_utc = MIN(rf_devices.first_seen_utc, excluded.first_seen_utc),
+                   last_seen_utc = MAX(rf_devices.last_seen_utc, excluded.last_seen_utc),
+                   obs_count = rf_devices.obs_count + excluded.obs_count
+            """,
+            (device_id, model, protocol, freq,
+             d["first_seen"], d["last_seen"],
+             d["max_rssi"] if d["max_rssi"] > -999 else None,
+             d["max_snr"] if d["max_snr"] > -999 else None,
+             device_type)
+        )
+
     db.commit()
-    print(f"  [sdr] {obs_count} RF observations")
+    print(f"  [sdr] {len(device_cache)} RF devices, {obs_count} observations")
     return obs_count
 
 # ── Session loader ─────────────────────────────────────────────────────────────
@@ -843,7 +1189,12 @@ def main():
             if existing > 0:
                 print(f"  Already processed ({existing} records) — use --all to re-run")
                 continue
-        wifi_obs = process_kismet(db, session_id, session_dir / "wifi")
+        wifi_obs = process_kismet(
+            db, session_id, session_dir / "wifi",
+            wigle_api_key=wigle_key,
+            online=not args.offline,
+            verbose=args.verbose,
+        )
         totals["wifi_obs"] += wifi_obs
         totals["sdr"]     += process_rtl433(db, session_id, session_dir / "sdr")
         totals["ble_obs"] += process_esp32_ble(
