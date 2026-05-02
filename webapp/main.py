@@ -68,6 +68,42 @@ async def get_devices(
     limit = min(int(limit), 1000)
     offset = max(int(offset), 0)
 
+    # Table-specific column mappings
+    table_schemas = {
+        "bt_devices": {
+            "primary_key": "address",
+            "signal_column": "max_rssi_dbm",
+            "vendor_column": "manufacturer",
+            "first_seen": "first_seen_utc",
+            "last_seen": "last_seen_utc",
+        },
+        "wifi_aps": {
+            "primary_key": "bssid",
+            "signal_column": "max_signal_dbm",
+            "vendor_column": None,  # no vendor column
+            "first_seen": "first_seen_utc",
+            "last_seen": "last_seen_utc",
+        },
+        "wifi_clients": {
+            "primary_key": "mac",
+            "signal_column": None,  # no signal column
+            "vendor_column": None,
+            "first_seen": "first_seen_utc",
+            "last_seen": "last_seen_utc",
+        },
+        "rf_devices": {
+            "primary_key": "device_id",
+            "signal_column": None,
+            "vendor_column": None,
+            "first_seen": "first_seen_utc",
+            "last_seen": "last_seen_utc",
+        },
+    }
+
+    schema = table_schemas.get(table)
+    if not schema:
+        return {"error": f"Unknown table schema: {table}"}
+
     try:
         with sqlite3.connect(str(DB_PATH)) as db:
             db.row_factory = sqlite3.Row
@@ -76,26 +112,35 @@ async def get_devices(
             conditions = []
             params = []
 
-            if vendor:
-                conditions.append("manufacturer LIKE ?")
+            # Vendor filter (only if table has vendor column)
+            if vendor and schema["vendor_column"]:
+                conditions.append(f"{schema['vendor_column']} LIKE ?")
                 params.append(f"%{vendor}%")
 
-            if rssi is not None:
+            # RSSI filter (only if table has signal column)
+            if rssi is not None and schema["signal_column"]:
                 try:
                     rssi = float(rssi)
-                    conditions.append("max_rssi_dbm <= ?")
+                    conditions.append(f"{schema['signal_column']} <= ?")
                     params.append(rssi)
                 except ValueError:
                     pass
 
+            # Date filter (works on all tables)
             if date:
-                conditions.append("first_seen_utc >= ?")
+                conditions.append(f"{schema['first_seen']} >= ?")
                 params.append(f"{date} 00:00:00")
 
             if conditions:
                 query += " WHERE " + " AND ".join(conditions)
 
-            query += " ORDER BY max_rssi_dbm DESC LIMIT ? OFFSET ?"
+            # Sort by signal if available, otherwise by last seen
+            if schema["signal_column"]:
+                query += f" ORDER BY {schema['signal_column']} DESC"
+            else:
+                query += f" ORDER BY {schema['last_seen']} DESC"
+
+            query += " LIMIT ? OFFSET ?"
             params.extend([limit, offset])
 
             rows = db.execute(query, params).fetchall()

@@ -30,7 +30,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadDevices();
     });
 
+    // Update filter availability when table changes
+    document.getElementById('table-selector').addEventListener('change', updateFilterAvailability);
+
     // Auto-load initial data
+    updateFilterAvailability();
     await loadDevices();
 });
 
@@ -115,4 +119,50 @@ function escapeHtml(text) {
         "'": '&#039;'
     };
     return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+function updateFilterAvailability() {
+    const table = document.getElementById('table-selector').value;
+
+    // Define which filters are available for each table
+    const filterAvailability = {
+        bt_devices: {
+            vendor: true,   // has manufacturer column
+            rssi: true,     // has max_rssi_dbm
+            date: true
+        },
+        wifi_aps: {
+            vendor: false,  // no manufacturer column
+            rssi: true,     // has max_signal_dbm
+            date: true
+        },
+        wifi_clients: {
+            vendor: false,  // no manufacturer
+            rssi: false,    // no signal column
+            date: true
+        },
+        rf_devices: {
+            vendor: false,  // no vendor
+            rssi: false,    // no signal column
+            date: true
+        }
+    };
+
+    const availability = filterAvailability[table] || {};
+    const vendorInput = document.getElementById('vendor-filter');
+    const rssiInput = document.getElementById('signal-filter');
+
+    // Update vendor filter
+    vendorInput.disabled = !availability.vendor;
+    vendorInput.placeholder = availability.vendor ? 'Vendor (e.g., Apple)' : 'Not available for this table';
+
+    // Update RSSI filter
+    rssiInput.disabled = !availability.rssi;
+    rssiInput.placeholder = availability.rssi ? 'Max RSSI (e.g., -60)' : 'Not available for this table';
+
+    // Clear disabled fields
+    if (!availability.vendor) vendorInput.value = '';
+    if (!availability.rssi) rssiInput.value = '';
+
+    console.log(`[JS] Updated filters for ${table}: vendor=${availability.vendor}, rssi=${availability.rssi}`);
 }
