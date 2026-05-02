@@ -581,6 +581,41 @@ start_sdr_collector() {
     echo "[sdr] supervisor PID ${CHILD_PIDS[-1]}"
 }
 
+# ── Wideband SDR collector (600-6000 MHz spectrum scanner) ──────────────────
+launch_wideband_scanner() {
+    local sdr_out="${SESSION_DIR}/sdr"
+    mkdir -p "${sdr_out}"
+    local scanner_script="${SCRIPT_DIR}/processing/rtl_wideband.py"
+    exec python3 "${scanner_script}" \
+        "${sdr_out}" \
+        "${WIDEBAND_FREQ_START_MHZ:-600}" \
+        "${WIDEBAND_FREQ_END_MHZ:-6000}" \
+        "${WIDEBAND_SCAN_STEP_MHZ:-1}" \
+        "${WIDEBAND_SCAN_TIME:-10}" \
+        "${WIDEBAND_LOCKUP_TIME:-30}" \
+        "${WIDEBAND_PEAK_THRESHOLD:--40}"
+}
+
+start_wideband_collector() {
+    if [[ "${ENABLE_WIDEBAND_SDR:-false}" != "true" ]]; then
+        echo "[wideband] Disabled in config — skipping"
+        return
+    fi
+    if ! lsusb | grep -qE "RTL283[28]|0bda:283[28]"; then
+        echo "[wideband] WARNING: RTL-SDR not detected — skipping"
+        return
+    fi
+    if ! command -v rtl_power &>/dev/null; then
+        echo "[wideband] ERROR: rtl_power not found — skipping"
+        return
+    fi
+    echo "[wideband] Starting spectrum scanner (under supervisor)"
+    supervise_collector wideband launch_wideband_scanner &
+    CHILD_PIDS+=($!)
+    update_manifest sdr true
+    echo "[wideband] supervisor PID ${CHILD_PIDS[-1]}"
+}
+
 # ── ESP32 BLE collector ────────────────────────────────────────────────────────
 launch_esp32_reader() {
     local port="${ESP32_DEVICE:-}"
@@ -680,6 +715,7 @@ echo "[wardrive] Starting collectors with auto-restart supervisors…"
 start_gps_collector
 start_wifi_collector
 start_sdr_collector
+start_wideband_collector
 start_esp32_collector
 
 if [[ ${#CHILD_PIDS[@]} -eq 0 ]]; then

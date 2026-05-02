@@ -7,6 +7,7 @@ Three independent collectors run in parallel; raw data is immutable and enrichme
 |-----------|----------|------|
 | Kismet    | WiFi adapter (monitor mode) | 802.11 APs + clients |
 | rtl_433   | RTL-SDR dongle | 433/915 MHz ISM devices |
+| Wideband SDR | RTL-SDR dongle | 600-6000 MHz spectrum scans + peak recordings |
 | ESP32 BLE | ESP32 DevKit via USB | Bluetooth LE advertisements |
 
 ---
@@ -127,9 +128,21 @@ Edit `config/wardrive.conf`:
 
 ```bash
 # Enable/disable each collector
-ENABLE_WIFI=false      # requires Kismet + monitor-mode adapter
-ENABLE_SDR=false       # requires RTL-SDR dongle
-ENABLE_ESP32=true      # requires flashed ESP32 on USB
+ENABLE_WIFI=false           # requires Kismet + monitor-mode adapter
+ENABLE_SDR=false            # requires RTL-SDR dongle (narrow-band: 433/915 MHz)
+ENABLE_WIDEBAND_SDR=false   # requires RTL-SDR dongle (wide-band: 600-6000 MHz)
+ENABLE_ESP32=true           # requires flashed ESP32 on USB
+
+# SDR options (narrow-band)
+SDR_FREQUENCY_MHZ="433.92"  # ISM band center frequency
+
+# Wideband SDR options (experimental)
+WIDEBAND_FREQ_START_MHZ=600      # scan start
+WIDEBAND_FREQ_END_MHZ=6000       # scan end
+WIDEBAND_SCAN_STEP_MHZ=1         # frequency resolution
+WIDEBAND_SCAN_TIME=10            # seconds per scan
+WIDEBAND_LOCKUP_TIME=30          # seconds to record interesting signals
+WIDEBAND_PEAK_THRESHOLD=-40      # dBm threshold for "interesting"
 
 # Serial port — leave blank for auto-detect
 ESP32_DEVICE=""        # or "/dev/ttyUSB0" to be explicit
@@ -153,7 +166,11 @@ Press **Ctrl-C** to stop all collectors cleanly. Session data is in:
 capture/raw/<timestamp>_wardrive/
 ├── manifest.json          # session metadata
 ├── wifi/                  # Kismet output
-├── sdr/                   # rtl_433 NDJSON
+├── sdr/
+│   ├── rtl433.ndjson     # narrow-band ISM devices (if rtl_433 enabled)
+│   ├── scan_*.csv        # spectrum scans (if wideband enabled)
+│   ├── peaks_*.json      # detected peaks log (if wideband enabled)
+│   └── lockup_*.wav      # recorded signals from peaks (if wideband enabled)
 └── bt/
     └── esp32_ble.ndjson   # BLE observations (one JSON object per line)
 ```
@@ -285,6 +302,92 @@ Schema version 1. BLE tables are additive — existing WiFi/SDR data is unaffect
 | `oui_lookup` | MAC OUI prefix → organization (shared by WiFi + BLE) |
 
 `lat` / `lon` columns exist in all obs tables and are `NULL` until GPS integration.
+
+---
+
+## Quick Start: Wideband Spectrum Scanning
+
+To search for signals across 600-6000 MHz with your omni antenna:
+
+```bash
+# 1. Enable wideband scanner in config
+vi config/wardrive.conf
+# Set: ENABLE_SDR=false
+# Set: ENABLE_WIDEBAND_SDR=true
+
+# 2. Optionally adjust scan parameters (default: 600-6000 MHz, 1 MHz steps, 10 sec scans)
+# WIDEBAND_SCAN_STEP_MHZ=5       # faster scans (5 MHz resolution)
+# WIDEBAND_PEAK_THRESHOLD=-35    # find weaker signals (-35 dBm vs default -40)
+
+# 3. Start capture session
+sudo bash wardrive.sh
+
+# 4. While running, in another terminal:
+tail -f capture/logs/*.log        # watch scan progress
+python3 processing/view_scans.py capture/raw/*/sdr/scan_*.csv  # visualize live
+
+# 5. After session, analyze results:
+ls -lh capture/raw/<session>/sdr/   # see all scans and recordings
+sqlite3 processing/wardrive.db "SELECT * FROM sessions ORDER BY started_at_utc DESC LIMIT 1;"
+```
+
+---
+
+## Wideband SDR Scanner
+
+The optional wideband SDR collector (`ENABLE_WIDEBAND_SDR=true`) runs a continuous spectrum reconnaissance loop:
+
+1. **Scan phase:** `rtl_power` sweeps 600-6000 MHz (configurable range) in 1 MHz steps (configurable) for 10 seconds
+2. **Peak detection:** Identifies frequencies with power above the threshold (default -40 dBm)
+3. **Lock-on phase:** Records the top 5 peaks for 30 seconds each using `rtl_fm`
+4. **Loop:** Waits 5 seconds and rescans
+
+**Output files:**
+- `scan_*.csv` — Full spectrum data from each scan pass (rtl_power format)
+- `peaks_*.json` — Top 20 frequencies per scan with power levels
+- `lockup_*.wav` — Audio/IQ recordings from each locked frequency
+
+**Important:** Only one SDR collector can use the RTL-SDR at a time. Choose:
+- `ENABLE_SDR=true, ENABLE_WIDEBAND_SDR=false` — narrow-band ISM monitoring (default)
+- `ENABLE_SDR=false, ENABLE_WIDEBAND_SDR=true` — wide-band spectrum reconnaissance
+
+**Configuration tuning:**
+```bash
+WIDEBAND_SCAN_STEP_MHZ=1       # 1 MHz = 6000 sweeps; 5 MHz = 1200 sweeps (faster)
+WIDEBAND_SCAN_TIME=10          # 10 sec per scan; increase for cleaner data
+WIDEBAND_PEAK_THRESHOLD=-40    # -40 dBm is aggressive; try -30 or -50
+WIDEBAND_LOCKUP_TIME=30        # 30 sec per peak; increase for longer recordings
+```
+
+**Performance notes:**
+- Narrowing the frequency range (e.g., 600-3000 MHz) significantly speeds up scans
+- Wider step sizes (5-10 MHz) sacrifice granularity for speed
+- Longer scan time produces cleaner spectrum data but delays peak detection
+
+**Viewing scan results:**
+```bash
+# Quick preview of a spectrum scan
+python3 processing/view_scans.py capture/raw/<session>/sdr/scan_*.csv
+
+# View detected peaks
+python3 processing/view_scans.py capture/raw/<session>/sdr/peaks_*.json
+
+# Listen to a locked recording (if audio)
+ffplay capture/raw/<session>/sdr/lockup_*.wav
+```
+
+**Modulation modes:** The scanner currently locks onto signals using wideband FM (`rtl_fm -M wbfm`). To capture other modulation types, you can modify the `launch_wideband_scanner()` function or extend the script:
+- `wbfm` — wideband FM (broadcast radio, FM capture)
+- `nbfm` — narrowband FM (two-way radio, PMR)
+- `am` — amplitude modulation
+- `usb`, `lsb` — single-sideband (amateur radio, SSB)
+- `cw` — Morse code / continuous wave
+- `raw` — raw IQ data (advanced processing)
+
+**Known limitations:**
+- Only records audio (wbfm mode); other modulation schemes may need `rtl_fm -M <mode>` changes
+- Peak detection is simple threshold-based; strong broadband noise may cause false positives
+- Cannot record multiple frequencies in parallel (one RTL-SDR dongle per session)
 
 ---
 
