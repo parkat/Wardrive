@@ -120,9 +120,14 @@ class GpsProvider:
                     # Fix lost — clear position so we don't report stale data
                     self._lat = self._lon = self._alt = None
             elif cls == "SKY":
-                self._sats = sum(
-                    1 for sv in obj.get("satellites", []) if sv.get("used", False)
-                )
+                # Try to get satellite count from detailed list first, fall back to summary field
+                if "satellites" in obj:
+                    self._sats = sum(
+                        1 for sv in obj.get("satellites", []) if sv.get("used", False)
+                    )
+                else:
+                    # Use summary field if detailed satellite list not available
+                    self._sats = obj.get("uSat", 0)
 
     def _run(self) -> None:
         """Background thread: connect to gpsd, stream JSON, reconnect on drop."""

@@ -164,9 +164,11 @@
             </div>
             <div class="nav-links">
                 <a href="/" class="nav-link">Explorer</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/live" class="nav-link">Live</a>
                 <a href="/map" class="nav-link">Map</a>
                 <a href="/analytics" class="nav-link active">Analytics</a>
+                <a href="/report" class="nav-link">Report</a>
             </div>
             <div class="status-section">
                 <div id="collector-panel" class="collector-panel"><!-- populated by collectors.js --></div>
@@ -294,11 +296,13 @@
             scales: {
                 x: {
                     ticks: { color: '#6b7280', font: { family: "'JetBrains Mono', monospace" } },
-                    grid: { color: '#2d3748', drawBorder: false }
+                    grid: { color: '#2d3748' },
+                    border: { display: false }
                 },
                 y: {
                     ticks: { color: '#6b7280', font: { family: "'JetBrains Mono', monospace" } },
-                    grid: { color: '#2d3748', drawBorder: false }
+                    grid: { color: '#2d3748' },
+                    border: { display: false }
                 }
             }
         };
@@ -326,12 +330,12 @@
         }
 
         function renderCharts(data) {
-            renderBleSignalChart(data.signal_strength.ble);
-            renderWifiSignalChart(data.signal_strength.wifi);
-            renderDeviceTypeChart(data.device_types);
-            renderHourlyDiscoveryChart(data.hourly_discovery);
-            renderManufacturersChart(data.top_manufacturers);
-            renderSessionComparisonChart(data.session_comparison);
+            renderBleSignalChart((data.signal_strength || {}).ble || []);
+            renderWifiSignalChart((data.signal_strength || {}).wifi || []);
+            renderDeviceTypeChart(data.device_types || []);
+            renderHourlyDiscoveryChart(data.hourly_discovery || []);
+            renderManufacturersChart(data.top_manufacturers || []);
+            renderSessionComparisonChart(data.session_comparison || { ble_per_session: [], wifi_per_session: [], avg_ble: 0, avg_wifi: 0 });
             updateSummaryStats(data);
         }
 
@@ -560,11 +564,15 @@
         }
 
         function updateSummaryStats(data) {
-            document.getElementById('stat-avg-ble').textContent = data.session_comparison.avg_ble;
-            document.getElementById('stat-avg-wifi').textContent = data.session_comparison.avg_wifi;
-            document.getElementById('stat-device-types').textContent = data.device_types.length;
+            const sc = data.session_comparison || {};
+            const mfgs = data.top_manufacturers || [];
+            const types = data.device_types || [];
 
-            const topMfg = data.top_manufacturers.length > 0 ? data.top_manufacturers[0].manufacturer : 'N/A';
+            document.getElementById('stat-avg-ble').textContent = sc.avg_ble ?? '—';
+            document.getElementById('stat-avg-wifi').textContent = sc.avg_wifi ?? '—';
+            document.getElementById('stat-device-types').textContent = types.length;
+
+            const topMfg = mfgs.length > 0 ? (mfgs[0].manufacturer || 'Unknown') : 'N/A';
             document.getElementById('stat-top-mfg').textContent = topMfg.substring(0, 20);
         }
 
@@ -579,13 +587,11 @@
             container.innerHTML = `<div class="error-message">Error: ${message}</div>`;
         }
 
-        // Load analytics on page load
+        // Load analytics on page load and auto-refresh every 30 seconds
         document.addEventListener('DOMContentLoaded', () => {
             loadAnalytics();
+            setInterval(loadAnalytics, 30000);
         });
-
-        // Auto-refresh every 30 seconds
-        setInterval(loadAnalytics, 30000);
     </script>
     <script src="/static/collectors.js"></script>
 </body>

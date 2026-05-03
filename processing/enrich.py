@@ -19,7 +19,9 @@ Raw data is never modified. This script is safe to re-run.
 Schema version: 1 (all additions are additive).
 """
 import argparse
+import bisect
 import json
+import math
 import os
 import sqlite3
 import time
@@ -82,6 +84,7 @@ CREATE TABLE IF NOT EXISTS wifi_aps (
     wigle_last_seen       TEXT,
     wigle_sighting_count  INT,
     device_type           TEXT,
+    alpr_source           TEXT,
     obs_count             INT DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS wifi_clients (
@@ -512,10 +515,81 @@ def lookup_wigle_wifi(db: sqlite3.Connection, bssid: str, api_key: str,
     return result
 
 # ═════════════════════════════════════════════════════════════════════════════
+# deflock.me — ALPR camera database (public civil liberties database)
+# ═════════════════════════════════════════════════════════════════════════════
+_deflock_breaker = _CircuitBreaker("deflock")
+
+def _deflock_grid_key(lat: float, lon: float, grid_meters: int = 100) -> str:
+    """Snap lat/lon to ~100m grid cell for cache key."""
+    lat_step = grid_meters / 111_000
+    lon_step = grid_meters / (111_000 * math.cos(math.radians(lat)))
+    snapped_lat = round(round(lat / lat_step) * lat_step, 6)
+    snapped_lon = round(round(lon / lon_step) * lon_step, 6)
+    return f"{snapped_lat:.6f},{snapped_lon:.6f}"
+
+def lookup_deflock_nearby(db: sqlite3.Connection, lat: float, lon: float,
+                          radius_m: int = 150, verbose: bool = False) -> list | None:
+    """
+    Query deflock.me for ALPR cameras near (lat, lon).
+    Returns list of camera dicts or None on miss/error.
+    Caches per ~100m grid cell in enrichment_cache.
+    """
+    if _deflock_breaker.is_open():
+        return None
+
+    cache_key = _deflock_grid_key(lat, lon)
+    hit, cached = _cache_get(db, "deflock", cache_key)
+    if hit:
+        return cached
+
+    url = (
+        f"https://api.deflock.me/v1/cameras"
+        f"?lat={lat}&lon={lon}&radius={radius_m}"
+    )
+    data = _http_get_json(url, label="deflock", breaker=_deflock_breaker, timeout=10)
+
+    result = None
+    if isinstance(data, list):
+        result = data
+    elif isinstance(data, dict):
+        result = data.get("cameras") or data.get("results") or []
+
+    _cache_set(db, "deflock", cache_key, result)
+    if verbose and result:
+        print(f"    deflock: {len(result)} ALPR camera(s) near {cache_key}")
+    return result
+
+# ═════════════════════════════════════════════════════════════════════════════
 # Device type classifier — tags devices by likely function
 # ═════════════════════════════════════════════════════════════════════════════
 CAMERA_UUIDS = {"180a", "1812", "110c"}  # Environmental, HID, A2DP (for some cams)
 CAMERA_OUIS = {"Axis", "Hanwha", "Avigilon", "Dahua", "Hikvision", "Reolink", "Arlo", "Ring", "Nest", "Google", "Wyze", "Tuya", "IQinVision", "Uniview", "NETGEAR"}
+ALPR_SSID_PATTERNS = (
+    # Flock Safety cameras
+    "flock", "flocksafety", "flock-", "flock_",
+    # Motorola Vigilant ALPR
+    "vigilant", "vigilant-", "vigilant_",
+    # Rekor/OpenALPR
+    "rekor", "openalpr", "rekor-", "rekor_",
+    # Genetec AutoVu
+    "autovu", "genetec",
+    # Digital Recognition Network
+    "drn-", "drn_", "recognition",
+    # Generic ALPR/LPR patterns
+    "alpr", "lpr-", "lpr_", "plateread", "plate-read",
+    "traffic-cam", "trafficcam", "anpr", "anpr-",
+    # Enforcement/surveillance systems
+    "enforcer", "enforcement",
+)
+ALPR_OUIS = {
+    "Flock Safety",
+    "Motorola Solutions",
+    "Genetec",
+    "Rekor Systems",
+    "Axis Communications",  # Used in some ALPR setups
+    "Hikvision",            # Used in some ALPR setups
+    "Dahua",                # Used in some ALPR setups
+}
 PHONE_OUIS = {"Apple", "Samsung", "Google", "OnePlus", "Motorola", "HTC", "LG"}
 ROUTER_OUIS = {"Cisco", "Ubiquiti", "Netgear", "TP-Link", "ASUS", "Linksys", "Aruba"}
 IOT_OUIS = {"Espressif", "Realtek", "Mediatek"}
@@ -541,7 +615,7 @@ def classify_device_type(bt_data: dict = None, wifi_data: dict = None, rf_data: 
             return "Camera"
 
         # Check camera OUIs and service UUIDs
-        if any(oui in manufacturer for oui in CAMERA_OUIS) or any(uuid in str(services).lower() for uuid in CAMERA_UUIDS):
+        if (manufacturer and any(oui in manufacturer for oui in CAMERA_OUIS)) or any(uuid in str(services).lower() for uuid in CAMERA_UUIDS):
             return "Camera"
 
         if manufacturer == "Apple":
@@ -553,10 +627,10 @@ def classify_device_type(bt_data: dict = None, wifi_data: dict = None, rf_data: 
         if "headphones" in appearance_name or "earphones" in appearance_name or any("a2dp" in str(s).lower() for s in (services or [])):
             return "Headphones"
 
-        if any(oui in manufacturer for oui in PHONE_OUIS):
+        if manufacturer and any(oui in manufacturer for oui in PHONE_OUIS):
             return "Phone"
 
-        if any(oui in manufacturer for oui in ("Ruuvi", "Nordic", "STMicroelectronics")):
+        if manufacturer and any(oui in manufacturer for oui in ("Ruuvi", "Nordic", "STMicroelectronics")):
             return "IoT sensor"
 
         return "Unknown"
@@ -566,19 +640,27 @@ def classify_device_type(bt_data: dict = None, wifi_data: dict = None, rf_data: 
         ssid = (wifi_data.get("ssid") or "").lower()
         manufacturer = wifi_data.get("manufacturer", "")
 
-        if any(pattern in ssid for pattern in ("flock", "ipc", "cam", "nvr", "axis", "hikvision", "dahua", "reolink", "arlo", "wyze")):
+        # ALPR check first — more specific than generic camera
+        if any(p in ssid for p in ALPR_SSID_PATTERNS):
+            if "flock" in ssid or "flocksafety" in ssid:
+                return "Flock Camera"
+            return "ALPR"
+        if manufacturer and any(oui in manufacturer for oui in ALPR_OUIS):
+            return "ALPR"
+
+        if any(pattern in ssid for pattern in ("ipc", "cam", "nvr", "axis", "hikvision", "dahua", "reolink", "arlo", "wyze")):
             return "Camera"
 
         if any(pattern in ssid for pattern in ("iphone", "galaxy", "android", "hotspot", "mobile")):
             return "Mobile hotspot"
 
-        if any(oui in manufacturer for oui in CAMERA_OUIS):
+        if manufacturer and any(oui in manufacturer for oui in CAMERA_OUIS):
             return "Camera"
 
-        if any(oui in manufacturer for oui in ROUTER_OUIS):
+        if manufacturer and any(oui in manufacturer for oui in ROUTER_OUIS):
             return "Router/AP"
 
-        if any(oui in manufacturer for oui in IOT_OUIS):
+        if manufacturer and any(oui in manufacturer for oui in IOT_OUIS):
             return "IoT device"
 
         return "Unknown"
@@ -593,6 +675,116 @@ def classify_device_type(bt_data: dict = None, wifi_data: dict = None, rf_data: 
         return "Unknown"
 
     return "Unknown"
+
+# ═════════════════════════════════════════════════════════════════════════════
+# GPS timeline builder (for WiFi/RF observation interpolation)
+# ═════════════════════════════════════════════════════════════════════════════
+def _load_gps_timeline(gps_log_path: Path) -> list:
+    """Parse NMEA log, return list of {ts_isoformat, lat, lon} dicts sorted by time."""
+    timeline = []
+    if not gps_log_path.exists():
+        return timeline
+
+    def nmea_to_dd(coord: str, hemi: str) -> float | None:
+        """Convert NMEA coord (DDMM.MMMM) to decimal degrees."""
+        if not coord:
+            return None
+        try:
+            dot = coord.index(".")
+            deg = int(coord[:dot-2])
+            minutes = float(coord[dot-2:])
+            dd = deg + minutes / 60.0
+            if hemi in ("S", "W"):
+                dd = -dd
+            return dd
+        except (ValueError, IndexError):
+            return None
+
+    with open(gps_log_path, errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if not (line.startswith("$GPRMC") or line.startswith("$GNRMC")):
+                continue
+            parts = line.split(",")
+            if len(parts) < 7 or parts[2] != "A":  # A = active/valid
+                continue
+            try:
+                # GPRMC: $GPRMC,hhmmss.ss,status,lat,N/S,lon,E/W,speed,course,ddmmyy,...
+                time_str = parts[1]  # hhmmss.ss
+                lat_str = parts[3]
+                lat_hemi = parts[4]
+                lon_str = parts[5]
+                lon_hemi = parts[6].split("*")[0]  # before checksum
+                date_str = parts[9]  # ddmmyy
+
+                if not all([time_str, lat_str, lon_str, date_str]):
+                    continue
+
+                lat = nmea_to_dd(lat_str, lat_hemi)
+                lon = nmea_to_dd(lon_str, lon_hemi)
+                if lat is None or lon is None:
+                    continue
+
+                # Parse date/time into ISO format
+                try:
+                    day, month, year = int(date_str[0:2]), int(date_str[2:4]), int(date_str[4:6])
+                    year += 2000
+                    hour, minute = int(time_str[0:2]), int(time_str[2:4])
+                    second = float(time_str[4:])
+                    dt = datetime(year, month, day, hour, minute, int(second),
+                                 int((second % 1) * 1e6), tzinfo=timezone.utc)
+                    ts = dt.isoformat()
+                    timeline.append({"ts": ts, "lat": round(lat, 7), "lon": round(lon, 7)})
+                except (ValueError, IndexError):
+                    continue
+            except Exception:
+                continue
+
+    timeline.sort(key=lambda x: x["ts"])
+    return timeline
+
+
+# Pre-built parallel list of ISO timestamp strings for binary search.
+# Populated by _build_gps_index once per timeline.
+_gps_index_cache: dict[int, list[str]] = {}  # id(timeline) → sorted ts strings
+
+
+def _build_gps_index(timeline: list) -> list[str]:
+    """Return (or cache) the list of ISO timestamp strings for bisect."""
+    key = id(timeline)
+    if key not in _gps_index_cache:
+        _gps_index_cache[key] = [fix["ts"] for fix in timeline]
+    return _gps_index_cache[key]
+
+
+def _find_nearest_gps(timeline: list, target_ts: str) -> dict | None:
+    """Find GPS fix nearest to target_ts using binary search. Returns {lat, lon} or None."""
+    if not timeline or not target_ts:
+        return None
+    try:
+        ts_list = _build_gps_index(timeline)
+        # Normalise to the same ISO format used in the index
+        target_norm = target_ts.replace("Z", "+00:00")
+        idx = bisect.bisect_left(ts_list, target_norm)
+        # Compare the neighbour(s) around the insertion point
+        candidates = []
+        if idx < len(timeline):
+            candidates.append(timeline[idx])
+        if idx > 0:
+            candidates.append(timeline[idx - 1])
+        if not candidates:
+            return None
+        target_dt = datetime.fromisoformat(target_norm)
+        best = min(
+            candidates,
+            key=lambda fix: abs(
+                (target_dt - datetime.fromisoformat(fix["ts"].replace("Z", "+00:00"))).total_seconds()
+            ),
+        )
+        return {"lat": best["lat"], "lon": best["lon"]}
+    except (ValueError, TypeError):
+        return None
+
 
 # ═════════════════════════════════════════════════════════════════════════════
 # BLE session processor
@@ -625,10 +817,18 @@ def process_esp32_ble(
             if not addr or len(addr) < 17:
                 continue
             ts = rec.get("ts")
-            if ts is None or isinstance(ts, (int, float)):
+            if ts is None:
                 continue
+            # Tolerate epoch timestamps written by older firmware/reader versions
+            if isinstance(ts, (int, float)):
+                try:
+                    ts = datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+                except (OSError, OverflowError, ValueError):
+                    continue
             rssi       = rec.get("rssi")
             raw_hex    = rec.get("raw")
+            lat        = rec.get("lat")
+            lon        = rec.get("lon")
             addr_type  = rec.get("addr_type", 1)
             is_rand    = rec.get("rand", 0)
             name       = rec.get("name")
@@ -638,9 +838,9 @@ def process_esp32_ble(
             apple_type = rec.get("apple_type")
             db.execute(
                 """INSERT INTO bt_obs
-                       (session_id, timestamp_utc, address, rssi_dbm, raw_payload)
-                   VALUES (?, ?, ?, ?, ?)""",
-                (session_id, ts, addr, rssi, raw_hex),
+                       (session_id, timestamp_utc, address, rssi_dbm, raw_payload, lat, lon)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (session_id, ts, addr, rssi, raw_hex, lat, lon),
             )
             obs_count += 1
             if addr not in device_cache:
@@ -782,7 +982,8 @@ def process_esp32_ble(
 
 # ── Process WiFi (Kismet SQLite DB) ───────────────────────────────────
 def process_kismet(db: sqlite3.Connection, session_id: str, wifi_dir: Path,
-                   wigle_api_key: str | None = None, online: bool = True, verbose: bool = False) -> int:
+                   wigle_api_key: str | None = None, online: bool = True, verbose: bool = False,
+                   gps_timeline: list | None = None) -> int:
     kismet_files = list(wifi_dir.glob("Kismet-*.kismet"))
     if not kismet_files:
         print("  [wifi] No Kismet DB files found — skipping")
@@ -792,6 +993,10 @@ def process_kismet(db: sqlite3.Connection, session_id: str, wifi_dir: Path,
     obs_count = 0
     ap_cache: dict = {}    # bssid → aggregated AP data
     client_cache: dict = {}  # mac → aggregated client data
+
+    # Load GPS timeline if not provided
+    if gps_timeline is None:
+        gps_timeline = []
 
     for kf in kismet_files:
         try:
@@ -917,12 +1122,17 @@ def process_kismet(db: sqlite3.Connection, session_id: str, wifi_dir: Path,
                     except (TypeError, OSError, ValueError):
                         ts = None
                     if ts:
+                        gps = _find_nearest_gps(gps_timeline, ts) if gps_timeline else None
                         db.execute(
-                            """INSERT INTO wifi_obs (session_id, timestamp_utc, bssid, signal_dbm)
-                               VALUES (?, ?, ?, ?)""",
-                            (session_id, ts, sourcemac.upper() if sourcemac else None, signal_dbm)
+                            """INSERT INTO wifi_obs (session_id, timestamp_utc, bssid, signal_dbm, lat, lon)
+                               VALUES (?, ?, ?, ?, ?, ?)""",
+                            (session_id, ts, sourcemac.upper() if sourcemac else None, signal_dbm,
+                             gps["lat"] if gps else None, gps["lon"] if gps else None)
                         )
                         obs_count += 1
+                        # Commit in batches to limit transaction size and avoid OOM
+                        if obs_count % 5000 == 0:
+                            db.commit()
 
         except sqlite3.DatabaseError as e:
             print(f"  [wifi] ⚠️ Kismet DB error in {kf.name}: {e}")
@@ -947,12 +1157,26 @@ def process_kismet(db: sqlite3.Connection, session_id: str, wifi_dir: Path,
 
         device_type = classify_device_type(wifi_data=ap)
 
+        # Determine ALPR source
+        alpr_source = None
+        if device_type == "Flock Camera":
+            alpr_source = "ssid_pattern"
+        elif device_type == "ALPR":
+            ssid_lower = (ap.get("ssid") or "").lower()
+            if any(p in ssid_lower for p in ALPR_SSID_PATTERNS):
+                alpr_source = "ssid_pattern"
+            else:
+                alpr_source = "oui_match"
+
+        # Note: deflock.me API lookup disabled (no public API available)
+        # Future: could add detection via signal clustering or other heuristics
+
         db.execute(
             """INSERT INTO wifi_aps
                   (bssid, ssid, encryption, channel, max_signal_dbm, first_seen_utc, last_seen_utc,
                    manufacturer, wigle_lat, wigle_lon, wigle_first_seen, wigle_last_seen,
-                   wigle_sighting_count, device_type, obs_count)
-               VALUES (?,?,?,?,?, ?,?,?, ?,?,?,?, ?,?,1)
+                   wigle_sighting_count, device_type, alpr_source, obs_count)
+               VALUES (?,?,?,?,?, ?,?,?, ?,?,?,?, ?,?,?,1)
                ON CONFLICT(bssid) DO UPDATE SET
                    ssid = COALESCE(excluded.ssid, wifi_aps.ssid),
                    encryption = COALESCE(excluded.encryption, wifi_aps.encryption),
@@ -964,6 +1188,7 @@ def process_kismet(db: sqlite3.Connection, session_id: str, wifi_dir: Path,
                    wigle_last_seen = COALESCE(excluded.wigle_last_seen, wifi_aps.wigle_last_seen),
                    wigle_sighting_count = COALESCE(excluded.wigle_sighting_count, wifi_aps.wigle_sighting_count),
                    device_type = COALESCE(excluded.device_type, wifi_aps.device_type),
+                   alpr_source = COALESCE(excluded.alpr_source, wifi_aps.alpr_source),
                    max_signal_dbm = MAX(wifi_aps.max_signal_dbm, excluded.max_signal_dbm),
                    first_seen_utc = MIN(wifi_aps.first_seen_utc, excluded.first_seen_utc),
                    last_seen_utc = MAX(wifi_aps.last_seen_utc, excluded.last_seen_utc),
@@ -979,6 +1204,7 @@ def process_kismet(db: sqlite3.Connection, session_id: str, wifi_dir: Path,
                 wigle.get("wigle_last_seen") if wigle else None,
                 wigle.get("wigle_sighting_count") if wigle else None,
                 device_type,
+                alpr_source,
             )
         )
 
@@ -1009,21 +1235,30 @@ def process_kismet(db: sqlite3.Connection, session_id: str, wifi_dir: Path,
     return obs_count
 
 # ── Process SDR (rtl_433) ──────────────────────────────────────────────────────
-def process_rtl433(db: sqlite3.Connection, session_id: str, sdr_dir: Path) -> int:
+def process_rtl433(db: sqlite3.Connection, session_id: str, sdr_dir: Path,
+                   gps_timeline: list | None = None) -> int:
     ndjson_files = list(sdr_dir.glob("*.ndjson"))
     if not ndjson_files:
         print("  [sdr] No NDJSON files found — skipping")
         return 0
     obs_count = 0
     device_cache: dict = {}  # device_key → max rssi/snr
+
+    # Load GPS timeline if not provided
+    if gps_timeline is None:
+        gps_timeline = []
     for ndjson_path in ndjson_files:
         with open(ndjson_path) as f:
             for line in f:
                 line = line.strip()
-                if not line or line.startswith("{"):
-                    # Skip header lines
-                    if '"enabled"' in line:
-                        continue
+                # Skip blank lines and rtl_433 startup/status headers
+                # (e.g. {"enabled":1,...} or {"version":"...","config":...})
+                if not line:
+                    continue
+                if not line.startswith("{"):
+                    continue
+                if '"enabled"' in line or ('"version"' in line and '"config"' in line):
+                    continue
                 try:
                     rec = json.loads(line)
                 except json.JSONDecodeError:
@@ -1031,7 +1266,15 @@ def process_rtl433(db: sqlite3.Connection, session_id: str, sdr_dir: Path) -> in
                 # Skip non-device records (stats, errors)
                 if "model" not in rec:
                     continue
-                ts       = rec.get("time") or rec.get("timestamp_utc")
+                ts_raw   = rec.get("time") or rec.get("timestamp_utc")
+                # Convert timestamp to ISO format if needed (rtl_433 uses "YYYY-MM-DD HH:MM:SS")
+                if ts_raw and isinstance(ts_raw, str) and "T" not in ts_raw:
+                    try:
+                        ts = datetime.fromisoformat(ts_raw.replace(" ", "T")).isoformat() + "Z"
+                    except (ValueError, AttributeError):
+                        ts = ts_raw
+                else:
+                    ts = ts_raw
                 model    = rec.get("model")
                 freq     = rec.get("freq")
                 protocol = rec.get("protocol")
@@ -1039,13 +1282,15 @@ def process_rtl433(db: sqlite3.Connection, session_id: str, sdr_dir: Path) -> in
                 snr      = rec.get("snr")
                 device_key = f"{model}_{rec.get('id', 'unknown')}"
 
-                # Track max signal levels in cache
+                # Track max signal levels and metadata in cache
                 if device_key not in device_cache:
                     device_cache[device_key] = {
                         "max_rssi": rssi if rssi is not None else -999,
                         "max_snr": snr if snr is not None else -999,
                         "first_seen": ts,
                         "last_seen": ts,
+                        "freq": freq,
+                        "protocol": protocol,
                     }
                 else:
                     d = device_cache[device_key]
@@ -1055,10 +1300,16 @@ def process_rtl433(db: sqlite3.Connection, session_id: str, sdr_dir: Path) -> in
                         d["max_snr"] = snr
                     if ts and ts > d["last_seen"]:
                         d["last_seen"] = ts
+                    if freq is not None and d["freq"] is None:
+                        d["freq"] = freq
+                    if protocol is not None and d["protocol"] is None:
+                        d["protocol"] = protocol
 
+                gps = _find_nearest_gps(gps_timeline, ts) if gps_timeline else None
                 db.execute(
-                    "INSERT INTO rf_obs (session_id,timestamp_utc,device_id,raw_json) VALUES(?,?,?,?)",
-                    (session_id, ts, device_key, line),
+                    "INSERT INTO rf_obs (session_id,timestamp_utc,device_id,raw_json,lat,lon) VALUES(?,?,?,?,?,?)",
+                    (session_id, ts, device_key, line,
+                     gps["lat"] if gps else None, gps["lon"] if gps else None),
                 )
                 obs_count += 1
 
@@ -1067,11 +1318,9 @@ def process_rtl433(db: sqlite3.Connection, session_id: str, sdr_dir: Path) -> in
         parts = device_key.rsplit("_", 1)
         model = parts[0] if parts else device_key
         device_id = device_key
-        protocol = None
-        freq = None
-
-        # Try to extract protocol/freq from one of the observations (all have same values per device)
-        # This is a limitation — we don't track per-device metadata, just aggregate signals
+        # Use cached per-device metadata captured during the parse pass
+        protocol = d.get("protocol")
+        freq     = d.get("freq")
 
         device_type = classify_device_type(rf_data={"model": model})
 
@@ -1116,20 +1365,23 @@ def load_session(db: sqlite3.Connection, session_dir: Path) -> str | None:
         """INSERT OR IGNORE INTO sessions
                (session_id, started_at_utc, ended_at_utc, hostname,
                 wifi_enabled, sdr_enabled, esp32_enabled, gps_enabled)
-           VALUES (?,?,?,?,?,?,?,0)""",
+           VALUES (?,?,?,?,?,?,?,?)""",
         (session_id, manifest.get("started_at_utc"), manifest.get("ended_at_utc"),
          manifest.get("hostname"),
-         1 if collectors.get("wifi") else 0,
-         1 if collectors.get("sdr") else 0,
-         1 if collectors.get("esp32") else 0),
+         1 if collectors.get("wifi")  else 0,
+         1 if collectors.get("sdr")   else 0,
+         1 if collectors.get("esp32") else 0,
+         1 if collectors.get("gps")   else 0),
     )
     db.commit()
     return session_id
 
 # ── Wigle key loader ───────────────────────────────────────────────────────────
+_WIGLE_KEY_PLACEHOLDER = "YOUR_WIGLE_API_TOKEN_HERE"
+
 def load_wigle_key(conf_path: Path) -> str | None:
     key = os.environ.get("WIGLE_API_KEY", "").strip()
-    if key:
+    if key and key != _WIGLE_KEY_PLACEHOLDER:
         return key
     if conf_path.exists():
         with open(conf_path) as f:
@@ -1137,7 +1389,7 @@ def load_wigle_key(conf_path: Path) -> str | None:
                 line = line.strip()
                 if line.startswith("WIGLE_API_KEY="):
                     val = line.split("=", 1)[1].strip().strip('"').strip("'")
-                    if val:
+                    if val and val != _WIGLE_KEY_PLACEHOLDER:
                         return val
     return None
 
@@ -1157,6 +1409,11 @@ def main():
     conf_path = Path(__file__).parent.parent / "config" / "wardrive.conf"
     db = sqlite3.connect(db_path)
     db.executescript(SCHEMA_SQL)
+    # Migration: add alpr_source column if not present
+    existing_cols = {row[1] for row in db.execute("PRAGMA table_info(wifi_aps)")}
+    if "alpr_source" not in existing_cols:
+        db.execute("ALTER TABLE wifi_aps ADD COLUMN alpr_source TEXT")
+        db.commit()
     wigle_key = None
     if not args.offline:
         wigle_key = load_wigle_key(conf_path)
@@ -1189,14 +1446,19 @@ def main():
             if existing > 0:
                 print(f"  Already processed ({existing} records) — use --all to re-run")
                 continue
+        # Load GPS timeline for this session
+        gps_timeline = _load_gps_timeline(session_dir / "gps" / "nmea.log")
+        if gps_timeline:
+            print(f"  [gps] Loaded {len(gps_timeline)} GPS fixes")
         wifi_obs = process_kismet(
             db, session_id, session_dir / "wifi",
             wigle_api_key=wigle_key,
             online=not args.offline,
             verbose=args.verbose,
+            gps_timeline=gps_timeline,
         )
         totals["wifi_obs"] += wifi_obs
-        totals["sdr"]     += process_rtl433(db, session_id, session_dir / "sdr")
+        totals["sdr"]     += process_rtl433(db, session_id, session_dir / "sdr", gps_timeline=gps_timeline)
         totals["ble_obs"] += process_esp32_ble(
             db, session_id,
             session_dir / "bt" / "esp32_ble.ndjson",
@@ -1218,6 +1480,10 @@ def main():
     print(f"  Found in Wigle:        {q('SELECT COUNT(*) FROM bt_devices WHERE wigle_sighting_count IS NOT NULL')}")
     print(f"  Public (stable) MAC:   {q('SELECT COUNT(*) FROM bt_devices WHERE is_randomized=0')}")
     print(f"  Enrichment cache:      {q('SELECT COUNT(*) FROM enrichment_cache')} entries")
+    flock_count = q("SELECT COUNT(*) FROM wifi_aps WHERE device_type='Flock Camera'")
+    alpr_count = q("SELECT COUNT(*) FROM wifi_aps WHERE device_type='ALPR'")
+    print(f"  Flock cameras:         {flock_count}")
+    print(f"  ALPR cameras:          {alpr_count}")
     print("=" * 60)
     db.close()
 

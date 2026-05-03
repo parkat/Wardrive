@@ -46,7 +46,7 @@ class WidebandScanner:
     def run_scan(self, scan_num):
         """Run rtl_power to scan frequency range, return CSV path"""
         timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-        csv_file = self.output_dir / f"scan_{timestamp}_#{scan_num}.csv"
+        csv_file = self.output_dir / f"scan_{timestamp}_n{scan_num}.csv"
 
         print(f"[wideband] Scan #{scan_num} ({self.start_mhz}-{self.end_mhz} MHz, "
               f"step {self.step_mhz} MHz)…", file=sys.stderr)
@@ -89,7 +89,11 @@ class WidebandScanner:
                     if len(parts) < 7:
                         continue
                     try:
-                        freq_mhz = float(parts[2])
+                        # rtl_power CSV: date, time, hz_low, hz_high, hz_step, samples, db...
+                        # parts[2] is the low edge of the bin in Hz — convert to MHz
+                        hz_low  = float(parts[2])
+                        hz_high = float(parts[3])
+                        freq_mhz = ((hz_low + hz_high) / 2.0) / 1e6
                         # rtl_power outputs multiple columns of power readings; take the mean
                         powers = [float(p) for p in parts[6:] if p.strip()]
                         avg_power = sum(powers) / len(powers) if powers else -100
@@ -126,15 +130,22 @@ class WidebandScanner:
             ]
 
             # Run for specified duration with timeout buffer
-            with open(wav_file, "wb") as f:
-                result = subprocess.run(cmd, stdout=f, stderr=subprocess.PIPE,
-                                      timeout=duration + 5)
+            with open(wav_file, "wb") as fout:
+                proc = subprocess.Popen(cmd, stdout=fout, stderr=subprocess.PIPE)
+                try:
+                    proc.wait(timeout=duration)
+                except subprocess.TimeoutExpired:
+                    # Normal exit path — kill rtl_fm so it releases the SDR dongle
+                    proc.terminate()
+                    try:
+                        proc.wait(timeout=3)
+                    except subprocess.TimeoutExpired:
+                        proc.kill()
+                        proc.wait()
 
             if wav_file.exists() and wav_file.stat().st_size > 1000:
                 print(f"[wideband] Recorded {wav_file.stat().st_size} bytes", file=sys.stderr)
                 return True
-        except subprocess.TimeoutExpired:
-            pass  # expected — rtl_fm runs for the duration
         except Exception as e:
             print(f"[wideband] Error recording: {e}", file=sys.stderr)
 
@@ -143,7 +154,7 @@ class WidebandScanner:
     def log_peaks(self, scan_num, peaks):
         """Log discovered peaks to JSON"""
         timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-        log_file = self.output_dir / f"peaks_{timestamp}_#{scan_num}.json"
+        log_file = self.output_dir / f"peaks_{timestamp}_n{scan_num}.json"
 
         peaks_data = {
             "scan_num": scan_num,

@@ -87,7 +87,7 @@ cleanup() {
         systemctl start NetworkManager 2>/dev/null || true
     fi
 
-    rm -f "/tmp/wardrive.pid"
+    rm -f "/tmp/wardrive.pid" "${SCRIPT_DIR}/capture/wardrive.pid"
     finalize_manifest
     echo "[wardrive] Session closed: ${SESSION_NAME}"
 }
@@ -335,16 +335,27 @@ preflight_all() {
 gps_query_fix() {
     local min_sats="${GPS_MIN_SATS:-4}"
 
+    # Validate that min_sats is a plain integer before use to prevent
+    # shell-variable injection into the Python -c script.
+    if ! [[ "${min_sats}" =~ ^[0-9]+$ ]]; then
+        echo "[gps] ERROR: GPS_MIN_SATS must be a non-negative integer, got '${min_sats}'" >&2
+        min_sats=4
+    fi
+
     # gpspipe -w: stream JSON watch objects from gpsd
     # timeout 8:  hard ceiling so we never block more than 8 seconds
     # -n 60:      read at most 60 objects (avoids hanging if gpsd is chatty)
+    #
+    # Pass min_sats as a command-line argument (sys.argv[1]) rather than
+    # interpolating the shell variable directly into the Python source string,
+    # which would be a code-injection path if wardrive.conf were tampered with.
     local result
     result=$(
         timeout 8 gpspipe -w -n 60 2>/dev/null | \
-        python3 -c "
+        python3 - "${min_sats}" <<'PYEOF'
 import sys, json
 
-min_sats = ${min_sats}
+min_sats = int(sys.argv[1])
 lat = lon = alt = None
 sats = 0
 mode = 0
@@ -381,14 +392,16 @@ if mode >= 2 and lat is not None and lon is not None and sats >= min_sats:
     print(f'{lat:.6f} {lon:.6f} {sats} {dims}')
 else:
     print('NO_FIX')
-" 2>/dev/null
+PYEOF
     ) || true
 
     echo "${result:-NO_FIX}"
 }
 
 gps_wait_for_fix() {
-    local deadline=$(( $(date +%s) + GPS_WAIT_FIX ))
+    local now deadline
+    now=$(date +%s)
+    deadline=$(( now + GPS_WAIT_FIX ))
     echo -n "[gps] Waiting for fix (up to ${GPS_WAIT_FIX}s, need ${GPS_MIN_SATS}+ sats)… "
     while [[ $(date +%s) -lt "${deadline}" ]]; do
         local fix
@@ -636,13 +649,13 @@ launch_esp32_reader() {
     stty -F "${port}" "${baud}" raw -echo 2>/dev/null || true
     local bt_out="${SESSION_DIR}/bt/esp32_ble.ndjson"
     local reader_script="${SCRIPT_DIR}/processing/esp32_reader.py"
-    local gps_flag=""
-    [[ "${ENABLE_GPS}" == "true" ]] && gps_flag="--gpsd"
+    local -a gps_args=()
+    [[ "${ENABLE_GPS}" == "true" ]] && gps_args=("--gpsd")
     exec python3 "${reader_script}" \
         --port "${port}" \
         --baud "${baud}" \
         --output "${bt_out}" \
-        ${gps_flag}
+        "${gps_args[@]}"
 }
 
 start_esp32_collector() {
@@ -684,9 +697,12 @@ heartbeat_monitor() {
                 kill -0 "${pid}" 2>/dev/null && (( alive++ )) || true
             done
         fi
+        # CHILD_PIDS in this subshell contains only collector supervisors
+        # (the heartbeat's own PID is appended in the parent after this
+        # subshell was forked, so it is NOT visible here — no -1 adjustment).
         local total=${#CHILD_PIDS[@]}
-        local collectors_alive=$(( alive > 0 ? alive - 1 : 0 ))
-        local collectors_total=$(( total > 0 ? total - 1 : 0 ))
+        local collectors_alive=${alive}
+        local collectors_total=${total}
 
         local gps_status=""
         if [[ "${ENABLE_GPS}" == "true" ]]; then
@@ -713,8 +729,12 @@ preflight_all
 inhibit_sleep
 
 # ── PID file for webapp stop control ───────────────────────────────────────────
-WARDRIVE_PID_FILE="/tmp/wardrive.pid"
-echo $$ > "${WARDRIVE_PID_FILE}"
+# Write to project-local capture/ instead of /tmp (which is world-writable).
+# Using /tmp would let any local user plant an arbitrary PID and get the webapp
+# to signal it. The capture/ directory is owned by root when wardrive runs.
+WARDRIVE_PID_FILE="${SCRIPT_DIR}/capture/wardrive.pid"
+printf '%d\n' "$$" > "${WARDRIVE_PID_FILE}" || true
+chmod 600 "${WARDRIVE_PID_FILE}" 2>/dev/null || true
 echo "[wardrive] PID file: ${WARDRIVE_PID_FILE} (PID $$)"
 
 echo "[wardrive] Starting collectors with auto-restart supervisors…"

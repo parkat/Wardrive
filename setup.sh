@@ -90,6 +90,9 @@ sudo apt-get install -y \
     kismet \
     rtl-sdr \
     rtl-433 \
+    gpsd \
+    gpsd-clients \
+    aircrack-ng \
     python3 \
     python3-pip \
     screen
