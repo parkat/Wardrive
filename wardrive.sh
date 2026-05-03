@@ -55,6 +55,8 @@ echo "[wardrive] Dir:     ${SESSION_DIR}"
 CHILD_PIDS=()
 INHIBITOR_PID=""
 CLEANUP_DONE=0
+SCREEN_BLANK_DISPLAY=""
+SCREEN_BLANK_XAUTH=""
 
 cleanup() {
     [[ "${CLEANUP_DONE}" -eq 1 ]] && return
@@ -63,6 +65,14 @@ cleanup() {
     if [[ -n "${INHIBITOR_PID:-}" ]] && kill -0 "${INHIBITOR_PID}" 2>/dev/null; then
         kill "${INHIBITOR_PID}" 2>/dev/null || true
         echo "[wardrive] Sleep inhibitor released — normal lid/sleep behavior restored"
+    fi
+
+    if [[ -n "${SCREEN_BLANK_DISPLAY:-}" ]]; then
+        DISPLAY="${SCREEN_BLANK_DISPLAY}" XAUTHORITY="${SCREEN_BLANK_XAUTH}" \
+            xset s default 2>/dev/null || true
+        DISPLAY="${SCREEN_BLANK_DISPLAY}" XAUTHORITY="${SCREEN_BLANK_XAUTH}" \
+            xset +dpms 2>/dev/null || true
+        echo "[wardrive] Screen blanking restored"
     fi
 
     echo "[wardrive] Shutting down collectors…"
@@ -162,6 +172,38 @@ inhibit_sleep() {
         echo "[wardrive] WARNING: Failed to start sleep inhibitor — lid-close may suspend"
         INHIBITOR_PID=""
     fi
+}
+
+inhibit_screen_blank() {
+    [[ "${KEEP_AWAKE:-true}" != "true" ]] && return
+
+    local disp="${DISPLAY:-}"
+    local xauth="${XAUTHORITY:-}"
+
+    # When running as sudo DISPLAY/XAUTHORITY are stripped; recover them from
+    # the invoking user's environment and the active X lock file.
+    if [[ -z "${disp}" && -n "${SUDO_USER:-}" ]]; then
+        local user_home
+        user_home="$(getent passwd "${SUDO_USER}" | cut -d: -f6)"
+        for candidate in :0 :1; do
+            [[ -f "/tmp/.X${candidate#:}-lock" ]] && { disp="${candidate}"; break; }
+        done
+        [[ -z "${xauth}" && -f "${user_home}/.Xauthority" ]] \
+            && xauth="${user_home}/.Xauthority"
+    fi
+
+    [[ -z "${disp}" ]] && return
+
+    if ! DISPLAY="${disp}" XAUTHORITY="${xauth}" xset q &>/dev/null; then
+        echo "[wardrive] WARNING: cannot reach display ${disp} — screen may blank during session"
+        return
+    fi
+
+    DISPLAY="${disp}" XAUTHORITY="${xauth}" xset s off  2>/dev/null || true
+    DISPLAY="${disp}" XAUTHORITY="${xauth}" xset -dpms  2>/dev/null || true
+    SCREEN_BLANK_DISPLAY="${disp}"
+    SCREEN_BLANK_XAUTH="${xauth}"
+    echo "[wardrive] Screen blanking disabled (display ${disp})"
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -681,6 +723,7 @@ heartbeat_monitor() {
 init_manifest
 preflight_all
 inhibit_sleep
+inhibit_screen_blank
 
 # ── PID file for webapp stop control ───────────────────────────────────────────
 # Write to project-local capture/ instead of /tmp (which is world-writable).
