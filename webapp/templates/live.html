@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>warDrive Live View</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="logo">⚡ warDrive Live View</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Explorer</a>
+                <a href="/live" class="nav-link active">Live</a>
+                <a href="/map" class="nav-link">Map</a>
+            </div>
+            <div class="status-section">
+                <div id="collector-panel" class="collector-panel"><!-- populated by collectors.js --></div>
+                <div id="status" class="status-pill">Connecting...</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section id="session-banner" class="session-banner">
+            <div class="session-banner-content">
+                <div class="session-info">
+                    <span class="session-label">Session:</span>
+                    <span id="session-id" class="session-value">—</span>
+                    <span class="session-timestamp" id="session-time">—</span>
+                    <span id="data-source" class="data-source-badge"></span>
+                </div>
+                <div class="session-stats">
+                    <span class="session-stat">
+                        <span class="stat-icon">📱</span> BLE:
+                        <span id="session-bt" class="stat-number">0</span>
+                    </span>
+                    <span class="session-stat">
+                        <span class="stat-icon">🔗</span> WiFi:
+                        <span id="session-wifi" class="stat-number">0</span>
+                    </span>
+                    <span class="session-stat">
+                        <span class="stat-icon">📡</span> RF:
+                        <span id="session-rf" class="stat-number">0</span>
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <section id="stats-row" class="stats-row">
+            <div class="stat-card">
+                <div class="stat-title">BLE Discoveries</div>
+                <div class="stat-display">
+                    <span id="counter-bt" class="counter-value">0</span>
+                    <span id="delta-bt" class="stat-delta">+0</span>
+                </div>
+                <div class="stat-rate" id="rate-bt">0 /min</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">WiFi Discoveries</div>
+                <div class="stat-display">
+                    <span id="counter-wifi" class="counter-value">0</span>
+                    <span id="delta-wifi" class="stat-delta">+0</span>
+                </div>
+                <div class="stat-rate" id="rate-wifi">0 /min</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">RF Discoveries</div>
+                <div class="stat-display">
+                    <span id="counter-rf" class="counter-value">0</span>
+                    <span id="delta-rf" class="stat-delta">+0</span>
+                </div>
+                <div class="stat-rate" id="rate-rf">0 /min</div>
+            </div>
+        </section>
+
+        <section id="controls" class="controls-section">
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="auto-refresh" checked>
+                    <span id="status-indicator" class="live-indicator pulsing">● LIVE</span>
+                </label>
+            </div>
+            <div class="control-group">
+                <label>Interval:</label>
+                <select id="poll-interval">
+                    <option value="2000">2s</option>
+                    <option value="5000" selected>5s</option>
+                    <option value="10000">10s</option>
+                    <option value="30000">30s</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <button id="clear-feed" class="btn-secondary">Clear Feed</button>
+            </div>
+        </section>
+
+        <section id="leaderboard-section" class="leaderboard-section">
+            <h3>Strongest Signals (Last 5 min)</h3>
+            <div id="leaderboard" class="leaderboard"></div>
+        </section>
+
+        <section id="feed-section" class="feed-section">
+            <h3>Activity Feed</h3>
+            <div id="activity-feed" class="activity-feed"></div>
+        </section>
+    </main>
+
+    <script src="/static/live.js"></script>
+    <script src="/static/collectors.js"></script>
+</body>
+</html>

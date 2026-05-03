@@ -87,6 +87,7 @@ cleanup() {
         systemctl start NetworkManager 2>/dev/null || true
     fi
 
+    rm -f "/tmp/wardrive.pid"
     finalize_manifest
     echo "[wardrive] Session closed: ${SESSION_NAME}"
 }
@@ -710,6 +711,11 @@ heartbeat_monitor() {
 init_manifest
 preflight_all
 inhibit_sleep
+
+# ── PID file for webapp stop control ───────────────────────────────────────────
+WARDRIVE_PID_FILE="/tmp/wardrive.pid"
+echo $$ > "${WARDRIVE_PID_FILE}"
+echo "[wardrive] PID file: ${WARDRIVE_PID_FILE} (PID $$)"
 
 echo "[wardrive] Starting collectors with auto-restart supervisors…"
 start_gps_collector

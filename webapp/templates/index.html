@@ -4,47 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>warDrive Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <header>
-        <h1>warDrive Passive Capture Explorer</h1>
-        <div id="status">Checking database...</div>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="logo">⚡ warDrive Explorer</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link active">Explorer</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/live" class="nav-link">Live</a>
+                <a href="/map" class="nav-link">Map</a>
+                <a href="/analytics" class="nav-link">Analytics</a>
+                <a href="/report" class="nav-link">Report</a>
+            </div>
+            <div class="status-section">
+                <div id="collector-panel" class="collector-panel"><!-- populated by collectors.js --></div>
+                <div id="status" class="status-pill">Connecting...</div>
+            </div>
+        </div>
     </header>
 
-    <main>
-        <section id="filters">
-            <h2>Filters</h2>
-            <div class="filter-row">
-                <select id="table-selector">
-                    <option value="bt_devices">BLE Devices (bt_devices)</option>
-                    <option value="wifi_aps">WiFi APs (wifi_aps)</option>
-                    <option value="wifi_clients">WiFi Clients (wifi_clients)</option>
-                    <option value="rf_devices">RF Devices (rf_devices)</option>
-                </select>
-                <input type="text" id="vendor-filter" placeholder="Vendor (e.g., Apple)">
+    <main class="main-content">
+        <section id="session-panel" class="session-panel">
+            <div class="session-header">
+                <h3>Sessions</h3>
+                <button id="session-toggle" class="toggle-btn">▼</button>
             </div>
-            <div class="filter-row">
-                <input type="number" id="signal-filter" placeholder="Max RSSI (e.g., -60)">
-                <input type="date" id="date-filter">
+            <div id="session-list" class="session-list"></div>
+        </section>
+
+        <section id="stats-bar" class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-label">WiFi APs</span>
+                <span id="stat-aps" class="stat-value">—</span>
             </div>
-            <div class="filter-actions">
-                <button id="apply-filters">Apply</button>
-                <button id="reset-filters" class="secondary">Reset</button>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-label">BLE Devices</span>
+                <span id="stat-ble" class="stat-value">—</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-label">RF Devices</span>
+                <span id="stat-rf" class="stat-value">—</span>
             </div>
         </section>
 
-        <section id="data-table">
-            <h2>Devices</h2>
+        <section id="filters" class="filters-section">
+            <div class="table-tabs">
+                <button class="tab-btn active" data-table="bt_devices">BLE</button>
+                <button class="tab-btn" data-table="wifi_aps">WiFi APs</button>
+                <button class="tab-btn" data-table="wifi_clients">WiFi Clients</button>
+                <button class="tab-btn" data-table="rf_devices">RF Devices</button>
+            </div>
+
+            <div class="filter-inputs">
+                <select id="session-filter">
+                    <option value="">All Runs</option>
+                </select>
+                <input type="text" id="vendor-filter" placeholder="Vendor">
+                <input type="number" id="signal-filter" placeholder="Max Signal (dBm)">
+                <input type="date" id="date-filter">
+                <button id="apply-filters" class="btn-primary">Apply</button>
+                <button id="reset-filters" class="btn-secondary">Reset</button>
+                <button id="export-csv" class="btn-export">Export CSV</button>
+                <button id="export-json" class="btn-export">Export JSON</button>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="global-search" placeholder="Search all columns...">
+                <span class="search-icon">🔍</span>
+            </div>
+        </section>
+
+        <section id="data-table" class="data-section">
             <div id="table-container">
                 <table id="device-table">
-                    <thead><tr><th>MAC/Address</th><th>Vendor</th><th>RSSI</th><th>Last Seen</th><th>First Seen</th></tr></thead>
-                    <tbody></tbody>
+                    <thead id="table-head"></thead>
+                    <tbody id="table-body"></tbody>
                 </table>
             </div>
         </section>
+
+        <div id="detail-panel" class="detail-panel">
+            <div class="detail-header">
+                <h2>Device Details</h2>
+                <button id="detail-close" class="detail-close-btn">&times;</button>
+            </div>
+            <div id="detail-content" class="detail-content"></div>
+        </div>
     </main>
 
     <script src="/static/app.js"></script>
+    <script src="/static/collectors.js"></script>
 </body>
 </html>

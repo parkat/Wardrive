@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>warDrive Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 12px rgba(0, 255, 136, 0.15);
+        }
+
+        .dashboard-card-title {
+            color: var(--accent-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-icon {
+            font-size: 1.2rem;
+        }
+
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            color: var(--accent-primary);
+            font-size: 1.3rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-small {
+            font-size: 0.95rem;
+            color: var(--accent-secondary);
+        }
+
+        .strongest-device {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .device-type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .device-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .device-info-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .device-info-value {
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            word-break: break-all;
+        }
+
+        .protocol-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .protocol-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .protocol-item:last-child {
+            border-bottom: none;
+        }
+
+        .protocol-name {
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+
+        .protocol-count {
+            color: var(--accent-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+
+        .geo-info {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            padding: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .geo-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+        }
+
+        .geo-label {
+            color: var(--text-muted);
+        }
+
+        .geo-value {
+            color: var(--accent-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .last-update {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--bg-hover);
+            border: 2px solid var(--accent-primary);
+            border-radius: 4px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .summary-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-value {
+            color: var(--accent-primary);
+            font-size: 2rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .refresh-btn {
+            padding: 0.5rem 1rem;
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .controls-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .title-section h2 {
+            color: var(--accent-primary);
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-top {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="logo">⚡ warDrive Explorer</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Explorer</a>
+                <a href="/dashboard" class="nav-link active">Dashboard</a>
+                <a href="/live" class="nav-link">Live</a>
+                <a href="/map" class="nav-link">Map</a>
+                <a href="/report" class="nav-link">Report</a>
+            </div>
+            <div class="status-section">
+                <div id="collector-panel" class="collector-panel"><!-- populated by collectors.js --></div>
+                <div id="status" class="status-pill">Connecting...</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="controls-top">
+            <div class="title-section">
+                <h2>Live Dashboard</h2>
+            </div>
+            <button id="refresh-btn" class="refresh-btn">Refresh Now</button>
+        </section>
+
+        <div id="summary-stats" class="summary-stats">
+            <div class="summary-card">
+                <div class="summary-label">Total Unique Devices</div>
+                <div class="summary-value" id="total-devices">—</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Last Capture</div>
+                <div class="summary-value" id="last-capture-time" style="font-size: 1.1rem;">—</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">BLE Devices</div>
+                <div class="summary-value" id="ble-count">—</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">WiFi Networks</div>
+                <div class="summary-value" id="wifi-count">—</div>
+            </div>
+        </div>
+
+        <div id="dashboard-grid" class="dashboard-grid">
+            <!-- Strongest Device Card -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-title">
+                    <span class="card-icon">📡</span>
+                    Strongest Signal
+                </div>
+                <div id="strongest-device-content" class="card-content">
+                    <p style="color: var(--text-muted); text-align: center;">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Busiest Session Card -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-title">
+                    <span class="card-icon">📊</span>
+                    Busiest Session
+                </div>
+                <div id="busiest-session-content" class="card-content">
+                    <p style="color: var(--text-muted); text-align: center;">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Device Summary Card -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-title">
+                    <span class="card-icon">📱</span>
+                    Device Breakdown
+                </div>
+                <div id="device-summary-content" class="card-content">
+                    <p style="color: var(--text-muted); text-align: center;">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Encryption/Protocol Card -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-title">
+                    <span class="card-icon">🔐</span>
+                    Top Encryption Types
+                </div>
+                <div id="protocol-content" class="card-content">
+                    <p style="color: var(--text-muted); text-align: center;">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Geographic Coverage Card -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-title">
+                    <span class="card-icon">🗺</span>
+                    Geographic Coverage
+                </div>
+                <div id="geo-content" class="card-content">
+                    <p style="color: var(--text-muted); text-align: center;">No GPS data available</p>
+                </div>
+            </div>
+
+            <!-- Update Status Card -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-title">
+                    <span class="card-icon">🔄</span>
+                    <span id="live-status">
+                        <span class="live-indicator"></span>Live
+                    </span>
+                </div>
+                <div class="last-update">
+                    <p>Updates every 5 seconds</p>
+                    <p id="last-update-time" style="color: var(--accent-secondary); margin-top: 0.5rem;">—</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let autoRefreshInterval = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("[Dashboard] Initializing...");
+            updateDashboard();
+
+            // Auto-refresh every 5 seconds
+            autoRefreshInterval = setInterval(updateDashboard, 5000);
+
+            // Manual refresh button
+            document.getElementById('refresh-btn').addEventListener('click', updateDashboard);
+
+            // Update status on visibility change
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    clearInterval(autoRefreshInterval);
+                } else {
+                    updateDashboard();
+                    autoRefreshInterval = setInterval(updateDashboard, 5000);
+                }
+            });
+        });
+
+        async function updateDashboard() {
+            try {
+                const res = await fetch('/api/dashboard/live');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+
+                if (data.status === 'ok' || data.status === 'db_not_found') {
+                    renderDashboard(data);
+                } else {
+                    console.error("[Dashboard] API error:", data);
+                }
+            } catch (e) {
+                console.error("[Dashboard] Fetch failed:", e);
+                updateStatusPill(false);
+            }
+        }
+
+        function renderDashboard(data) {
+            // Update status pill
+            updateStatusPill(true);
+
+            // Update summary stats
+            const uniqueDevices = data.unique_devices || { ble: 0, wifi_ap: 0, wifi_client: 0, rf: 0, total: 0 };
+            document.getElementById('total-devices').textContent = uniqueDevices.total || '0';
+            document.getElementById('ble-count').textContent = uniqueDevices.ble || '0';
+            document.getElementById('wifi-count').textContent = uniqueDevices.wifi_ap || '0';
+
+            // Last capture time
+            const lastCapture = data.last_capture ? new Date(data.last_capture) : null;
+            if (lastCapture) {
+                document.getElementById('last-capture-time').textContent = formatTimeAgo(lastCapture);
+            } else {
+                document.getElementById('last-capture-time').textContent = '—';
+            }
+
+            // Strongest device
+            renderStrongestDevice(data.strongest_device);
+
+            // Busiest session
+            renderBusiestSession(data.busiest_session);
+
+            // Device summary
+            renderDeviceSummary(uniqueDevices);
+
+            // Protocol stats
+            renderProtocolStats(data.protocol_stats);
+
+            // Geographic coverage
+            renderGeoInfo(data.geographic_bounds);
+
+            // Update last refresh time
+            document.getElementById('last-update-time').textContent = `Updated ${formatTimeAgo(new Date())}`;
+        }
+
+        function renderStrongestDevice(device) {
+            const container = document.getElementById('strongest-device-content');
+            if (!device) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No data</p>';
+                return;
+            }
+
+            const typeLabel = device.type.toUpperCase();
+            const signalColor = device.rssi_dbm > -50 ? 'var(--accent-primary)' :
+                               device.rssi_dbm > -70 ? 'var(--color-amber)' :
+                               'var(--color-red)';
+
+            container.innerHTML = `
+                <div class="strongest-device">
+                    <div style="margin-bottom: 0.75rem;">
+                        <span class="device-type-badge">${typeLabel}</span>
+                    </div>
+                    <div class="device-info-row">
+                        <span class="device-info-label">Type:</span>
+                        <span class="device-info-value">${escapeHtml(device.device_type || 'Unknown')}</span>
+                    </div>
+                    <div class="device-info-row">
+                        <span class="device-info-label">Signal:</span>
+                        <span class="device-info-value" style="color: ${signalColor}; font-weight: 600;">${device.rssi_dbm} dBm</span>
+                    </div>
+                    <div class="device-info-row">
+                        <span class="device-info-label">Address:</span>
+                        <span class="device-info-value" style="font-size: 0.8rem;">${escapeHtml(device.address)}</span>
+                    </div>
+                    ${device.name ? `<div class="device-info-row">
+                        <span class="device-info-label">Name:</span>
+                        <span class="device-info-value">${escapeHtml(device.name)}</span>
+                    </div>` : ''}
+                    ${device.manufacturer ? `<div class="device-info-row">
+                        <span class="device-info-label">Manufacturer:</span>
+                        <span class="device-info-value">${escapeHtml(device.manufacturer)}</span>
+                    </div>` : ''}
+                </div>
+            `;
+        }
+
+        function renderBusiestSession(session) {
+            const container = document.getElementById('busiest-session-content');
+            if (!session) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No sessions</p>';
+                return;
+            }
+
+            const startDate = new Date(session.started_at_utc);
+            container.innerHTML = `
+                <div class="metric-row">
+                    <span class="metric-label">Session ID</span>
+                    <span class="metric-value" style="font-size: 0.9rem;">${escapeHtml(session.session_id)}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total Devices</span>
+                    <span class="metric-value">${session.total_devices}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">WiFi APs</span>
+                    <span class="metric-small">${session.ap_count}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">BLE Devices</span>
+                    <span class="metric-small">${session.bt_count}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">RF Devices</span>
+                    <span class="metric-small">${session.rf_count}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Started</span>
+                    <span class="metric-small">${startDate.toLocaleString()}</span>
+                </div>
+            `;
+        }
+
+        function renderDeviceSummary(summary) {
+            const container = document.getElementById('device-summary-content');
+            container.innerHTML = `
+                <div class="metric-row">
+                    <span class="metric-label">BLE</span>
+                    <span class="metric-value">${summary.ble}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">WiFi APs</span>
+                    <span class="metric-value">${summary.wifi_ap}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">WiFi Clients</span>
+                    <span class="metric-value">${summary.wifi_client}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">RF Devices</span>
+                    <span class="metric-value">${summary.rf}</span>
+                </div>
+            `;
+        }
+
+        function renderProtocolStats(stats) {
+            const container = document.getElementById('protocol-content');
+            if (!stats || stats.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No encryption data</p>';
+                return;
+            }
+
+            const html = stats.map(p => `
+                <div class="protocol-item">
+                    <span class="protocol-name" title="${escapeHtml(p.type)}">${escapeHtml(p.type)}</span>
+                    <span class="protocol-count">${p.count}</span>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<ul class="protocol-list">${html}</ul>`;
+        }
+
+        function renderGeoInfo(bounds) {
+            const container = document.getElementById('geo-content');
+            if (!bounds) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No GPS data</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="geo-info">
+                    <div class="geo-row">
+                        <span class="geo-label">Min Lat:</span>
+                        <span class="geo-value">${bounds.min_lat.toFixed(5)}</span>
+                    </div>
+                    <div class="geo-row">
+                        <span class="geo-label">Max Lat:</span>
+                        <span class="geo-value">${bounds.max_lat.toFixed(5)}</span>
+                    </div>
+                    <div class="geo-row">
+                        <span class="geo-label">Min Lon:</span>
+                        <span class="geo-value">${bounds.min_lon.toFixed(5)}</span>
+                    </div>
+                    <div class="geo-row">
+                        <span class="geo-label">Max Lon:</span>
+                        <span class="geo-value">${bounds.max_lon.toFixed(5)}</span>
+                    </div>
+                    <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color);">
+                        <div class="geo-row">
+                            <span class="geo-label">Coverage Area:</span>
+                        </div>
+                        <div style="color: var(--accent-secondary); font-size: 0.9rem; margin-top: 0.5rem;">
+                            Approx. ${getDistanceApprox(bounds.min_lat, bounds.max_lat, bounds.min_lon, bounds.max_lon)} km
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateStatusPill(connected) {
+            const status = document.getElementById('status');
+            if (connected) {
+                status.textContent = '● LIVE';
+                status.classList.remove('error');
+                status.classList.add('connected');
+            } else {
+                status.textContent = '⚠ Error';
+                status.classList.remove('connected');
+                status.classList.add('error');
+            }
+        }
+
+        function formatTimeAgo(date) {
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            if (seconds < 60) return `${seconds}s ago`;
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+
+        function getDistanceApprox(minLat, maxLat, minLon, maxLon) {
+            const R = 6371; // Earth radius in km
+            const dLat = (maxLat - minLat) * Math.PI / 180;
+            const dLon = (maxLon - minLon) * Math.PI / 180;
+            const distance = 2 * R * Math.asin(Math.sqrt(
+                Math.sin(dLat / 2) ** 2 +
+                Math.cos(minLat * Math.PI / 180) * Math.cos(maxLat * Math.PI / 180) * Math.sin(dLon / 2) ** 2
+            ));
+            return distance.toFixed(1);
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+    <script src="/static/collectors.js"></script>
+</body>
+</html>

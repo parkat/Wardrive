@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>warDrive — Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+    <link rel="stylesheet" href="/static/style.css"/>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #0f1117;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        #map {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+        }
+        #panel {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
+            width: 280px;
+            background: rgba(15, 17, 23, 0.95);
+            border: 1px solid #1e2a3a;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            color: #e0e0e0;
+            font-size: 0.875rem;
+        }
+        .panel-title {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .nav-link {
+            flex: 1;
+            min-width: 60px;
+            padding: 0.5rem;
+            border: 1px solid #1e2a3a;
+            border-radius: 4px;
+            background: transparent;
+            color: #a0aec0;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-link:hover {
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+        .nav-link.active {
+            background: #1e3a1f;
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+        .section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #1e2a3a;
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        .section-label {
+            font-weight: 600;
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            background: #1a1f2e;
+            border: 1px solid #1e2a3a;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        select:focus {
+            outline: none;
+            border-color: #4ade80;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .checkbox-item input[type="checkbox"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+        .checkbox-item label {
+            cursor: pointer;
+            flex: 1;
+            margin: 0;
+        }
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.25rem;
+        }
+        .color-ble { background: #22d3ee; }
+        .color-wifi { background: #4ade80; }
+        .color-rf { background: #fb923c; }
+        .color-track { background: #94a3b8; }
+        .stats-box {
+            background: #1a1f2e;
+            padding: 0.75rem;
+            border-radius: 4px;
+            border: 1px solid #1e2a3a;
+            margin-top: 0.5rem;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+        }
+        .stat-row:last-child {
+            margin-bottom: 0;
+        }
+        .stat-label {
+            color: #a0aec0;
+        }
+        .stat-count {
+            color: #4ade80;
+            font-weight: 600;
+        }
+        #pin-count {
+            font-weight: 600;
+            color: #4ade80;
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            background: #1e3a1f;
+            border: 1px solid #4ade80;
+            border-radius: 4px;
+            color: #4ade80;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #2d5a2d;
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+        }
+        /* Leaflet popup styling */
+        .leaflet-popup-content-wrapper {
+            background: #1a1f2e;
+            color: #e0e0e0;
+            border: 1px solid #1e2a3a;
+            border-radius: 4px;
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            font-size: 0.85rem;
+        }
+        .popup-header {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .popup-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+            font-size: 0.8rem;
+        }
+        .popup-label {
+            color: #a0aec0;
+        }
+        .popup-value {
+            color: #e0e0e0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            margin-left: 0.5rem;
+        }
+        .filter-device-item {
+            background: #0f1117;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            border-radius: 3px;
+            border-left: 3px solid #4ade80;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .filter-device-item:hover {
+            background: #1a1f2e;
+        }
+        .filter-device-item.ble {
+            border-left-color: #22d3ee;
+        }
+        .filter-device-item.wifi {
+            border-left-color: #4ade80;
+        }
+        .filter-device-item.rf {
+            border-left-color: #fb923c;
+        }
+        .device-item-addr {
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #e0e0e0;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .device-item-meta {
+            color: #a0aec0;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="panel">
+        <div class="panel-title">warDrive Map</div>
+
+        <div class="nav-links">
+            <a href="/" class="nav-link">Explorer</a>
+            <a href="/live" class="nav-link">Live</a>
+            <a href="/map" class="nav-link active">Map</a>
+        </div>
+
+        <div id="collector-panel" class="collector-panel" style="flex-direction: column; margin-bottom: 1rem; gap: 0.5rem;"><!-- populated by collectors.js --></div>
+
+        <div class="section">
+            <div class="section-label">Session</div>
+            <select id="session-select">
+                <option value="">All Sessions</option>
+            </select>
+        </div>
+
+        <div class="section">
+            <div class="section-label">Layers</div>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="toggle-ble" checked>
+                    <label for="toggle-ble"><span class="color-dot color-ble"></span>BLE Devices</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="toggle-wifi" checked>
+                    <label for="toggle-wifi"><span class="color-dot color-wifi"></span>WiFi APs</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="toggle-rf" checked>
+                    <label for="toggle-rf"><span class="color-dot color-rf"></span>RF Devices</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="toggle-track" checked>
+                    <label for="toggle-track"><span class="color-dot color-track"></span>GPS Track</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="toggle-heatmap">
+                    <label for="toggle-heatmap"><span class="color-dot color-track"></span>Heatmap</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-label">Stats</div>
+            <div class="stats-box">
+                <div class="stat-row">
+                    <span class="stat-label">Total pins</span>
+                    <span class="stat-count" id="pin-count">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">BLE</span>
+                    <span class="stat-count" id="stat-ble">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">WiFi</span>
+                    <span class="stat-count" id="stat-wifi">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">RF</span>
+                    <span class="stat-count" id="stat-rf">0</span>
+                </div>
+            </div>
+        </div>
+
+        <button id="fit-btn">Fit to Map</button>
+
+        <div class="section" style="margin-top: 0.5rem;">
+            <div class="section-label">Area Filter</div>
+            <div style="display:flex; gap:0.5rem;">
+                <button id="draw-rect-btn" style="flex:1; margin-top:0; font-size:0.8rem;">▭ Rectangle</button>
+                <button id="draw-poly-btn" style="flex:1; margin-top:0; font-size:0.8rem;">⬠ Polygon</button>
+            </div>
+            <div id="filter-status" style="display:none; margin-top:0.75rem; background:#1a1f2e; padding:0.75rem; border-radius:4px; border:1px solid #1e2a3a; display:flex; flex-direction:column; max-height:300px;">
+                <div style="font-size:0.8rem; color:#a0aec0; margin-bottom:0.5rem;">Devices in area:</div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.75rem;">
+                    <span style="color:#22d3ee">BLE <span id="filter-ble">0</span></span>
+                    <span style="color:#4ade80">WiFi <span id="filter-wifi">0</span></span>
+                    <span style="color:#fb923c">RF <span id="filter-rf">0</span></span>
+                </div>
+                <div id="filter-device-list" style="flex:1; overflow-y:auto; margin-bottom:0.5rem; padding-right:0.25rem; font-size:0.75rem; min-height:60px;">
+                </div>
+                <button id="clear-filter-btn" style="margin-top:0; background:#3a1f1f; border-color:#ef4444; color:#ef4444; font-size:0.8rem;">✕ Clear Filter</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script src="/static/map.js"></script>
+    <script src="/static/collectors.js"></script>
+</body>
+</html>

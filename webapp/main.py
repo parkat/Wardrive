@@ -1,6 +1,11 @@
 import logging
 import sqlite3
+import json
+import subprocess
+import signal
+import os
 from pathlib import Path
+from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -12,6 +17,7 @@ app = FastAPI(title="warDrive Explorer")
 WEBAPP_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = WEBAPP_ROOT.parent
 DB_PATH = PROJECT_ROOT / "processing" / "wardrive.db"
+WARDRIVE_PID_FILE = Path("/tmp/wardrive.pid")
 
 @asynccontextmanager
 async def lifespan(app):
@@ -36,6 +42,57 @@ app.mount("/static", StaticFiles(directory=str(WEBAPP_ROOT / "static")), name="s
 async def index():
     return FileResponse(WEBAPP_ROOT / "templates" / "index.html")
 
+@app.get("/live")
+async def live():
+    return FileResponse(WEBAPP_ROOT / "templates" / "live.html")
+
+@app.get("/map")
+async def map_page():
+    return FileResponse(WEBAPP_ROOT / "templates" / "map.html")
+
+@app.get("/analytics")
+async def analytics():
+    return FileResponse(WEBAPP_ROOT / "templates" / "analytics.html")
+
+@app.get("/dashboard")
+async def dashboard():
+    return FileResponse(WEBAPP_ROOT / "templates" / "dashboard.html")
+
+@app.get("/report")
+async def report_page():
+    return FileResponse(WEBAPP_ROOT / "templates" / "report.html")
+
+def _get_ble_gps_positions(session_id=None):
+    capture_raw = PROJECT_ROOT / "capture" / "raw"
+    best = {}
+    if not capture_raw.exists():
+        return best
+    dirs = [capture_raw / session_id] if session_id else sorted(capture_raw.iterdir(), reverse=True)
+    for d in dirs:
+        if not (isinstance(d, Path) and d.is_dir()):
+            continue
+        ndjson = d / "bt" / "esp32_ble.ndjson"
+        if not ndjson.exists():
+            continue
+        with open(ndjson) as f:
+            for line in f:
+                try:
+                    obj = json.loads(line)
+                    addr = obj.get("addr")
+                    if not addr or "lat" not in obj or "lon" not in obj:
+                        continue
+                    rssi = obj.get("rssi", -100)
+                    if addr not in best or rssi > best[addr]["rssi_dbm"]:
+                        best[addr] = {
+                            "lat": obj["lat"], "lon": obj["lon"],
+                            "rssi_dbm": rssi,
+                            "name": obj.get("name") or obj.get("local_name"),
+                        }
+                except Exception:
+                    pass
+    return best
+
+
 @app.get("/api/status")
 async def get_db_status():
     if not DB_PATH.exists():
@@ -44,9 +101,249 @@ async def get_db_status():
         with sqlite3.connect(str(DB_PATH)) as db:
             tables = db.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
             table_names = [row[0] for row in tables]
-            return {"status": "connected", "tables": table_names}
+
+            counts = {}
+            for table in ["bt_devices", "wifi_aps", "wifi_clients", "rf_devices"]:
+                try:
+                    count = db.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                    counts[table] = count
+                except:
+                    counts[table] = 0
+
+            return {"status": "connected", "tables": table_names, "counts": counts}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+@app.get("/api/collectors/status")
+async def get_collectors_status():
+    """Get status of all collectors (wifi, sdr, esp32, gps) and wardrive session."""
+
+    def is_process_running(pgrep_pattern):
+        """Check if process matching pattern is running via pgrep."""
+        try:
+            result = subprocess.run(
+                ["pgrep", "-x" if pattern.isalnum() or pattern in ("kismet", "rtl_433", "gpspipe") else "-f", pgrep_pattern],
+                capture_output=True,
+                timeout=2
+            )
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def is_sudo_available():
+        """Check if sudoers is configured for wardrive."""
+        try:
+            result = subprocess.run(
+                ["sudo", "-n", "-l", str(PROJECT_ROOT / "wardrive.sh")],
+                capture_output=True,
+                timeout=2
+            )
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def get_active_session():
+        """Find the most recent session without ended_at_utc."""
+        capture_raw = PROJECT_ROOT / "capture" / "raw"
+        if not capture_raw.exists():
+            return None, None
+
+        for session_dir in sorted(capture_raw.iterdir(), reverse=True):
+            if not session_dir.is_dir():
+                continue
+            manifest = session_dir / "manifest.json"
+            if manifest.exists():
+                try:
+                    with open(manifest) as f:
+                        data = json.load(f)
+                        if "ended_at_utc" not in data:
+                            return data, data.get("session_id")
+                except Exception:
+                    pass
+        return None, None
+
+    def get_collector_enabled_status(manifest_data):
+        """Get enabled status from manifest or config file."""
+        collectors_enabled = {"wifi": False, "sdr": False, "esp32": False, "gps": False}
+
+        if manifest_data and "collectors" in manifest_data:
+            collectors_enabled.update(manifest_data["collectors"])
+        else:
+            config_path = PROJECT_ROOT / "config" / "wardrive.conf"
+            if config_path.exists():
+                try:
+                    with open(config_path) as f:
+                        for line in f:
+                            if "ENABLE_WIFI=" in line and "true" in line:
+                                collectors_enabled["wifi"] = True
+                            elif "ENABLE_SDR=" in line and "true" in line:
+                                collectors_enabled["sdr"] = True
+                            elif "ENABLE_ESP32=" in line and "true" in line:
+                                collectors_enabled["esp32"] = True
+                            elif "ENABLE_GPS=" in line and "true" in line:
+                                collectors_enabled["gps"] = True
+                except Exception:
+                    pass
+
+        return collectors_enabled
+
+    # Check if wardrive is running
+    wardrive_running = False
+    wardrive_pid = None
+    if WARDRIVE_PID_FILE.exists():
+        try:
+            wardrive_pid = int(WARDRIVE_PID_FILE.read_text().strip())
+            os.kill(wardrive_pid, 0)
+            wardrive_running = True
+        except (OSError, ValueError):
+            WARDRIVE_PID_FILE.unlink(missing_ok=True)
+
+    # Get active session
+    manifest_data, session_id = get_active_session()
+    started_at = manifest_data.get("started_at_utc") if manifest_data else None
+
+    # Get enabled status
+    collectors_enabled = get_collector_enabled_status(manifest_data)
+
+    # Check each collector
+    collectors = {
+        "wifi": {
+            "enabled": collectors_enabled["wifi"],
+            "running": is_process_running("kismet") if collectors_enabled["wifi"] else False
+        },
+        "sdr": {
+            "enabled": collectors_enabled["sdr"],
+            "running": is_process_running("rtl_433") if collectors_enabled["sdr"] else False
+        },
+        "esp32": {
+            "enabled": collectors_enabled["esp32"],
+            "running": is_process_running("esp32_reader\\.py") if collectors_enabled["esp32"] else False
+        },
+        "gps": {
+            "enabled": collectors_enabled["gps"],
+            "running": is_process_running("gpspipe") if collectors_enabled["gps"] else False
+        }
+    }
+
+    return {
+        "wardrive_running": wardrive_running,
+        "wardrive_pid": wardrive_pid,
+        "session_id": session_id,
+        "started_at_utc": started_at,
+        "collectors": collectors,
+        "sudo_available": is_sudo_available(),
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+@app.post("/api/collectors/start")
+async def start_collectors():
+    """Start wardrive.sh session. Requires sudoers configuration."""
+
+    # Check if already running
+    if WARDRIVE_PID_FILE.exists():
+        try:
+            pid = int(WARDRIVE_PID_FILE.read_text().strip())
+            os.kill(pid, 0)
+            return {"status": "already_running", "pid": pid}
+        except (OSError, ValueError):
+            WARDRIVE_PID_FILE.unlink(missing_ok=True)
+
+    # Check sudo availability
+    check = subprocess.run(
+        ["sudo", "-n", "-l", str(PROJECT_ROOT / "wardrive.sh")],
+        capture_output=True,
+        timeout=2
+    )
+    if check.returncode != 0:
+        return {
+            "status": "sudo_not_configured",
+            "message": "wardrive.sh requires root privileges. Configure sudoers to enable start from the UI.",
+            "sudoers_snippet": f"parkat ALL=(root) NOPASSWD: {PROJECT_ROOT}/wardrive.sh\nparkat ALL=(root) NOPASSWD: /bin/kill"
+        }
+
+    # Launch wardrive.sh
+    try:
+        proc = subprocess.Popen(
+            ["sudo", "-n", str(PROJECT_ROOT / "wardrive.sh")],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True
+        )
+        return {"status": "started", "pid": proc.pid}
+    except Exception as e:
+        logging.error(f"Failed to start collectors: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/collectors/stop")
+async def stop_collectors():
+    """Stop wardrive.sh session. Requires PID file or sudoers for kill."""
+
+    if not WARDRIVE_PID_FILE.exists():
+        return {"status": "not_running"}
+
+    try:
+        pid = int(WARDRIVE_PID_FILE.read_text().strip())
+    except ValueError:
+        WARDRIVE_PID_FILE.unlink(missing_ok=True)
+        return {"status": "not_running"}
+
+    # Verify process is alive
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        WARDRIVE_PID_FILE.unlink(missing_ok=True)
+        return {"status": "not_running"}
+
+    # Try direct SIGTERM first
+    try:
+        os.kill(pid, signal.SIGTERM)
+        return {"status": "stopped"}
+    except PermissionError:
+        pass
+
+    # Fallback: sudo kill
+    try:
+        result = subprocess.run(
+            ["sudo", "-n", "kill", "-TERM", str(pid)],
+            capture_output=True,
+            timeout=2
+        )
+        if result.returncode == 0:
+            return {"status": "stopped"}
+    except Exception:
+        pass
+
+    return {
+        "status": "sudo_required_for_kill",
+        "message": "Cannot signal root-owned process. Configure sudoers to enable kill from the UI.",
+        "sudoers_snippet": f"parkat ALL=(root) NOPASSWD: {PROJECT_ROOT}/wardrive.sh\nparkat ALL=(root) NOPASSWD: /bin/kill"
+    }
+
+@app.get("/api/sessions")
+async def get_sessions():
+    if not DB_PATH.exists():
+        return {"error": "Database not found"}
+
+    try:
+        with sqlite3.connect(str(DB_PATH)) as db:
+            db.row_factory = sqlite3.Row
+            # Fetch all sessions with aggregated counts from observation tables
+            query = """
+            SELECT
+                s.session_id,
+                s.started_at_utc,
+                s.ended_at_utc,
+                (SELECT COUNT(DISTINCT bssid) FROM wifi_obs WHERE session_id = s.session_id) as ap_count,
+                (SELECT COUNT(DISTINCT address) FROM bt_obs WHERE session_id = s.session_id) as bt_count,
+                (SELECT COUNT(DISTINCT device_id) FROM rf_obs WHERE session_id = s.session_id) as rf_count
+            FROM sessions s
+            ORDER BY s.started_at_utc DESC
+            """
+            rows = db.execute(query).fetchall()
+            return [dict(row) for row in rows]
+    except Exception as e:
+        logging.error(f"Database error: {e}")
+        return {"error": str(e)}
 
 @app.get("/api/devices")
 async def get_devices(
@@ -54,6 +351,8 @@ async def get_devices(
     vendor: str = None,
     rssi: float = None,
     date: str = None,
+    session: str = None,
+    device_type: str = None,
     limit: int = 500,
     offset: int = 0
 ):
@@ -76,20 +375,26 @@ async def get_devices(
             "vendor_column": "manufacturer",
             "first_seen": "first_seen_utc",
             "last_seen": "last_seen_utc",
+            "obs_table": "bt_obs",
+            "obs_key": "address",
         },
         "wifi_aps": {
             "primary_key": "bssid",
             "signal_column": "max_signal_dbm",
-            "vendor_column": None,  # no vendor column
+            "vendor_column": "manufacturer",
             "first_seen": "first_seen_utc",
             "last_seen": "last_seen_utc",
+            "obs_table": "wifi_obs",
+            "obs_key": "bssid",
         },
         "wifi_clients": {
             "primary_key": "mac",
             "signal_column": None,  # no signal column
-            "vendor_column": None,
+            "vendor_column": "manufacturer",
             "first_seen": "first_seen_utc",
             "last_seen": "last_seen_utc",
+            "obs_table": "wifi_obs",
+            "obs_key": "client_mac",
         },
         "rf_devices": {
             "primary_key": "device_id",
@@ -97,6 +402,8 @@ async def get_devices(
             "vendor_column": None,
             "first_seen": "first_seen_utc",
             "last_seen": "last_seen_utc",
+            "obs_table": "rf_obs",
+            "obs_key": "device_id",
         },
     }
 
@@ -111,6 +418,14 @@ async def get_devices(
             query = f"SELECT * FROM {table}"
             conditions = []
             params = []
+
+            # Session filter (via observation table subquery)
+            if session:
+                obs_table = schema["obs_table"]
+                obs_key = schema["obs_key"]
+                pk_column = schema["primary_key"]
+                conditions.append(f"{pk_column} IN (SELECT DISTINCT {obs_key} FROM {obs_table} WHERE session_id = ?)")
+                params.append(session)
 
             # Vendor filter (only if table has vendor column)
             if vendor and schema["vendor_column"]:
@@ -131,6 +446,11 @@ async def get_devices(
                 conditions.append(f"{schema['first_seen']} >= ?")
                 params.append(f"{date} 00:00:00")
 
+            # Device type filter (works on tables with device_type column)
+            if device_type:
+                conditions.append("device_type = ?")
+                params.append(device_type)
+
             if conditions:
                 query += " WHERE " + " AND ".join(conditions)
 
@@ -147,6 +467,572 @@ async def get_devices(
             return [dict(row) for row in rows]
     except Exception as e:
         logging.error(f"Database error: {e}")
+        return {"error": str(e)}
+
+@app.get("/api/map/devices")
+async def get_map_devices(session: str = None):
+    devices = []
+
+    # BLE from raw NDJSON
+    ble_positions = _get_ble_gps_positions(session)
+    if ble_positions and DB_PATH.exists():
+        with sqlite3.connect(str(DB_PATH)) as db:
+            db.row_factory = sqlite3.Row
+            if session:
+                rows = db.execute(
+                    "SELECT d.* FROM bt_devices d "
+                    "WHERE d.address IN (SELECT DISTINCT address FROM bt_obs WHERE session_id=?)",
+                    (session,)
+                ).fetchall()
+            else:
+                rows = db.execute("SELECT * FROM bt_devices").fetchall()
+            for row in rows:
+                r = dict(row)
+                pos = ble_positions.get(r["address"])
+                if pos:
+                    devices.append({
+                        "type": "ble",
+                        "address": r["address"],
+                        "name": r.get("name"),
+                        "manufacturer": r.get("manufacturer"),
+                        "device_type": r.get("device_type"),
+                        "lat": pos["lat"], "lon": pos["lon"],
+                        "rssi_dbm": r.get("max_rssi_dbm") or pos["rssi_dbm"],
+                    })
+
+    # WiFi from DB (GPS observations + wigle coords)
+    if DB_PATH.exists():
+        with sqlite3.connect(str(DB_PATH)) as db:
+            db.row_factory = sqlite3.Row
+            # Query WiFi observations with GPS data
+            if session:
+                rows = db.execute("""
+                    SELECT DISTINCT w.bssid, a.ssid, a.manufacturer, a.device_type, a.alpr_source,
+                           AVG(w.lat) as lat, AVG(w.lon) as lon, MAX(w.signal_dbm) as signal_dbm
+                    FROM wifi_obs w
+                    JOIN wifi_aps a ON w.bssid = a.bssid
+                    WHERE w.session_id = ? AND w.lat IS NOT NULL AND w.lon IS NOT NULL
+                    GROUP BY w.bssid
+                """, (session,)).fetchall()
+            else:
+                rows = db.execute("""
+                    SELECT DISTINCT w.bssid, a.ssid, a.manufacturer, a.device_type, a.alpr_source,
+                           AVG(w.lat) as lat, AVG(w.lon) as lon, MAX(w.signal_dbm) as signal_dbm
+                    FROM wifi_obs w
+                    JOIN wifi_aps a ON w.bssid = a.bssid
+                    WHERE w.lat IS NOT NULL AND w.lon IS NOT NULL
+                    GROUP BY w.bssid
+                """).fetchall()
+            for row in rows:
+                r = dict(row)
+                devices.append({
+                    "type": "wifi",
+                    "address": r["bssid"],
+                    "name": r.get("ssid"),
+                    "manufacturer": r.get("manufacturer"),
+                    "device_type": r.get("device_type"),
+                    "alpr_source": r.get("alpr_source"),
+                    "lat": r["lat"], "lon": r["lon"],
+                    "rssi_dbm": r.get("signal_dbm"),
+                })
+
+    # RF from DB (GPS observations)
+    if DB_PATH.exists():
+        with sqlite3.connect(str(DB_PATH)) as db:
+            db.row_factory = sqlite3.Row
+            if session:
+                rows = db.execute("""
+                    SELECT DISTINCT r.device_id, d.model, d.device_type,
+                           AVG(r.lat) as lat, AVG(r.lon) as lon
+                    FROM rf_obs r
+                    JOIN rf_devices d ON r.device_id = d.device_id
+                    WHERE r.session_id = ? AND r.lat IS NOT NULL AND r.lon IS NOT NULL
+                    GROUP BY r.device_id
+                """, (session,)).fetchall()
+            else:
+                rows = db.execute("""
+                    SELECT DISTINCT r.device_id, d.model, d.device_type,
+                           AVG(r.lat) as lat, AVG(r.lon) as lon
+                    FROM rf_obs r
+                    JOIN rf_devices d ON r.device_id = d.device_id
+                    WHERE r.lat IS NOT NULL AND r.lon IS NOT NULL
+                    GROUP BY r.device_id
+                """).fetchall()
+            for row in rows:
+                r = dict(row)
+                devices.append({
+                    "type": "rf",
+                    "address": r["device_id"],
+                    "name": r.get("model"),
+                    "manufacturer": None,
+                    "device_type": r.get("device_type"),
+                    "lat": r["lat"], "lon": r["lon"],
+                    "rssi_dbm": None,
+                })
+
+    return devices
+
+
+@app.get("/api/map/track")
+async def get_map_track(session: str = None):
+    capture_raw = PROJECT_ROOT / "capture" / "raw"
+    points = []
+    if not capture_raw.exists():
+        return points
+
+    dirs = []
+    if session:
+        d = capture_raw / session
+        if d.is_dir():
+            dirs = [d]
+    else:
+        dirs = sorted(capture_raw.iterdir(), reverse=True)
+
+    def nmea_to_dd(coord, hemi):
+        if not coord:
+            return None
+        dot = coord.index(".")
+        deg = int(coord[:dot-2])
+        minutes = float(coord[dot-2:])
+        dd = deg + minutes / 60.0
+        if hemi in ("S", "W"):
+            dd = -dd
+        return round(dd, 7)
+
+    for d in dirs:
+        if not (isinstance(d, Path) and d.is_dir()):
+            continue
+        nmea_log = d / "gps" / "nmea.log"
+        if not nmea_log.exists():
+            continue
+        with open(nmea_log, errors="replace") as f:
+            for line in f:
+                line = line.strip()
+                if not (line.startswith("$GPRMC") or line.startswith("$GNRMC")):
+                    continue
+                parts = line.split(",")
+                if len(parts) < 7 or parts[2] != "A":
+                    continue
+                try:
+                    lat = nmea_to_dd(parts[3], parts[4])
+                    lon = nmea_to_dd(parts[5], parts[6].split("*")[0])
+                    if lat and lon:
+                        points.append({"lat": lat, "lon": lon})
+                except Exception:
+                    pass
+        if points:
+            break
+
+    return points
+
+
+@app.get("/api/live/session")
+async def get_live_session():
+    if not DB_PATH.exists():
+        return {"error": "Database not found"}
+
+    try:
+        with sqlite3.connect(str(DB_PATH)) as db:
+            db.row_factory = sqlite3.Row
+            # First try to find an active session (no ended_at_utc)
+            session = db.execute(
+                "SELECT * FROM sessions WHERE ended_at_utc IS NULL ORDER BY started_at_utc DESC LIMIT 1"
+            ).fetchone()
+
+            # If no active session, get the most recent finished session with data
+            if not session:
+                session = db.execute(
+                    "SELECT * FROM sessions ORDER BY started_at_utc DESC LIMIT 1"
+                ).fetchone()
+
+            if session:
+                session_dict = dict(session)
+                session_id = session_dict.get("session_id")
+
+                if session_id:
+                    bt_count = db.execute(
+                        "SELECT COUNT(DISTINCT address) FROM bt_obs WHERE session_id = ?", (session_id,)
+                    ).fetchone()[0]
+                    wifi_count = db.execute(
+                        "SELECT COUNT(DISTINCT bssid) FROM wifi_obs WHERE session_id = ?", (session_id,)
+                    ).fetchone()[0]
+                    rf_count = db.execute(
+                        "SELECT COUNT(DISTINCT device_id) FROM rf_obs WHERE session_id = ?", (session_id,)
+                    ).fetchone()[0]
+
+                    session_dict["bt_count"] = bt_count
+                    session_dict["wifi_count"] = wifi_count
+                    session_dict["rf_count"] = rf_count
+
+                    # If we have data in the database, don't fall back to raw capture
+                    if bt_count > 0 or wifi_count > 0 or rf_count > 0:
+                        return {"active_session": session_dict, "status": "enriched"}
+
+                return {"active_session": session_dict}
+
+        # Fallback: check for recent raw capture sessions
+        capture_raw = PROJECT_ROOT / "capture" / "raw"
+        if capture_raw.exists():
+            sessions = []
+            for session_dir in sorted(capture_raw.iterdir(), reverse=True):
+                if session_dir.is_dir():
+                    manifest_file = session_dir / "manifest.json"
+                    if manifest_file.exists():
+                        try:
+                            with open(manifest_file) as f:
+                                manifest = json.load(f)
+
+                                # Count devices from Kismet files
+                                wifi_count = 0
+                                bt_count = 0
+                                kismet_file = None
+                                for f in (session_dir / "wifi").glob("*.kismet") if (session_dir / "wifi").exists() else []:
+                                    kismet_file = f
+                                    break
+
+                                if kismet_file:
+                                    try:
+                                        with sqlite3.connect(str(kismet_file)) as kdb:
+                                            wifi_count = kdb.execute("SELECT COUNT(*) FROM devices WHERE devmac IS NOT NULL").fetchone()[0]
+                                    except Exception:
+                                        pass
+
+                                # Include unfinished sessions or recently finished ones
+                                sessions.append({
+                                    "session_id": manifest.get("session_id"),
+                                    "started_at_utc": manifest.get("started_at_utc"),
+                                    "ended_at_utc": manifest.get("ended_at_utc"),
+                                    "hostname": manifest.get("hostname"),
+                                    "source": "raw_capture",  # Indicates not yet enriched
+                                    "collectors": manifest.get("collectors", {}),
+                                    "bt_count": bt_count,
+                                    "wifi_count": wifi_count,
+                                    "rf_count": 0,
+                                })
+                        except Exception:
+                            pass
+
+            # Return the most recent session from raw captures
+            if sessions:
+                return {"active_session": sessions[0], "status": "raw_data_not_yet_enriched"}
+
+        return {"active_session": None}
+    except Exception as e:
+        logging.error(f"Database error: {e}")
+        return {"error": str(e)}
+
+@app.get("/api/live/feed")
+async def get_live_feed(since: str = None, limit: int = 100, include_raw: bool = True):
+    if not DB_PATH.exists():
+        return []
+
+    limit = min(int(limit), 500)
+
+    if not since:
+        since = (datetime.now(timezone.utc) - timedelta(seconds=30)).isoformat()
+
+    observations = []
+
+    # Try to get enriched data from main database
+    try:
+        with sqlite3.connect(str(DB_PATH)) as db:
+            db.row_factory = sqlite3.Row
+
+            query = """
+            SELECT 'ble' as type, b.timestamp_utc, b.address, d.name, d.manufacturer,
+                   d.device_type, b.rssi_dbm, b.lat, b.lon, b.session_id
+            FROM bt_obs b
+            JOIN bt_devices d ON b.address = d.address
+            WHERE b.timestamp_utc >= ?
+
+            UNION ALL
+
+            SELECT 'wifi' as type, w.timestamp_utc, a.bssid as address, a.ssid as name,
+                   a.manufacturer, a.device_type, w.signal_dbm as rssi_dbm, w.lat, w.lon, w.session_id
+            FROM wifi_obs w
+            JOIN wifi_aps a ON w.bssid = a.bssid
+            WHERE w.timestamp_utc >= ?
+
+            UNION ALL
+
+            SELECT 'rf' as type, r.timestamp_utc, d.device_id as address, d.model as name,
+                   NULL as manufacturer, d.device_type, d.max_rssi_dbm as rssi_dbm, r.lat, r.lon, r.session_id
+            FROM rf_obs r
+            JOIN rf_devices d ON r.device_id = d.device_id
+            WHERE r.timestamp_utc >= ?
+
+            ORDER BY timestamp_utc DESC
+            LIMIT ?
+            """
+
+            rows = db.execute(query, (since, since, since, limit)).fetchall()
+            observations = [dict(row) for row in rows]
+    except Exception as e:
+        logging.error(f"Database error: {e}")
+
+    # If no enriched data and include_raw is true, try raw Kismet files
+    if not observations and include_raw:
+        try:
+            capture_raw = PROJECT_ROOT / "capture" / "raw"
+            if capture_raw.exists():
+                for session_dir in sorted(capture_raw.iterdir(), reverse=True)[:3]:  # Check last 3 sessions
+                    if not session_dir.is_dir():
+                        continue
+                    kismet_file = None
+                    for f in session_dir.glob("wifi/*.kismet"):
+                        kismet_file = f
+                        break
+
+                    if kismet_file and kismet_file.exists():
+                        try:
+                            with sqlite3.connect(str(kismet_file)) as kdb:
+                                kdb.row_factory = sqlite3.Row
+                                # Query devices from Kismet
+                                dev_query = "SELECT devmac, strongest_signal, type FROM devices WHERE devmac IS NOT NULL ORDER BY last_time DESC LIMIT 200"
+                                devices = kdb.execute(dev_query).fetchall()
+
+                                for dev in devices:
+                                    observations.append({
+                                        "type": "wifi",
+                                        "address": dev["devmac"],
+                                        "name": None,
+                                        "manufacturer": None,
+                                        "device_type": dev["type"] if dev["type"] else "Unknown",
+                                        "rssi_dbm": dev["strongest_signal"] if dev["strongest_signal"] and dev["strongest_signal"] < 0 else None,
+                                        "timestamp_utc": (datetime.now(timezone.utc)).isoformat(),
+                                        "session_id": session_dir.name,
+                                        "source": "raw_kismet"
+                                    })
+                        except Exception as e:
+                            logging.debug(f"Could not read Kismet file: {e}")
+
+                    if len(observations) >= limit:
+                        break
+        except Exception as e:
+            logging.debug(f"Raw data fallback error: {e}")
+
+    return observations[:limit]
+
+@app.get("/api/report/summary")
+async def get_report_summary(session: str = None):
+    """Generate aggregated statistics for the report view - DISABLED for performance."""
+    return {
+        "error": "Report endpoint temporarily disabled - use the Explorer with filters to analyze data instead."
+    }
+
+@app.get("/api/dashboard/live")
+async def get_dashboard_live():
+    """Get live dashboard metrics across all sessions and devices."""
+    if not DB_PATH.exists():
+        return {
+            "status": "db_not_found",
+            "strongest_device": None,
+            "busiest_session": None,
+            "unique_devices": {"ble": 0, "wifi_ap": 0, "wifi_client": 0, "rf": 0, "total": 0},
+            "protocol_stats": [],
+            "geographic_bounds": None,
+            "last_capture": None,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
+    try:
+        with sqlite3.connect(str(DB_PATH)) as db:
+            db.row_factory = sqlite3.Row
+
+            # Get strongest BLE and WiFi in one pass
+            bt_strongest = db.execute("SELECT address, name, manufacturer, max_rssi_dbm, device_type FROM bt_devices WHERE max_rssi_dbm IS NOT NULL ORDER BY max_rssi_dbm DESC LIMIT 1").fetchone()
+            wifi_strongest = db.execute("SELECT bssid, ssid, manufacturer, max_signal_dbm, device_type FROM wifi_aps WHERE max_signal_dbm IS NOT NULL ORDER BY max_signal_dbm DESC LIMIT 1").fetchone()
+
+            strongest_device = None
+            if bt_strongest and wifi_strongest:
+                bt_rssi = bt_strongest["max_rssi_dbm"] or -200
+                wifi_rssi = wifi_strongest["max_signal_dbm"] or -200
+                if bt_rssi > wifi_rssi:
+                    strongest_device = {"type": "ble", "address": bt_strongest["address"], "name": bt_strongest["name"], "manufacturer": bt_strongest["manufacturer"], "rssi_dbm": bt_rssi, "device_type": bt_strongest["device_type"]}
+                else:
+                    strongest_device = {"type": "wifi", "address": wifi_strongest["bssid"], "name": wifi_strongest["ssid"], "manufacturer": wifi_strongest["manufacturer"], "rssi_dbm": wifi_rssi, "device_type": wifi_strongest["device_type"]}
+            elif bt_strongest:
+                strongest_device = {"type": "ble", "address": bt_strongest["address"], "name": bt_strongest["name"], "manufacturer": bt_strongest["manufacturer"], "rssi_dbm": bt_strongest["max_rssi_dbm"], "device_type": bt_strongest["device_type"]}
+            elif wifi_strongest:
+                strongest_device = {"type": "wifi", "address": wifi_strongest["bssid"], "name": wifi_strongest["ssid"], "manufacturer": wifi_strongest["manufacturer"], "rssi_dbm": wifi_strongest["max_signal_dbm"], "device_type": wifi_strongest["device_type"]}
+
+            # Get busiest session using efficient CTE approach
+            session_counts = db.execute("""
+                WITH session_stats AS (
+                    SELECT s.session_id, s.started_at_utc,
+                        (SELECT COUNT(DISTINCT bssid) FROM wifi_obs WHERE session_id = s.session_id) as wifi_count,
+                        (SELECT COUNT(DISTINCT address) FROM bt_obs WHERE session_id = s.session_id) as bt_count,
+                        (SELECT COUNT(DISTINCT device_id) FROM rf_obs WHERE session_id = s.session_id) as rf_count
+                    FROM sessions s
+                )
+                SELECT session_id, started_at_utc, wifi_count, bt_count, rf_count, (wifi_count + bt_count + rf_count) as total
+                FROM session_stats ORDER BY total DESC LIMIT 1
+            """).fetchone()
+
+            busiest_session = None
+            if session_counts:
+                busiest_session = {
+                    "session_id": session_counts["session_id"],
+                    "started_at_utc": session_counts["started_at_utc"],
+                    "total_devices": session_counts["total"],
+                    "ap_count": session_counts["wifi_count"] or 0,
+                    "bt_count": session_counts["bt_count"] or 0,
+                    "rf_count": session_counts["rf_count"] or 0
+                }
+
+            # Get all unique device counts in one query
+            unique_counts = db.execute("""
+                SELECT
+                    (SELECT COUNT(DISTINCT address) FROM bt_devices) as ble_count,
+                    (SELECT COUNT(DISTINCT bssid) FROM wifi_aps) as wifi_ap_count,
+                    (SELECT COUNT(DISTINCT mac) FROM wifi_clients) as wifi_client_count,
+                    (SELECT COUNT(DISTINCT device_id) FROM rf_devices) as rf_count
+            """).fetchone()
+
+            unique_bt = unique_counts["ble_count"] or 0
+            unique_wifi_ap = unique_counts["wifi_ap_count"] or 0
+            unique_wifi_client = unique_counts["wifi_client_count"] or 0
+            unique_rf = unique_counts["rf_count"] or 0
+
+            # Protocol/encryption stats
+            protocol_stats = [{"type": row["encryption"], "count": row["count"]} for row in db.execute("""
+                SELECT encryption, COUNT(*) as count FROM wifi_aps WHERE encryption IS NOT NULL GROUP BY encryption ORDER BY count DESC LIMIT 5
+            """).fetchall()]
+
+            # Geographic bounds
+            geo_bounds = None
+            geo_check = db.execute("SELECT MIN(lat) as min_lat, MAX(lat) as max_lat, MIN(lon) as min_lon, MAX(lon) as max_lon FROM wifi_obs WHERE lat IS NOT NULL AND lon IS NOT NULL").fetchone()
+            if geo_check and geo_check["min_lat"] is not None:
+                geo_bounds = {"min_lat": geo_check["min_lat"], "max_lat": geo_check["max_lat"], "min_lon": geo_check["min_lon"], "max_lon": geo_check["max_lon"]}
+
+            # Last capture timestamp
+            last_ts = db.execute("""SELECT MAX(ts) as latest FROM (SELECT MAX(timestamp_utc) as ts FROM bt_obs UNION ALL SELECT MAX(timestamp_utc) FROM wifi_obs UNION ALL SELECT MAX(timestamp_utc) FROM rf_obs)""").fetchone()
+            last_capture_ts = last_ts["latest"] if last_ts and last_ts["latest"] else None
+
+            return {
+                "status": "ok",
+                "strongest_device": strongest_device,
+                "busiest_session": busiest_session,
+                "unique_devices": {
+                    "ble": unique_bt,
+                    "wifi_ap": unique_wifi_ap,
+                    "wifi_client": unique_wifi_client,
+                    "rf": unique_rf,
+                    "total": unique_bt + unique_wifi_ap + unique_wifi_client + unique_rf
+                },
+                "protocol_stats": protocol_stats,
+                "geographic_bounds": geo_bounds,
+                "last_capture": last_capture_ts,
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+    except Exception as e:
+        logging.error(f"Dashboard error: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "strongest_device": None,
+            "busiest_session": None,
+            "unique_devices": {"ble": 0, "wifi_ap": 0, "wifi_client": 0, "rf": 0, "total": 0},
+            "protocol_stats": [],
+            "geographic_bounds": None,
+            "last_capture": None,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
+@app.get("/api/analytics")
+async def get_analytics():
+    """Return aggregated analytics data for dashboard visualization."""
+    if not DB_PATH.exists():
+        return {"error": "Database not found"}
+
+    try:
+        with sqlite3.connect(str(DB_PATH)) as db:
+            db.row_factory = sqlite3.Row
+
+            # Signal strength distributions (per table - faster than UNION)
+            ble_signal = db.execute("""
+                SELECT CASE WHEN max_rssi_dbm >= -50 THEN 'Strong (-50 to 0)' WHEN max_rssi_dbm >= -70 THEN 'Good (-70 to -50)' WHEN max_rssi_dbm >= -85 THEN 'Fair (-85 to -70)' ELSE 'Weak (< -85)' END as signal_range, COUNT(*) as count
+                FROM bt_devices WHERE max_rssi_dbm IS NOT NULL GROUP BY signal_range ORDER BY signal_range
+            """).fetchall()
+
+            wifi_signal = db.execute("""
+                SELECT CASE WHEN max_signal_dbm >= -50 THEN 'Strong (-50 to 0)' WHEN max_signal_dbm >= -70 THEN 'Good (-70 to -50)' WHEN max_signal_dbm >= -85 THEN 'Fair (-85 to -70)' ELSE 'Weak (< -85)' END as signal_range, COUNT(*) as count
+                FROM wifi_aps WHERE max_signal_dbm IS NOT NULL GROUP BY signal_range ORDER BY signal_range
+            """).fetchall()
+
+            # Device type counts
+            device_types = db.execute("""
+                SELECT 'BLE' as device_type, COUNT(*) as count FROM bt_devices
+                UNION ALL SELECT 'WiFi AP', COUNT(*) FROM wifi_aps
+                UNION ALL SELECT 'WiFi Client', COUNT(*) FROM wifi_clients
+                UNION ALL SELECT 'RF Device', COUNT(*) FROM rf_devices
+            """).fetchall()
+
+            # Top manufacturers (BLE only for speed)
+            top_manufacturers = db.execute("""
+                SELECT manufacturer, COUNT(*) as count FROM bt_devices
+                WHERE manufacturer IS NOT NULL GROUP BY manufacturer ORDER BY count DESC LIMIT 10
+            """).fetchall()
+
+            # WiFi encryption distribution
+            wifi_encryption = db.execute("""
+                SELECT encryption, COUNT(*) as count FROM wifi_aps
+                WHERE encryption IS NOT NULL GROUP BY encryption ORDER BY count DESC LIMIT 10
+            """).fetchall()
+
+            # Hourly discovery (fast version - aggregate by hour from each table)
+            hourly_dict = {}
+
+            # BLE observations by hour
+            for row in db.execute("SELECT strftime('%Y-%m-%d %H:00:00', timestamp_utc) as hour, COUNT(DISTINCT address) as cnt FROM bt_obs GROUP BY hour"):
+                if row["hour"] not in hourly_dict:
+                    hourly_dict[row["hour"]] = {"hour": row["hour"], "ble": 0, "wifi_ap": 0, "rf": 0}
+                hourly_dict[row["hour"]]["ble"] = row["cnt"] or 0
+
+            # WiFi observations by hour
+            for row in db.execute("SELECT strftime('%Y-%m-%d %H:00:00', timestamp_utc) as hour, COUNT(DISTINCT bssid) as cnt FROM wifi_obs WHERE bssid IS NOT NULL GROUP BY hour"):
+                if row["hour"] not in hourly_dict:
+                    hourly_dict[row["hour"]] = {"hour": row["hour"], "ble": 0, "wifi_ap": 0, "rf": 0}
+                hourly_dict[row["hour"]]["wifi_ap"] = row["cnt"] or 0
+
+            # RF observations by hour
+            for row in db.execute("SELECT strftime('%Y-%m-%d %H:00:00', timestamp_utc) as hour, COUNT(DISTINCT device_id) as cnt FROM rf_obs GROUP BY hour"):
+                if row["hour"] not in hourly_dict:
+                    hourly_dict[row["hour"]] = {"hour": row["hour"], "ble": 0, "wifi_ap": 0, "rf": 0}
+                hourly_dict[row["hour"]]["rf"] = row["cnt"] or 0
+
+            hourly = sorted(hourly_dict.values(), key=lambda x: x["hour"])
+
+            # Session comparison stats - counts per session
+            session_ble = [row["ble_count"] for row in db.execute("""
+                SELECT COUNT(DISTINCT address) as ble_count FROM bt_obs GROUP BY session_id ORDER BY session_id DESC
+            """).fetchall()]
+
+            session_wifi = [row["wifi_count"] for row in db.execute("""
+                SELECT COUNT(DISTINCT bssid) as wifi_count FROM wifi_obs WHERE bssid IS NOT NULL GROUP BY session_id ORDER BY session_id DESC
+            """).fetchall()]
+
+            avg_ble = sum(session_ble) / len(session_ble) if session_ble else 0
+            avg_wifi = sum(session_wifi) / len(session_wifi) if session_wifi else 0
+
+            return {
+                "signal_strength": {
+                    "ble": [{"range": row["signal_range"], "count": row["count"]} for row in ble_signal],
+                    "wifi": [{"range": row["signal_range"], "count": row["count"]} for row in wifi_signal]
+                },
+                "device_types": [{"type": row["device_type"], "count": row["count"]} for row in device_types],
+                "top_manufacturers": [{"manufacturer": row["manufacturer"], "count": row["count"]} for row in top_manufacturers],
+                "wifi_encryption": [{"encryption": row["encryption"], "count": row["count"]} for row in wifi_encryption],
+                "hourly_discovery": [{"hour": row["hour"], "ble": row["ble"] or 0, "wifi_ap": row["wifi_ap"] or 0, "rf": row["rf"] or 0} for row in hourly],
+                "session_comparison": {
+                    "ble_per_session": session_ble,
+                    "wifi_per_session": session_wifi,
+                    "avg_ble": round(avg_ble, 1),
+                    "avg_wifi": round(avg_wifi, 1)
+                }
+            }
+    except Exception as e:
+        logging.error(f"Analytics error: {e}")
         return {"error": str(e)}
 
 if __name__ == "__main__":

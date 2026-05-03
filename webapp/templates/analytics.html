@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - warDrive Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .analytics-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .analytics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .chart-title {
+            color: var(--accent-secondary);
+            font-size: 1rem;
+            margin: 0 0 1.5rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            margin-bottom: 1rem;
+        }
+
+        .chart-wrapper.tall {
+            height: 400px;
+        }
+
+        .chart-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .summary-stat {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .summary-stat-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-stat-value {
+            color: var(--accent-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .error-message {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid var(--color-red);
+            color: var(--color-red);
+            padding: 1rem;
+            border-radius: 3px;
+            margin: 1rem 0;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 1024px) {
+            .analytics-row {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-wrapper {
+                height: 250px;
+            }
+
+            .chart-wrapper.tall {
+                height: 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .analytics-container {
+                gap: 1rem;
+            }
+
+            .analytics-row {
+                gap: 1rem;
+            }
+
+            .chart-card {
+                padding: 1rem;
+            }
+
+            .chart-wrapper {
+                height: 200px;
+            }
+
+            .chart-wrapper.tall {
+                height: 300px;
+            }
+
+            .summary-stats {
+                gap: 0.5rem;
+            }
+
+            .summary-stat {
+                padding: 0.75rem;
+            }
+
+            .summary-stat-value {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="logo">⚡ warDrive Explorer</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Explorer</a>
+                <a href="/live" class="nav-link">Live</a>
+                <a href="/map" class="nav-link">Map</a>
+                <a href="/analytics" class="nav-link active">Analytics</a>
+            </div>
+            <div class="status-section">
+                <div id="collector-panel" class="collector-panel"><!-- populated by collectors.js --></div>
+                <div id="status" class="status-pill">Connecting...</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="analytics-container">
+            <!-- Signal Strength Distribution Row -->
+            <div class="analytics-row">
+                <div class="chart-card">
+                    <h3 class="chart-title">BLE Signal Strength Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="ble-signal-chart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3 class="chart-title">WiFi AP Signal Strength Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="wifi-signal-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Type Breakdown -->
+            <div class="analytics-row">
+                <div class="chart-card">
+                    <h3 class="chart-title">Device Type Distribution</h3>
+                    <div class="chart-wrapper tall">
+                        <canvas id="device-type-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hourly Discovery Timeline -->
+            <div class="analytics-row full-width">
+                <div class="chart-card">
+                    <h3 class="chart-title">Devices Discovered Per Hour</h3>
+                    <div class="chart-wrapper tall">
+                        <canvas id="hourly-discovery-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Manufacturers -->
+            <div class="analytics-row full-width">
+                <div class="chart-card">
+                    <h3 class="chart-title">Top 10 Manufacturers by Device Count</h3>
+                    <div class="chart-wrapper tall">
+                        <canvas id="manufacturers-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Comparison -->
+            <div class="analytics-row">
+                <div class="chart-card">
+                    <h3 class="chart-title">Devices Per Session (BLE vs WiFi APs)</h3>
+                    <div class="chart-wrapper tall">
+                        <canvas id="session-comparison-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Statistics -->
+            <div class="analytics-row full-width">
+                <div class="chart-card">
+                    <h3 class="chart-title">Summary Statistics</h3>
+                    <div class="summary-stats">
+                        <div class="summary-stat">
+                            <div class="summary-stat-label">Avg BLE/Session</div>
+                            <div class="summary-stat-value" id="stat-avg-ble">—</div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="summary-stat-label">Avg WiFi APs/Session</div>
+                            <div class="summary-stat-value" id="stat-avg-wifi">—</div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="summary-stat-label">Total Device Types</div>
+                            <div class="summary-stat-value" id="stat-device-types">—</div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="summary-stat-label">Top Manufacturer</div>
+                            <div class="summary-stat-value" id="stat-top-mfg" style="font-size: 0.9rem; word-break: break-word;">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="error-container"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script>
+        // Chart.js color scheme matching warDrive theme
+        const chartColors = {
+            primary: '#00ff88',
+            secondary: '#00d4ff',
+            red: '#ff4444',
+            blue: '#3b82f6',
+            purple: '#8b5cf6',
+            amber: '#f59e0b',
+            teal: '#10b981',
+            cyan: '#06b6d4',
+            orange: '#f97316',
+            gray: '#374151'
+        };
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#e2e8f0',
+                        font: { family: "'JetBrains Mono', monospace" },
+                        padding: 15
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: '#6b7280', font: { family: "'JetBrains Mono', monospace" } },
+                    grid: { color: '#2d3748', drawBorder: false }
+                },
+                y: {
+                    ticks: { color: '#6b7280', font: { family: "'JetBrains Mono', monospace" } },
+                    grid: { color: '#2d3748', drawBorder: false }
+                }
+            }
+        };
+
+        let charts = {};
+
+        async function loadAnalytics() {
+            try {
+                // Update status
+                updateStatus('connected', 'Fetching analytics...');
+
+                const response = await fetch('/api/analytics');
+                if (!response.ok) throw new Error('Failed to load analytics');
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                renderCharts(data);
+                updateStatus('connected', 'Connected');
+            } catch (error) {
+                console.error('Analytics error:', error);
+                showError(error.message);
+                updateStatus('error', 'Error loading analytics');
+            }
+        }
+
+        function renderCharts(data) {
+            renderBleSignalChart(data.signal_strength.ble);
+            renderWifiSignalChart(data.signal_strength.wifi);
+            renderDeviceTypeChart(data.device_types);
+            renderHourlyDiscoveryChart(data.hourly_discovery);
+            renderManufacturersChart(data.top_manufacturers);
+            renderSessionComparisonChart(data.session_comparison);
+            updateSummaryStats(data);
+        }
+
+        function renderBleSignalChart(bleData) {
+            const ctx = document.getElementById('ble-signal-chart').getContext('2d');
+
+            const labels = bleData.map(d => d.range);
+            const counts = bleData.map(d => d.count);
+
+            if (charts.bleSignal) charts.bleSignal.destroy();
+
+            charts.bleSignal = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Devices',
+                        data: counts,
+                        backgroundColor: chartColors.primary,
+                        borderColor: chartColors.primary,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    indexAxis: 'y'
+                }
+            });
+        }
+
+        function renderWifiSignalChart(wifiData) {
+            const ctx = document.getElementById('wifi-signal-chart').getContext('2d');
+
+            const labels = wifiData.map(d => d.range);
+            const counts = wifiData.map(d => d.count);
+
+            if (charts.wifiSignal) charts.wifiSignal.destroy();
+
+            charts.wifiSignal = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'APs',
+                        data: counts,
+                        backgroundColor: chartColors.secondary,
+                        borderColor: chartColors.secondary,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    indexAxis: 'y'
+                }
+            });
+        }
+
+        function renderDeviceTypeChart(deviceTypes) {
+            const ctx = document.getElementById('device-type-chart').getContext('2d');
+
+            // Sort by count descending, take top 8
+            const sorted = deviceTypes.sort((a, b) => b.count - a.count).slice(0, 8);
+            const labels = sorted.map(d => d.type);
+            const counts = sorted.map(d => d.count);
+
+            const colors = [
+                chartColors.primary,
+                chartColors.secondary,
+                chartColors.purple,
+                chartColors.amber,
+                chartColors.teal,
+                chartColors.cyan,
+                chartColors.orange,
+                chartColors.blue
+            ];
+
+            if (charts.deviceType) charts.deviceType.destroy();
+
+            charts.deviceType = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderColor: '#111827',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    plugins: {
+                        ...chartOptions.plugins,
+                        legend: {
+                            ...chartOptions.plugins.legend,
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderHourlyDiscoveryChart(hourlyData) {
+            const ctx = document.getElementById('hourly-discovery-chart').getContext('2d');
+
+            const labels = hourlyData.map(d => new Date(d.hour).toLocaleString());
+            const bleData = hourlyData.map(d => d.ble);
+            const wifiData = hourlyData.map(d => d.wifi_ap);
+            const rfData = hourlyData.map(d => d.rf);
+
+            if (charts.hourlyDiscovery) charts.hourlyDiscovery.destroy();
+
+            charts.hourlyDiscovery = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'BLE Devices',
+                            data: bleData,
+                            borderColor: chartColors.primary,
+                            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'WiFi APs',
+                            data: wifiData,
+                            borderColor: chartColors.secondary,
+                            backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'RF Devices',
+                            data: rfData,
+                            borderColor: chartColors.orange,
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            ...chartOptions.scales.y,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderManufacturersChart(manufacturers) {
+            const ctx = document.getElementById('manufacturers-chart').getContext('2d');
+
+            const labels = manufacturers.map(m => m.manufacturer).slice(0, 10);
+            const counts = manufacturers.map(m => m.count).slice(0, 10);
+
+            if (charts.manufacturers) charts.manufacturers.destroy();
+
+            charts.manufacturers = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Devices',
+                        data: counts,
+                        backgroundColor: chartColors.primary,
+                        borderColor: chartColors.primary,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    indexAxis: 'y'
+                }
+            });
+        }
+
+        function renderSessionComparisonChart(sessionComparison) {
+            const ctx = document.getElementById('session-comparison-chart').getContext('2d');
+
+            const sessions = sessionComparison.ble_per_session.length;
+            const sessionLabels = Array.from({ length: sessions }, (_, i) => `Session ${i + 1}`);
+
+            if (charts.sessionComparison) charts.sessionComparison.destroy();
+
+            charts.sessionComparison = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sessionLabels,
+                    datasets: [
+                        {
+                            label: 'BLE Devices',
+                            data: sessionComparison.ble_per_session,
+                            backgroundColor: chartColors.primary,
+                            borderColor: chartColors.primary,
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'WiFi APs',
+                            data: sessionComparison.wifi_per_session,
+                            backgroundColor: chartColors.secondary,
+                            borderColor: chartColors.secondary,
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    ...chartOptions,
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            ...chartOptions.scales.y,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateSummaryStats(data) {
+            document.getElementById('stat-avg-ble').textContent = data.session_comparison.avg_ble;
+            document.getElementById('stat-avg-wifi').textContent = data.session_comparison.avg_wifi;
+            document.getElementById('stat-device-types').textContent = data.device_types.length;
+
+            const topMfg = data.top_manufacturers.length > 0 ? data.top_manufacturers[0].manufacturer : 'N/A';
+            document.getElementById('stat-top-mfg').textContent = topMfg.substring(0, 20);
+        }
+
+        function updateStatus(status, message) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status-pill ${status}`;
+        }
+
+        function showError(message) {
+            const container = document.getElementById('error-container');
+            container.innerHTML = `<div class="error-message">Error: ${message}</div>`;
+        }
+
+        // Load analytics on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAnalytics();
+        });
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadAnalytics, 30000);
+    </script>
+    <script src="/static/collectors.js"></script>
+</body>
+</html>

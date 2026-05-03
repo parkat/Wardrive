@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>warDrive Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .report-page {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .report-header {
+            margin-bottom: 2rem;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-primary);
+            padding-bottom: 1.5rem;
+        }
+
+        .report-title {
+            font-size: 2rem;
+            color: var(--accent-primary);
+            margin: 0 0 0.5rem 0;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .report-timestamp {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .report-section {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            color: var(--accent-secondary);
+            font-size: 1.2rem;
+            margin: 0 0 1.5rem 0;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .device-count-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .count-card {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .count-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.2);
+        }
+
+        .count-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .count-value {
+            color: var(--accent-primary);
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .table-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-hover);
+            margin-bottom: 0.5rem;
+            border-radius: 3px;
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .table-row:hover {
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .row-label {
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .row-value {
+            color: var(--accent-primary);
+            font-weight: 600;
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .signal-stat {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .signal-card {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1rem;
+        }
+
+        .signal-type {
+            color: var(--accent-secondary);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .signal-metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .metric-label {
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .bar-chart {
+            margin: 1.5rem 0;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            gap: 1rem;
+        }
+
+        .bar-name {
+            min-width: 150px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .bar-container {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .bar-fill {
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.5rem;
+        }
+
+        .bar-count {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .time-range {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .time-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .time-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .time-label {
+            color: var(--text-muted);
+        }
+
+        .time-value {
+            color: var(--accent-primary);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .report-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-export-pdf {
+            background: var(--accent-secondary);
+            color: var(--bg-primary);
+            border-color: var(--accent-secondary);
+        }
+
+        .btn-export-pdf:hover {
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem;
+        }
+
+        .error-message {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid var(--color-red);
+            color: var(--color-red);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+        }
+
+        .session-selector {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .session-selector select {
+            min-width: 300px;
+        }
+
+        @media (max-width: 768px) {
+            .device-count-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .signal-stat {
+                grid-template-columns: 1fr;
+            }
+
+            .report-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="logo">⚡ warDrive Explorer</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Explorer</a>
+                <a href="/live" class="nav-link">Live</a>
+                <a href="/map" class="nav-link">Map</a>
+                <a href="/report" class="nav-link active">Report</a>
+            </div>
+            <div class="status-section">
+                <div id="collector-panel" class="collector-panel"><!-- populated by collectors.js --></div>
+                <div id="status" class="status-pill">Connecting...</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content report-page">
+        <div class="report-header">
+            <h1 class="report-title">Data Capture Report</h1>
+            <div class="report-timestamp" id="report-timestamp"></div>
+        </div>
+
+        <div class="session-selector">
+            <label for="report-session-filter" style="color: var(--text-muted); margin-right: 1rem;">Filter by Session:</label>
+            <select id="report-session-filter">
+                <option value="">All Sessions</option>
+            </select>
+        </div>
+
+        <div id="report-error" class="error-message" style="display: none;"></div>
+        <div id="report-loading" class="loading">Loading report...</div>
+
+        <div id="report-content" style="display: none;">
+            <!-- Device Summary Section -->
+            <section class="report-section">
+                <h2 class="section-title">Device Summary</h2>
+                <div class="device-count-grid">
+                    <div class="count-card">
+                        <div class="count-label">WiFi APs</div>
+                        <div class="count-value" id="count-wifi-ap">0</div>
+                    </div>
+                    <div class="count-card">
+                        <div class="count-label">BLE Devices</div>
+                        <div class="count-value" id="count-ble">0</div>
+                    </div>
+                    <div class="count-card">
+                        <div class="count-label">WiFi Clients</div>
+                        <div class="count-value" id="count-wifi-client">0</div>
+                    </div>
+                    <div class="count-card">
+                        <div class="count-label">RF Devices</div>
+                        <div class="count-value" id="count-rf">0</div>
+                    </div>
+                    <div class="count-card">
+                        <div class="count-label">Total Devices</div>
+                        <div class="count-value" id="count-total">0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Time Range Section -->
+            <section class="report-section">
+                <h2 class="section-title">Capture Time Range</h2>
+                <div class="time-range">
+                    <div class="time-item">
+                        <span class="time-label">Earliest Capture:</span>
+                        <span class="time-value" id="time-start">—</span>
+                    </div>
+                    <div class="time-item">
+                        <span class="time-label">Latest Capture:</span>
+                        <span class="time-value" id="time-end">—</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Signal Strength Section -->
+            <section class="report-section">
+                <h2 class="section-title">Signal Strength Statistics</h2>
+                <div class="signal-stat" id="signal-strength-stats"></div>
+            </section>
+
+            <!-- Top Manufacturers Section -->
+            <section class="report-section">
+                <h2 class="section-title">Top 10 Manufacturers</h2>
+                <div class="bar-chart" id="manufacturers-chart"></div>
+            </section>
+
+            <!-- WiFi Encryption Section -->
+            <section class="report-section">
+                <h2 class="section-title">WiFi Encryption Distribution</h2>
+                <div class="bar-chart" id="encryption-chart"></div>
+            </section>
+
+            <!-- WiFi Device Types Section -->
+            <section class="report-section" id="protocols-section" style="display: none;">
+                <h2 class="section-title">WiFi Device Types</h2>
+                <div class="bar-chart" id="protocols-chart"></div>
+            </section>
+
+            <!-- Export Section -->
+            <section class="report-section">
+                <h2 class="section-title">Export Report</h2>
+                <div class="report-controls">
+                    <button id="export-pdf-btn" class="btn-primary btn-export-pdf">Export as PDF</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="/static/report.js"></script>
+    <script src="/static/collectors.js"></script>
+</body>
+</html>
