@@ -91,7 +91,8 @@ cleanup() {
     finalize_manifest
     echo "[wardrive] Session closed: ${SESSION_NAME}"
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap '{ cleanup; exit 1; }' INT TERM
 
 # ── Manifest helpers ───────────────────────────────────────────────────────────
 MANIFEST="${SESSION_DIR}/manifest.json"
@@ -236,12 +237,9 @@ preflight_wifi() {
         return 1
     fi
 
-    # airmon-ng check kill handles wpa_supplicant, NetworkManager, and any
-    # other process interfering with the wireless interface in one shot.
-    echo "[preflight]   Running airmon-ng check kill…"
-    airmon-ng check kill >/dev/null 2>&1 || true
-    sleep 1
-
+    # Skip airmon-ng check kill — we use a dedicated monitor adapter (wlan1)
+    # so NetworkManager managing wlan0 does not interfere. Killing NM here
+    # would drop any active internet connection on wlan0.
     echo "[preflight]   WiFi: clear"
 }
 
@@ -335,8 +333,6 @@ preflight_all() {
 gps_query_fix() {
     local min_sats="${GPS_MIN_SATS:-4}"
 
-    # Validate that min_sats is a plain integer before use to prevent
-    # shell-variable injection into the Python -c script.
     if ! [[ "${min_sats}" =~ ^[0-9]+$ ]]; then
         echo "[gps] ERROR: GPS_MIN_SATS must be a non-negative integer, got '${min_sats}'" >&2
         min_sats=4
@@ -346,54 +342,12 @@ gps_query_fix() {
     # timeout 8:  hard ceiling so we never block more than 8 seconds
     # -n 60:      read at most 60 objects (avoids hanging if gpsd is chatty)
     #
-    # Pass min_sats as a command-line argument (sys.argv[1]) rather than
-    # interpolating the shell variable directly into the Python source string,
-    # which would be a code-injection path if wardrive.conf were tampered with.
+    # NOTE: the Python parser lives in processing/gps_query.py. We cannot use
+    # a heredoc here because the heredoc would override the pipe on python3's
+    # stdin, causing the gpspipe data to go unread and always returning NO_FIX.
+    local gps_script="${SCRIPT_DIR}/processing/gps_query.py"
     local result
-    result=$(
-        timeout 8 gpspipe -w -n 60 2>/dev/null | \
-        python3 - "${min_sats}" <<'PYEOF'
-import sys, json
-
-min_sats = int(sys.argv[1])
-lat = lon = alt = None
-sats = 0
-mode = 0
-
-for line in sys.stdin:
-    line = line.strip()
-    if not line:
-        continue
-    try:
-        obj = json.loads(line)
-    except Exception:
-        continue
-    cls = obj.get('class', '')
-    if cls == 'TPV':
-        m = obj.get('mode', 0)
-        if m > mode:
-            mode = m
-        if obj.get('lat') is not None:
-            lat = obj['lat']
-        if obj.get('lon') is not None:
-            lon = obj['lon']
-        if obj.get('alt') is not None:
-            alt = obj['alt']
-    elif cls == 'SKY':
-        used = sum(1 for sv in obj.get('satellites', []) if sv.get('used'))
-        if used > sats:
-            sats = used
-    # Exit early once we have a solid fix
-    if mode >= 2 and lat is not None and lon is not None and sats >= min_sats:
-        break
-
-if mode >= 2 and lat is not None and lon is not None and sats >= min_sats:
-    dims = '3D' if mode == 3 else '2D'
-    print(f'{lat:.6f} {lon:.6f} {sats} {dims}')
-else:
-    print('NO_FIX')
-PYEOF
-    ) || true
+    result=$(timeout 8 gpspipe -w -n 60 2>/dev/null | python3 "${gps_script}" "${min_sats}") || true
 
     echo "${result:-NO_FIX}"
 }
