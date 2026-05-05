@@ -598,11 +598,10 @@ launch_wideband_scanner() {
     local scanner_script="${SCRIPT_DIR}/processing/rtl_wideband.py"
     exec python3 "${scanner_script}" \
         "${sdr_out}" \
-        "${WIDEBAND_FREQ_START_MHZ:-600}" \
-        "${WIDEBAND_FREQ_END_MHZ:-6000}" \
-        "${WIDEBAND_SCAN_STEP_MHZ:-1}" \
-        "${WIDEBAND_SCAN_TIME:-10}" \
-        "${WIDEBAND_LOCKUP_TIME:-30}" \
+        "${WIDEBAND_FREQ_START_MHZ:-100}" \
+        "${WIDEBAND_FREQ_END_MHZ:-1700}" \
+        "${WIDEBAND_SCAN_STEP_MHZ:-2}" \
+        "${WIDEBAND_SCAN_TIME:-1}" \
         "${WIDEBAND_PEAK_THRESHOLD:--40}"
 }
 
@@ -611,15 +610,22 @@ start_wideband_collector() {
         echo "[wideband] Disabled in config — skipping"
         return
     fi
+    # rtl_433 and wideband scanner both require exclusive access to the RTL-SDR dongle.
+    if [[ "${ENABLE_SDR:-false}" == "true" ]]; then
+        echo "[wideband] ERROR: ENABLE_SDR and ENABLE_WIDEBAND_SDR are both true."
+        echo "[wideband]   They share the same RTL-SDR dongle — disable one in config/wardrive.conf."
+        echo "[wideband]   Wideband scanner skipped."
+        return
+    fi
     if ! lsusb | grep -qE "RTL283[28]|0bda:283[28]"; then
         echo "[wideband] WARNING: RTL-SDR not detected — skipping"
         return
     fi
     if ! command -v rtl_power &>/dev/null; then
-        echo "[wideband] ERROR: rtl_power not found — skipping"
+        echo "[wideband] ERROR: rtl_power not found — install rtl-sdr tools"
         return
     fi
-    echo "[wideband] Starting spectrum scanner (under supervisor)"
+    echo "[wideband] Starting spectrum scanner ${WIDEBAND_FREQ_START_MHZ:-100}-${WIDEBAND_FREQ_END_MHZ:-1700} MHz (under supervisor)"
     supervise_collector wideband launch_wideband_scanner &
     CHILD_PIDS+=($!)
     update_manifest sdr true

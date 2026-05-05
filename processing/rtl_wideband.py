@@ -1,35 +1,37 @@
 #!/usr/bin/env python3
 """
-rtl_wideband.py — wideband spectrum scanner with peak lock-on
+rtl_wideband.py — wideband spectrum scanner
+
+Passively scans 100-1700 MHz (R820T hardware range) with rtl_power and logs
+all detected peaks to JSON + CSV for offline enrichment analysis. All signal
+analysis is deferred to post-processing (processing/enrich_wideband.py) where
+bandwidth, modulation, band classification, and signal statistics are computed.
 
 Workflow:
-1. Scan 600-6000 MHz with rtl_power to find active frequencies
-2. Identify peaks above threshold
-3. Lock onto each peak with rtl_fm for a period
-4. Log spectrum maps and recordings
-5. Rescan and repeat
+1. Scan 100-1700 MHz with rtl_power
+2. Identify and log peaks above threshold to JSON
+3. Save raw spectrum CSV for later bandwidth/modulation analysis
+4. Rescan continuously
 """
 
-import os
+import math
 import sys
 import json
 import time
 import subprocess
-import tempfile
 import signal
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 
 class WidebandScanner:
     def __init__(self, output_dir, start_mhz, end_mhz, step_mhz, scan_time,
-                 lockup_time, peak_threshold):
+                 peak_threshold):
         self.output_dir = Path(output_dir)
         self.start_mhz = start_mhz
         self.end_mhz = end_mhz
         self.step_mhz = step_mhz
         self.scan_time = scan_time
-        self.lockup_time = lockup_time
         self.peak_threshold = peak_threshold
         self.running = True
 
@@ -45,11 +47,15 @@ class WidebandScanner:
 
     def run_scan(self, scan_num):
         """Run rtl_power to scan frequency range, return CSV path"""
-        timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         csv_file = self.output_dir / f"scan_{timestamp}_n{scan_num}.csv"
 
+        num_hops = max(1, math.ceil((self.end_mhz - self.start_mhz) / self.step_mhz))
+        expected_secs = num_hops * self.scan_time + 30
+        timeout = int(expected_secs * 1.5)
+
         print(f"[wideband] Scan #{scan_num} ({self.start_mhz}-{self.end_mhz} MHz, "
-              f"step {self.step_mhz} MHz)…", file=sys.stderr)
+              f"step {self.step_mhz} MHz, ~{expected_secs}s)…", file=sys.stderr)
 
         try:
             cmd = [
@@ -60,25 +66,31 @@ class WidebandScanner:
                 str(csv_file)
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=self.scan_time * 3)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
 
             if result.returncode != 0:
                 print(f"[wideband] rtl_power failed: {result.stderr}", file=sys.stderr)
                 return None
 
-            if csv_file.exists():
+            if csv_file.exists() and csv_file.stat().st_size > 0:
                 print(f"[wideband] Scan saved: {csv_file.name}", file=sys.stderr)
                 return csv_file
+            print(f"[wideband] rtl_power produced no output", file=sys.stderr)
         except subprocess.TimeoutExpired:
-            print(f"[wideband] rtl_power timeout", file=sys.stderr)
+            print(f"[wideband] rtl_power timeout after {timeout}s", file=sys.stderr)
         except Exception as e:
             print(f"[wideband] Error running rtl_power: {e}", file=sys.stderr)
 
         return None
 
     def parse_spectrum(self, csv_file):
-        """Parse rtl_power CSV, return list of (freq_mhz, power_dbm) tuples sorted by power"""
-        peaks = []
+        """Parse rtl_power CSV, return deduplicated list of (freq_mhz, power_dbm) tuples.
+
+        rtl_power CSV format per row:
+          date, time, hz_low, hz_high, hz_step, n_samples, db0, db1, ...
+        Each db column is one FFT bin at hz_low + i * hz_step.
+        """
+        all_bins = []
         try:
             with open(csv_file) as f:
                 for line in f:
@@ -89,71 +101,42 @@ class WidebandScanner:
                     if len(parts) < 7:
                         continue
                     try:
-                        # rtl_power CSV: date, time, hz_low, hz_high, hz_step, samples, db...
-                        # parts[2] is the low edge of the bin in Hz — convert to MHz
                         hz_low  = float(parts[2])
-                        hz_high = float(parts[3])
-                        freq_mhz = ((hz_low + hz_high) / 2.0) / 1e6
-                        # rtl_power outputs multiple columns of power readings; take the mean
-                        powers = [float(p) for p in parts[6:] if p.strip()]
-                        avg_power = sum(powers) / len(powers) if powers else -100
-
-                        if avg_power > self.peak_threshold:
-                            peaks.append((freq_mhz, avg_power))
+                        hz_step = float(parts[4])
+                        for i, raw in enumerate(parts[6:]):
+                            raw = raw.strip()
+                            if not raw:
+                                continue
+                            power = float(raw)
+                            if power > self.peak_threshold:
+                                freq_mhz = (hz_low + i * hz_step) / 1e6
+                                all_bins.append((freq_mhz, power))
                     except (ValueError, IndexError):
                         continue
         except Exception as e:
             print(f"[wideband] Error parsing spectrum: {e}", file=sys.stderr)
             return []
 
-        # Sort by power (strongest first)
-        peaks.sort(key=lambda x: x[1], reverse=True)
-        return peaks
+        all_bins.sort(key=lambda x: x[1], reverse=True)
+        return self._cluster_peaks(all_bins)
 
-    def record_frequency(self, freq_mhz, duration):
-        """Lock onto a frequency and record with rtl_fm"""
-        timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-        freq_clean = f"{freq_mhz:.1f}".replace(".", "_")
-        wav_file = self.output_dir / f"lockup_{timestamp}_{freq_clean}mhz.wav"
-
-        print(f"[wideband] Locking {freq_mhz:.1f} MHz for {duration}s → {wav_file.name}",
-              file=sys.stderr)
-
-        try:
-            cmd = [
-                "rtl_fm",
-                "-f", f"{int(freq_mhz * 1e6)}",  # frequency in Hz
-                "-M", "wbfm",  # wideband FM (adjust if needed)
-                "-s", "200000",  # sample rate
-                "-g", "30",  # gain
-                "-p", "0",  # ppm correction
-            ]
-
-            # Run for specified duration with timeout buffer
-            with open(wav_file, "wb") as fout:
-                proc = subprocess.Popen(cmd, stdout=fout, stderr=subprocess.PIPE)
-                try:
-                    proc.wait(timeout=duration)
-                except subprocess.TimeoutExpired:
-                    # Normal exit path — kill rtl_fm so it releases the SDR dongle
-                    proc.terminate()
-                    try:
-                        proc.wait(timeout=3)
-                    except subprocess.TimeoutExpired:
-                        proc.kill()
-                        proc.wait()
-
-            if wav_file.exists() and wav_file.stat().st_size > 1000:
-                print(f"[wideband] Recorded {wav_file.stat().st_size} bytes", file=sys.stderr)
-                return True
-        except Exception as e:
-            print(f"[wideband] Error recording: {e}", file=sys.stderr)
-
-        return False
+    def _cluster_peaks(self, bins, spacing_mhz=2.0):
+        """Merge bins within spacing_mhz of each other, keeping the strongest per cluster."""
+        clustered = []
+        for freq, power in bins:
+            for i, (cf, cp) in enumerate(clustered):
+                if abs(freq - cf) <= spacing_mhz:
+                    if power > cp:
+                        clustered[i] = (freq, power)
+                    break
+            else:
+                clustered.append((freq, power))
+        clustered.sort(key=lambda x: x[1], reverse=True)
+        return clustered
 
     def log_peaks(self, scan_num, peaks):
         """Log discovered peaks to JSON"""
-        timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         log_file = self.output_dir / f"peaks_{timestamp}_n{scan_num}.json"
 
         peaks_data = {
@@ -173,7 +156,7 @@ class WidebandScanner:
             print(f"[wideband] Error logging peaks: {e}", file=sys.stderr)
 
     def main_loop(self):
-        """Main scan-lock-rescan loop"""
+        """Main scan loop: acquire spectrum data for later enrichment"""
         scan_num = 0
 
         while self.running:
@@ -186,7 +169,7 @@ class WidebandScanner:
                 time.sleep(5)
                 continue
 
-            # Parse peaks
+            # Parse peaks and log
             peaks = self.parse_spectrum(csv_file)
             self.log_peaks(scan_num, peaks)
 
@@ -195,17 +178,11 @@ class WidebandScanner:
                 time.sleep(2)
                 continue
 
-            print(f"[wideband] Found {len(peaks)} peaks, top 5:", file=sys.stderr)
-            for freq, power in peaks[:5]:
+            print(f"[wideband] Found {len(peaks)} peaks, top 10:", file=sys.stderr)
+            for freq, power in peaks[:10]:
                 print(f"[wideband]   {freq:8.1f} MHz @ {power:6.1f} dBm", file=sys.stderr)
 
-            # Lock onto top 5 peaks
-            for freq, power in peaks[:5]:
-                if not self.running:
-                    break
-                print(f"[wideband] Recording peak #{freq}…", file=sys.stderr)
-                self.record_frequency(freq, self.lockup_time)
-
+            print(f"[wideband] Spectrum data saved. Analysis deferred to enrichment stage.", file=sys.stderr)
             print(f"[wideband] Rescan in 5 seconds…", file=sys.stderr)
             time.sleep(5)
 
@@ -213,19 +190,18 @@ class WidebandScanner:
 def main():
     if len(sys.argv) < 2:
         print("Usage: rtl_wideband.py <output_dir> [start_mhz] [end_mhz] [step_mhz] "
-              "[scan_time] [lockup_time] [threshold_dbm]", file=sys.stderr)
+              "[scan_time] [threshold_dbm]", file=sys.stderr)
         sys.exit(1)
 
     output_dir = sys.argv[1]
-    start_mhz = int(sys.argv[2]) if len(sys.argv) > 2 else 600
-    end_mhz = int(sys.argv[3]) if len(sys.argv) > 3 else 6000
-    step_mhz = int(sys.argv[4]) if len(sys.argv) > 4 else 1
-    scan_time = int(sys.argv[5]) if len(sys.argv) > 5 else 10
-    lockup_time = int(sys.argv[6]) if len(sys.argv) > 6 else 30
-    peak_threshold = int(sys.argv[7]) if len(sys.argv) > 7 else -40
+    start_mhz      = int(sys.argv[2]) if len(sys.argv) > 2 else 100   # R820T lower limit ~24 MHz
+    end_mhz        = int(sys.argv[3]) if len(sys.argv) > 3 else 1700  # R820T upper limit ~1766 MHz
+    step_mhz       = int(sys.argv[4]) if len(sys.argv) > 4 else 2
+    scan_time      = int(sys.argv[5]) if len(sys.argv) > 5 else 1     # seconds integration per step
+    peak_threshold = int(sys.argv[6]) if len(sys.argv) > 6 else -40
 
     scanner = WidebandScanner(output_dir, start_mhz, end_mhz, step_mhz, scan_time,
-                              lockup_time, peak_threshold)
+                              peak_threshold)
     scanner.main_loop()
 
 
