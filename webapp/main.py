@@ -1,6 +1,7 @@
 import getpass
 import logging
 import re
+import shutil
 import sqlite3
 import json
 import subprocess
@@ -24,7 +25,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:8000", "http://127.0.0.1:8000"],
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["Content-Type"],
 )
 
@@ -41,9 +42,46 @@ def _validate_session(session: str | None) -> str | None:
         raise HTTPException(status_code=400, detail="Invalid session identifier")
     return session
 
+def _get_config_value(key: str) -> str | None:
+    """Read a single variable from wardrive.conf. Returns None if absent or blank."""
+    if not CONFIG_PATH.exists():
+        return None
+    try:
+        with open(CONFIG_PATH) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith(f"{key}="):
+                    val = line[len(key) + 1:].strip('"').strip("'")
+                    return val if val else None
+    except Exception:
+        return None
+    return None
+
+def _get_capture_raw_dir() -> Path:
+    """Return the configured capture/raw directory, falling back to project default."""
+    base = _get_config_value("CAPTURE_BASE_DIR")
+    if base:
+        return Path(base) / "raw"
+    return PROJECT_ROOT / "capture" / "raw"
+
+def _dir_size_bytes(path: Path) -> int:
+    """Return total byte size of all files under path."""
+    total = 0
+    try:
+        for p in path.rglob("*"):
+            if p.is_file():
+                try:
+                    total += p.stat().st_size
+                except OSError:
+                    pass
+    except Exception:
+        pass
+    return total
+
 WEBAPP_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = WEBAPP_ROOT.parent
 DB_PATH = PROJECT_ROOT / "processing" / "wardrive.db"
+CONFIG_PATH = PROJECT_ROOT / "config" / "wardrive.conf"
 # PID file is written by wardrive.sh to the project-local capture/ directory,
 # not /tmp, to prevent world-writable /tmp from being a privilege-escalation
 # staging area (see wardrive.sh for rationale).
@@ -92,8 +130,12 @@ async def dashboard():
 async def report_page():
     return FileResponse(WEBAPP_ROOT / "templates" / "report.html")
 
+@app.get("/storage")
+async def storage_page():
+    return FileResponse(WEBAPP_ROOT / "templates" / "storage.html")
+
 def _get_ble_gps_positions(session_id=None):
-    capture_raw = PROJECT_ROOT / "capture" / "raw"
+    capture_raw = _get_capture_raw_dir()
     best = {}
     if not capture_raw.exists():
         return best
@@ -183,7 +225,7 @@ async def get_collectors_status():
 
     def get_active_session():
         """Find the most recent session without ended_at_utc."""
-        capture_raw = PROJECT_ROOT / "capture" / "raw"
+        capture_raw = _get_capture_raw_dir()
         if not capture_raw.exists():
             return None, None
 
@@ -655,7 +697,7 @@ async def get_map_devices(session: str = None):
 @app.get("/api/map/track")
 async def get_map_track(session: str = None):
     session = _validate_session(session)
-    capture_raw = PROJECT_ROOT / "capture" / "raw"
+    capture_raw = _get_capture_raw_dir()
     points = []
     if not capture_raw.exists():
         return points
@@ -752,7 +794,7 @@ async def get_live_session():
                 return {"active_session": session_dict}
 
         # Fallback: check for recent raw capture sessions
-        capture_raw = PROJECT_ROOT / "capture" / "raw"
+        capture_raw = _get_capture_raw_dir()
         if capture_raw.exists():
             sessions = []
             for session_dir in sorted(capture_raw.iterdir(), reverse=True):
@@ -860,7 +902,7 @@ async def get_live_feed(since: str = None, limit: int = 100, include_raw: bool =
     # If no enriched data and include_raw is true, try raw Kismet files
     if not observations and include_raw:
         try:
-            capture_raw = PROJECT_ROOT / "capture" / "raw"
+            capture_raw = _get_capture_raw_dir()
             if capture_raw.exists():
                 for session_dir in sorted(capture_raw.iterdir(), reverse=True)[:3]:  # Check last 3 sessions
                     if not session_dir.is_dir():
@@ -1121,6 +1163,225 @@ async def get_analytics():
     except Exception as e:
         logging.error(f"Analytics error: {e}")
         return {"error": str(e)}
+
+@app.get("/api/storage/stats")
+async def get_storage_stats():
+    """Return disk usage for the database, per-session capture dirs, and the underlying filesystem."""
+    capture_raw = _get_capture_raw_dir()
+
+    result = {
+        "db": {"path": str(DB_PATH), "size_bytes": 0, "exists": DB_PATH.exists()},
+        "capture_dir": str(capture_raw),
+        "capture_base_dir": _get_config_value("CAPTURE_BASE_DIR") or "",
+        "total_capture_bytes": 0,
+        "sessions": [],
+        "disk": None,
+    }
+
+    if DB_PATH.exists():
+        try:
+            result["db"]["size_bytes"] = DB_PATH.stat().st_size
+        except OSError:
+            pass
+
+    # Pull session DB counts in one query
+    db_sessions: dict = {}
+    if DB_PATH.exists():
+        try:
+            with sqlite3.connect(str(DB_PATH)) as db:
+                db.row_factory = sqlite3.Row
+                for row in db.execute("""
+                    SELECT s.session_id, s.started_at_utc, s.ended_at_utc,
+                        (SELECT COUNT(DISTINCT bssid)     FROM wifi_obs WHERE session_id = s.session_id) AS ap_count,
+                        (SELECT COUNT(DISTINCT address)   FROM bt_obs   WHERE session_id = s.session_id) AS bt_count,
+                        (SELECT COUNT(DISTINCT device_id) FROM rf_obs   WHERE session_id = s.session_id) AS rf_count
+                    FROM sessions s ORDER BY s.started_at_utc DESC
+                """).fetchall():
+                    r = dict(row)
+                    db_sessions[r["session_id"]] = r
+        except Exception as e:
+            logging.error(f"Storage stats DB error: {e}")
+
+    sessions = []
+    total_capture_bytes = 0
+
+    # Sessions that have raw files on disk
+    raw_ids: set = set()
+    if capture_raw.exists():
+        for d in sorted(capture_raw.iterdir(), reverse=True):
+            if not d.is_dir():
+                continue
+            raw_ids.add(d.name)
+            size = _dir_size_bytes(d)
+            total_capture_bytes += size
+            db_info = db_sessions.get(d.name, {})
+            ap = db_info.get("ap_count") or 0
+            bt = db_info.get("bt_count") or 0
+            rf = db_info.get("rf_count") or 0
+            started = db_info.get("started_at_utc")
+            ended = db_info.get("ended_at_utc")
+            duration_sec = None
+            if started and ended:
+                try:
+                    s0 = datetime.fromisoformat(started.replace("Z", "+00:00"))
+                    s1 = datetime.fromisoformat(ended.replace("Z", "+00:00"))
+                    duration_sec = int((s1 - s0).total_seconds())
+                except Exception:
+                    pass
+            sessions.append({
+                "session_id": d.name,
+                "size_bytes": size,
+                "has_raw": True,
+                "in_db": d.name in db_sessions,
+                "started_at_utc": started,
+                "ended_at_utc": ended,
+                "ap_count": ap,
+                "bt_count": bt,
+                "rf_count": rf,
+                "total_devices": ap + bt + rf,
+                "duration_sec": duration_sec,
+                "is_active": bool(started and not ended),
+            })
+
+    # DB-only sessions (raw files already gone)
+    for sid, db_info in db_sessions.items():
+        if sid in raw_ids:
+            continue
+        ap = db_info.get("ap_count") or 0
+        bt = db_info.get("bt_count") or 0
+        rf = db_info.get("rf_count") or 0
+        started = db_info.get("started_at_utc")
+        ended = db_info.get("ended_at_utc")
+        duration_sec = None
+        if started and ended:
+            try:
+                s0 = datetime.fromisoformat(started.replace("Z", "+00:00"))
+                s1 = datetime.fromisoformat(ended.replace("Z", "+00:00"))
+                duration_sec = int((s1 - s0).total_seconds())
+            except Exception:
+                pass
+        sessions.append({
+            "session_id": sid,
+            "size_bytes": 0,
+            "has_raw": False,
+            "in_db": True,
+            "started_at_utc": started,
+            "ended_at_utc": ended,
+            "ap_count": ap,
+            "bt_count": bt,
+            "rf_count": rf,
+            "total_devices": ap + bt + rf,
+            "duration_sec": duration_sec,
+            "is_active": bool(started and not ended),
+        })
+
+    # Sort combined list by started_at_utc descending
+    sessions.sort(key=lambda x: x.get("started_at_utc") or "", reverse=True)
+    result["sessions"] = sessions
+    result["total_capture_bytes"] = total_capture_bytes
+
+    # Filesystem stats for the capture mount (or project root as fallback)
+    check_path = capture_raw if capture_raw.exists() else PROJECT_ROOT
+    try:
+        usage = shutil.disk_usage(str(check_path))
+        result["disk"] = {
+            "total_bytes": usage.total,
+            "used_bytes": usage.used,
+            "free_bytes": usage.free,
+        }
+    except Exception:
+        pass
+
+    return result
+
+
+@app.delete("/api/sessions/{session_id}")
+async def delete_session(session_id: str):
+    """Delete a session's raw files and DB records. Refuses to delete an active session."""
+    _validate_session(session_id)
+
+    capture_raw = _get_capture_raw_dir()
+    session_dir = (capture_raw / session_id).resolve()
+
+    # Path traversal guard
+    if not str(session_dir).startswith(str(capture_raw.resolve())):
+        raise HTTPException(status_code=400, detail="Invalid session path")
+
+    # Refuse to delete an active (still-running) session
+    manifest_path = session_dir / "manifest.json"
+    if manifest_path.exists():
+        try:
+            with open(manifest_path) as f:
+                manifest = json.load(f)
+            if not manifest.get("ended_at_utc"):
+                raise HTTPException(status_code=409, detail="Cannot delete an active session")
+        except HTTPException:
+            raise
+        except Exception:
+            pass
+
+    deleted = {"db_records": False, "files": False, "errors": []}
+
+    # Remove observation and session rows from the database
+    if DB_PATH.exists():
+        try:
+            with sqlite3.connect(str(DB_PATH)) as db:
+                db.execute("DELETE FROM bt_obs   WHERE session_id = ?", (session_id,))
+                db.execute("DELETE FROM wifi_obs  WHERE session_id = ?", (session_id,))
+                db.execute("DELETE FROM rf_obs    WHERE session_id = ?", (session_id,))
+                db.execute("DELETE FROM sessions  WHERE session_id = ?", (session_id,))
+                db.commit()
+            deleted["db_records"] = True
+        except Exception as e:
+            deleted["errors"].append(f"DB error: {e}")
+
+    # Remove raw capture directory
+    if session_dir.exists():
+        try:
+            shutil.rmtree(str(session_dir))
+            deleted["files"] = True
+        except Exception as e:
+            deleted["errors"].append(f"File error: {e}")
+
+    status = "partial" if deleted["errors"] else "ok"
+    return {"status": status, "session_id": session_id, "deleted": deleted}
+
+
+@app.post("/api/storage/config")
+async def update_storage_config(request: Request):
+    """Write CAPTURE_BASE_DIR to wardrive.conf."""
+    body = await request.json()
+    new_path = str(body.get("capture_base_dir", "")).strip()
+
+    if new_path:
+        if not Path(new_path).is_absolute():
+            raise HTTPException(status_code=400, detail="Path must be absolute")
+        try:
+            (Path(new_path) / "raw").mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Cannot access directory: {e}")
+
+    if not CONFIG_PATH.exists():
+        raise HTTPException(status_code=500, detail="Config file not found")
+
+    try:
+        config_text = CONFIG_PATH.read_text()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Cannot read config: {e}")
+
+    new_line = f'CAPTURE_BASE_DIR="{new_path}"'
+    if re.search(r'^CAPTURE_BASE_DIR=', config_text, re.MULTILINE):
+        config_text = re.sub(r'^CAPTURE_BASE_DIR=.*$', new_line, config_text, flags=re.MULTILINE)
+    else:
+        config_text += f'\n{new_line}\n'
+
+    try:
+        CONFIG_PATH.write_text(config_text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Cannot write config: {e}")
+
+    return {"status": "ok", "capture_base_dir": new_path}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

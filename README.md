@@ -107,6 +107,15 @@ Edit `config/wardrive.conf`. All options use Bash syntax (no spaces around `=`).
 SESSION_LABEL="wardrive"    # appended to the timestamp folder name
 KEEP_AWAKE=true             # block sleep/lid-close during capture (systemd-inhibit)
 
+# ── Capture storage location ───────────────────────────────────────────────────
+# Leave blank to use the default (project directory / capture/).
+# Set to an absolute path to capture sessions directly to external storage, e.g.:
+#   CAPTURE_BASE_DIR="/mnt/usb_drive/wardrive"
+# The webapp reads this setting at runtime. wardrive.sh must be restarted to
+# write new sessions to the new location. The raw/ and logs/ subdirectories are
+# created automatically on first run.
+CAPTURE_BASE_DIR=""
+
 # ── WiFi (Kismet) ──────────────────────────────────────────────────────────────
 ENABLE_WIFI=true
 WIFI_INTERFACE="wlan1"      # set to your monitor-mode adapter interface
@@ -255,6 +264,7 @@ The webapp is a FastAPI application (`webapp/main.py`) served by uvicorn on `127
 | `/map` | **Map** — Leaflet map showing all geolocated BLE, WiFi, and RF devices; GPS track overlay from NMEA log |
 | `/analytics` | **Analytics** — Chart.js visualizations: signal strength distributions (BLE + WiFi), device type breakdown, devices per hour timeline, top manufacturers, per-session comparison |
 | `/report` | **Report** — session report view (note: the `/api/report/summary` endpoint is currently disabled; use the Explorer with filters instead) |
+| `/storage` | **Storage** — disk usage overview (database size, capture files, filesystem free space); session management table with per-session device counts, duration, and disk size; individual and bulk session deletion (removes raw files + DB records); capture storage path configuration |
 
 The header on every page shows live collector status (which collectors are enabled/running) and a start/stop button for `wardrive.sh`. Starting from the UI requires sudoers configuration (see below).
 
@@ -407,7 +417,7 @@ warDrive/
     ├── run.sh                      # foreground launcher
     ├── manage.sh                   # background start/stop/status/restart
     ├── static/                     # CSS and JS assets
-    └── templates/                  # HTML pages (index, dashboard, live, map, analytics, report)
+    └── templates/                  # HTML pages (index, dashboard, live, map, analytics, report, storage)
 ```
 
 ---

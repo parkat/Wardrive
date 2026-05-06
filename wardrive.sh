@@ -40,8 +40,9 @@ ENABLE_GPS="${ENABLE_GPS:-false}"
 # ── Session setup ──────────────────────────────────────────────────────────────
 TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 SESSION_NAME="${TIMESTAMP}_${SESSION_LABEL:-wardrive}"
-SESSION_DIR="${SCRIPT_DIR}/capture/raw/${SESSION_NAME}"
-LOG_DIR="${SCRIPT_DIR}/capture/logs"
+_CAPTURE_ROOT="${CAPTURE_BASE_DIR:-${SCRIPT_DIR}/capture}"
+SESSION_DIR="${_CAPTURE_ROOT}/raw/${SESSION_NAME}"
+LOG_DIR="${_CAPTURE_ROOT}/logs"
 
 mkdir -p "${SESSION_DIR}"/{wifi,sdr,bt,gps} "${LOG_DIR}"
 

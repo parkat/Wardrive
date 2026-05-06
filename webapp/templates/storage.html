@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>warDrive Storage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .storage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .storage-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .storage-card-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .storage-card-value {
+            color: var(--accent-primary);
+            font-size: 1.6rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .storage-card-sub {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .disk-bar-wrap {
+            margin-top: 0.5rem;
+            background: var(--border-color);
+            border-radius: 2px;
+            height: 6px;
+            overflow: hidden;
+        }
+
+        .disk-bar-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        .disk-bar-fill.warn  { background: var(--color-amber); }
+        .disk-bar-fill.crit  { background: var(--color-red);   }
+
+        .section-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: var(--accent-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+
+        .path-form {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .path-field {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .path-field label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .path-field input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: 3px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .path-field input:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .path-hint {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 3px;
+            padding: 0.6rem 1.2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: box-shadow 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--color-red);
+            border: 1px solid var(--color-red);
+            border-radius: 3px;
+            padding: 0.3rem 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 68, 68, 0.15);
+        }
+
+        .btn-danger:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            padding: 0.5rem 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .filter-bar input[type="number"] {
+            width: 80px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.5rem;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .filter-bar input:focus { border-color: var(--accent-primary); }
+
+        .status-msg {
+            padding: 0.6rem 1rem;
+            border-radius: 3px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .status-msg.ok    { background: rgba(0,255,136,0.1); color: var(--accent-primary); border: 1px solid var(--accent-primary); }
+        .status-msg.error { background: rgba(255,68,68,0.1);  color: var(--color-red);      border: 1px solid var(--color-red); }
+        .status-msg.info  { background: rgba(0,212,255,0.1);  color: var(--accent-secondary); border: 1px solid var(--accent-secondary); }
+
+        .session-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .session-table th {
+            color: var(--text-muted);
+            text-align: left;
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            font-size: 0.78rem;
+            white-space: nowrap;
+        }
+
+        .session-table td {
+            padding: 0.65rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .session-table tr:last-child td { border-bottom: none; }
+
+        .session-table tr.dim td { opacity: 0.45; }
+
+        .session-table tr.active-session td:first-child::before {
+            content: '▶ ';
+            color: var(--accent-primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.45rem;
+            border-radius: 2px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-active  { background: rgba(0,255,136,0.15); color: var(--accent-primary); }
+        .badge-db-only { background: rgba(0,212,255,0.12); color: var(--accent-secondary); }
+        .badge-raw     { background: rgba(245,158,11,0.15); color: var(--color-amber); }
+
+        .num { font-family: 'JetBrains Mono', monospace; color: var(--accent-primary); }
+        .muted { color: var(--text-muted); }
+
+        .table-wrap { overflow-x: auto; }
+
+        @media (max-width: 768px) {
+            .storage-grid { grid-template-columns: repeat(2, 1fr); }
+            .path-form { flex-direction: column; }
+            .path-field { min-width: unset; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="logo">⚡ warDrive Explorer</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Explorer</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/live" class="nav-link">Live</a>
+                <a href="/map" class="nav-link">Map</a>
+                <a href="/analytics" class="nav-link">Analytics</a>
+                <a href="/report" class="nav-link">Report</a>
+                <a href="/storage" class="nav-link active">Storage</a>
+            </div>
+            <div class="status-section">
+                <div id="collector-panel" class="collector-panel"><!-- populated by collectors.js --></div>
+                <div id="status" class="status-pill">Connecting...</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section style="margin-bottom: 2rem;">
+            <h2 style="color: var(--accent-primary); font-size: 1.6rem; margin: 0 0 1.5rem;">Storage &amp; Maintenance</h2>
+
+            <!-- Overview cards -->
+            <div id="overview-grid" class="storage-grid">
+                <div class="storage-card">
+                    <div class="storage-card-label">Database</div>
+                    <div class="storage-card-value" id="db-size">—</div>
+                    <div class="storage-card-sub" id="db-path"></div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-label">Capture Files</div>
+                    <div class="storage-card-value" id="capture-size">—</div>
+                    <div class="storage-card-sub" id="capture-sessions-count"></div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-label">Total Used</div>
+                    <div class="storage-card-value" id="total-size">—</div>
+                    <div class="storage-card-sub" id="disk-path"></div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-label">Disk Free</div>
+                    <div class="storage-card-value" id="disk-free">—</div>
+                    <div class="disk-bar-wrap"><div id="disk-bar" class="disk-bar-fill" style="width:0%"></div></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Capture path configuration -->
+        <div class="section-card">
+            <div class="section-title">Capture Storage Location</div>
+            <div id="path-status" class="status-msg"></div>
+            <div class="path-form">
+                <div class="path-field">
+                    <label>Capture base directory</label>
+                    <input type="text" id="capture-path-input" placeholder="/mnt/usb_drive/wardrive  (blank = project default)">
+                    <div class="path-hint" id="path-current"></div>
+                </div>
+                <button class="btn-primary" onclick="savePath()">Save Path</button>
+                <button class="btn-secondary" onclick="clearPath()">Reset to Default</button>
+            </div>
+            <div class="path-hint" style="margin-top: 0.75rem;">
+                New sessions use this path after restarting <code>wardrive.sh</code>.
+                The webapp reads the configured path immediately.
+            </div>
+        </div>
+
+        <!-- Session management -->
+        <div class="section-card">
+            <div class="section-title">Session Management</div>
+            <div id="session-status" class="status-msg"></div>
+
+            <div class="filter-bar">
+                <label for="min-devices">Show sessions with fewer than</label>
+                <input type="number" id="min-devices" value="10" min="0">
+                <label>total devices</label>
+                <button class="btn-secondary" onclick="applyFilter()">Filter</button>
+                <button class="btn-secondary" onclick="resetFilter()">Show All</button>
+                <button class="btn-danger" id="cull-btn" onclick="cullSessions()">Delete Filtered</button>
+            </div>
+
+            <div class="table-wrap">
+                <table class="session-table">
+                    <thead>
+                        <tr>
+                            <th>Session</th>
+                            <th>Started</th>
+                            <th>Duration</th>
+                            <th>WiFi</th>
+                            <th>BLE</th>
+                            <th>RF</th>
+                            <th>Total</th>
+                            <th>Size</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="session-tbody">
+                        <tr><td colspan="9" class="muted" style="text-align:center;padding:2rem;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let allSessions = [];
+        let filteredIds = new Set();
+
+        // ── Init ──────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', loadStats);
+
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/storage/stats');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                renderOverview(data);
+                renderPathConfig(data);
+                allSessions = data.sessions || [];
+                renderSessions(allSessions);
+            } catch (e) {
+                console.error('[Storage] load error:', e);
+                showMsg('session-status', 'error', 'Failed to load storage stats: ' + e.message);
+            }
+        }
+
+        // ── Overview ──────────────────────────────────────────────────────────
+        function renderOverview(data) {
+            set('db-size', formatBytes(data.db?.size_bytes || 0));
+            set('db-path', data.db?.path ? truncatePath(data.db.path) : '');
+
+            const capBytes = data.total_capture_bytes || 0;
+            set('capture-size', formatBytes(capBytes));
+            set('capture-sessions-count', (data.sessions?.length || 0) + ' sessions');
+
+            const total = (data.db?.size_bytes || 0) + capBytes;
+            set('total-size', formatBytes(total));
+            set('disk-path', truncatePath(data.capture_dir || ''));
+
+            const disk = data.disk;
+            if (disk && disk.total_bytes > 0) {
+                set('disk-free', formatBytes(disk.free_bytes));
+                const pct = (disk.used_bytes / disk.total_bytes) * 100;
+                const bar = document.getElementById('disk-bar');
+                bar.style.width = pct.toFixed(1) + '%';
+                bar.className = 'disk-bar-fill' + (pct > 90 ? ' crit' : pct > 75 ? ' warn' : '');
+            } else {
+                set('disk-free', '—');
+            }
+        }
+
+        // ── Path config ───────────────────────────────────────────────────────
+        function renderPathConfig(data) {
+            const cur = data.capture_base_dir || '';
+            document.getElementById('capture-path-input').value = cur;
+            const hint = document.getElementById('path-current');
+            hint.textContent = cur
+                ? 'Current: ' + cur + '/raw'
+                : 'Current: ' + (data.capture_dir || 'project default');
+        }
+
+        async function savePath() {
+            const val = document.getElementById('capture-path-input').value.trim();
+            try {
+                const res = await fetch('/api/storage/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ capture_base_dir: val }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Save failed');
+                showMsg('path-status', 'ok', 'Path saved. Restart wardrive.sh to write new sessions there.');
+                loadStats();
+            } catch (e) {
+                showMsg('path-status', 'error', e.message);
+            }
+        }
+
+        function clearPath() {
+            document.getElementById('capture-path-input').value = '';
+            savePath();
+        }
+
+        // ── Session table ─────────────────────────────────────────────────────
+        function renderSessions(sessions) {
+            const tbody = document.getElementById('session-tbody');
+            if (!sessions.length) {
+                tbody.innerHTML = '<tr><td colspan="9" class="muted" style="text-align:center;padding:2rem;">No sessions found</td></tr>';
+                return;
+            }
+
+            filteredIds = new Set(sessions.map(s => s.session_id));
+            document.getElementById('cull-btn').disabled = sessions.every(s => s.is_active);
+
+            tbody.innerHTML = sessions.map(s => {
+                const badges = [];
+                if (s.is_active) badges.push('<span class="badge badge-active">active</span>');
+                if (!s.has_raw && s.in_db) badges.push('<span class="badge badge-db-only">db only</span>');
+                if (s.has_raw && !s.in_db) badges.push('<span class="badge badge-raw">raw only</span>');
+
+                const started = s.started_at_utc ? fmtDate(s.started_at_utc) : '—';
+
+                return `<tr class="${s.is_active ? 'active-session' : ''}" data-id="${escHtml(s.session_id)}" data-total="${s.total_devices}">
+                    <td>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;">${escHtml(s.session_id)}</span>
+                        ${badges.length ? ' ' + badges.join(' ') : ''}
+                    </td>
+                    <td class="muted">${started}</td>
+                    <td class="muted">${fmtDuration(s.duration_sec)}</td>
+                    <td class="num">${s.ap_count || 0}</td>
+                    <td class="num">${s.bt_count || 0}</td>
+                    <td class="num">${s.rf_count || 0}</td>
+                    <td class="num" style="font-weight:600;">${s.total_devices || 0}</td>
+                    <td class="muted">${s.size_bytes ? formatBytes(s.size_bytes) : '—'}</td>
+                    <td>
+                        ${s.is_active
+                            ? '<span class="muted" style="font-size:0.75rem;">running</span>'
+                            : `<button class="btn-danger" onclick="deleteSession('${escHtml(s.session_id)}', this)">Delete</button>`}
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function applyFilter() {
+            const threshold = parseInt(document.getElementById('min-devices').value) || 0;
+            const filtered = allSessions.filter(s => s.total_devices < threshold);
+            renderSessions(filtered);
+            showMsg('session-status', 'info',
+                `Showing ${filtered.length} of ${allSessions.length} sessions with fewer than ${threshold} total devices.`);
+        }
+
+        function resetFilter() {
+            renderSessions(allSessions);
+            hideMsg('session-status');
+        }
+
+        async function deleteSession(sessionId, btn) {
+            if (!confirm(`Delete session "${sessionId}"?\n\nThis removes all raw capture files and database records for this session. This cannot be undone.`)) return;
+
+            btn.disabled = true;
+            btn.textContent = '...';
+
+            try {
+                const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok && res.status !== 200) throw new Error(data.detail || 'Delete failed');
+
+                if (data.status === 'partial') {
+                    showMsg('session-status', 'error', `Partial delete for ${sessionId}: ${data.deleted.errors.join('; ')}`);
+                } else {
+                    showMsg('session-status', 'ok', `Deleted session ${sessionId}.`);
+                }
+
+                // Remove from local list and re-render
+                allSessions = allSessions.filter(s => s.session_id !== sessionId);
+                const row = btn.closest('tr');
+                row.remove();
+                loadStats(); // refresh overview numbers
+            } catch (e) {
+                btn.disabled = false;
+                btn.textContent = 'Delete';
+                showMsg('session-status', 'error', `Error deleting ${sessionId}: ${e.message}`);
+            }
+        }
+
+        async function cullSessions() {
+            const toDelete = allSessions.filter(s => filteredIds.has(s.session_id) && !s.is_active);
+            if (!toDelete.length) {
+                showMsg('session-status', 'info', 'No sessions to delete (active sessions are skipped).');
+                return;
+            }
+
+            const msg = `Delete ${toDelete.length} session(s)?\n\n` +
+                toDelete.slice(0, 5).map(s => `  • ${s.session_id} (${s.total_devices} devices)`).join('\n') +
+                (toDelete.length > 5 ? `\n  ... and ${toDelete.length - 5} more` : '') +
+                '\n\nThis cannot be undone.';
+
+            if (!confirm(msg)) return;
+
+            const btn = document.getElementById('cull-btn');
+            btn.disabled = true;
+
+            let ok = 0, fail = 0;
+            for (const s of toDelete) {
+                try {
+                    const res = await fetch(`/api/sessions/${encodeURIComponent(s.session_id)}`, { method: 'DELETE' });
+                    const data = await res.json();
+                    if (data.status === 'ok' || data.status === 'partial') ok++;
+                    else fail++;
+                } catch {
+                    fail++;
+                }
+            }
+
+            showMsg('session-status', fail ? 'error' : 'ok',
+                `Deleted ${ok} session(s).${fail ? ' ' + fail + ' failed — check console.' : ''}`);
+            btn.disabled = false;
+            await loadStats();
+        }
+
+        // ── Helpers ───────────────────────────────────────────────────────────
+        function formatBytes(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), 4);
+            return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+        }
+
+        function fmtDate(iso) {
+            if (!iso) return '—';
+            try {
+                return new Date(iso).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+            } catch { return iso; }
+        }
+
+        function fmtDuration(sec) {
+            if (!sec || sec < 0) return '—';
+            if (sec < 60) return sec + 's';
+            if (sec < 3600) return Math.floor(sec / 60) + 'm';
+            return Math.floor(sec / 3600) + 'h ' + Math.floor((sec % 3600) / 60) + 'm';
+        }
+
+        function truncatePath(p) {
+            return p.length > 48 ? '…' + p.slice(-46) : p;
+        }
+
+        function set(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+        }
+
+        function escHtml(s) {
+            return String(s).replace(/[&<>"']/g, c =>
+                ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[c]));
+        }
+
+        function showMsg(id, type, text) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.className = 'status-msg ' + type;
+            el.textContent = text;
+            el.style.display = 'block';
+        }
+
+        function hideMsg(id) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        }
+    </script>
+    <script src="/static/collectors.js"></script>
+</body>
+</html>
