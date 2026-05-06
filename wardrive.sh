@@ -389,7 +389,11 @@ gps_query_fix() {
     # stdin, causing the gpspipe data to go unread and always returning NO_FIX.
     local gps_script="${SCRIPT_DIR}/processing/gps_query.py"
     local result
-    result=$(timeout 8 gpspipe -w -n 60 2>/dev/null | python3 "${gps_script}" "${min_sats}") || true
+    # Per-attempt timeout: capped at 8s minimum, or half GPS_WAIT_FIX so the
+    # outer loop in gps_wait_for_fix gets at least 2 tries within the budget.
+    local per_attempt=$(( GPS_WAIT_FIX / 2 ))
+    (( per_attempt < 8 )) && per_attempt=8
+    result=$(timeout "${per_attempt}" gpspipe -w -n 60 2>/dev/null | python3 "${gps_script}" "${min_sats}") || true
 
     echo "${result:-NO_FIX}"
 }
@@ -575,6 +579,12 @@ start_sdr_collector() {
     if [[ "${ENABLE_SDR:-false}" != "true" ]]; then
         echo "[sdr] Disabled in config — skipping"
         return
+    fi
+    local freq_int="${SDR_FREQUENCY_MHZ:-915}"
+    freq_int="${freq_int%.*}"  # strip decimal if present
+    if ! [[ "${freq_int}" =~ ^[0-9]+$ ]] || (( freq_int < 24 || freq_int > 1766 )); then
+        echo "[sdr] ERROR: SDR_FREQUENCY_MHZ=${SDR_FREQUENCY_MHZ} is outside RTL-SDR range (24-1766 MHz) — skipping"
+        return 1
     fi
     if ! lsusb | grep -qE "RTL283[28]|0bda:283[28]"; then
         echo "[sdr] WARNING: RTL-SDR not detected — skipping"

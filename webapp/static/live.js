@@ -83,7 +83,7 @@ async function loadFeed() {
 
             if (newObservations.length > 0) {
                 newObservations.forEach(obs => {
-                    counters[obs.type]++;
+                    if (obs.type in counters) counters[obs.type]++;
                     allObservations.unshift(obs);
                 });
 

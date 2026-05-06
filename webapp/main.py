@@ -1,3 +1,4 @@
+import getpass
 import logging
 import re
 import sqlite3
@@ -160,7 +161,7 @@ async def get_collectors_status():
         """Check if process matching pattern is running via pgrep."""
         try:
             result = subprocess.run(
-                ["pgrep", "-x" if pgrep_pattern.isalnum() or pgrep_pattern in ("kismet", "rtl_433", "gpspipe") else "-f", pgrep_pattern],
+                ["pgrep", "-f", pgrep_pattern],
                 capture_output=True,
                 timeout=2
             )
@@ -298,6 +299,7 @@ async def start_collectors():
         return {
             "status": "sudo_not_configured",
             "message": "wardrive.sh requires root privileges. Configure sudoers to enable start from the UI.",
+            "sudoers_snippet": _sudoers_snippet(),
         }
 
     # Launch wardrive.sh
@@ -312,6 +314,15 @@ async def start_collectors():
     except Exception as e:
         logging.error(f"Failed to start collectors: {e}")
         return {"status": "error", "message": str(e)}
+
+def _sudoers_snippet() -> str:
+    user = getpass.getuser()
+    script = PROJECT_ROOT / "wardrive.sh"
+    return (
+        f"# Allow warDrive webapp to start/stop capture sessions\n"
+        f"{user} ALL=(root) NOPASSWD: {script}\n"
+        f"{user} ALL=(root) NOPASSWD: /usr/bin/kill\n"
+    )
 
 def _pid_is_wardrive(pid: int) -> bool:
     """Verify that `pid` is a wardrive.sh bash process.
@@ -378,6 +389,7 @@ async def stop_collectors():
     return {
         "status": "sudo_required_for_kill",
         "message": "Cannot signal root-owned process. Configure sudoers to enable kill from the UI.",
+        "sudoers_snippet": _sudoers_snippet(),
     }
 
 @app.get("/api/sessions")
@@ -504,12 +516,13 @@ async def get_devices(
                     pass
 
             # Date filter (works on all tables)
-            # Validate YYYY-MM-DD format before use (value is bound, not interpolated,
-            # but validation prevents garbage data from reaching the DB).
-            _DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
-            if date and _DATE_RE.match(date):
-                conditions.append(f"{schema['first_seen']} >= ?")
-                params.append(f"{date} 00:00:00")
+            if date:
+                try:
+                    datetime.strptime(date, "%Y-%m-%d")  # rejects invalid calendar dates
+                    conditions.append(f"{schema['first_seen']} >= ?")
+                    params.append(f"{date} 00:00:00")
+                except ValueError:
+                    pass
 
             # Device type filter (works on tables with device_type column)
             if device_type:
@@ -657,7 +670,7 @@ async def get_map_track(session: str = None):
         dirs = sorted(capture_raw.iterdir(), reverse=True)
 
     def nmea_to_dd(coord, hemi):
-        if not coord:
+        if not coord or "." not in coord:
             return None
         dot = coord.index(".")
         deg = int(coord[:dot-2])

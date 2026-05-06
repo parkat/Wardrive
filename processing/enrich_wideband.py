@@ -65,7 +65,7 @@ def estimate_bandwidth_from_csv(csv_file, peak_freq_mhz, window_mhz=10):
                         try:
                             power = float(raw.strip())
                             powers[freq_mhz_bin] = power
-                        except:
+                        except (ValueError, TypeError):
                             continue
 
         if not powers:
@@ -148,9 +148,9 @@ def load_gps_data(session_dir):
                                 lon = -lon
 
                             gps_fixes.append({'lat': lat, 'lon': lon, 'time': timestamp})
-                        except:
+                        except (ValueError, IndexError):
                             continue
-    except:
+    except (OSError, IOError):
         pass
 
     return gps_fixes
@@ -347,7 +347,7 @@ def save_enriched_database(enriched_peaks, output_path):
             stats['description'],
             len(powers),
             max(powers),
-            sum(powers) / len(powers),
+            sum(powers) / len(powers) if powers else -100.0,
             min(powers),
             most_common_mods,
             f"{min(freqs):.1f} - {max(freqs):.1f}",

@@ -198,7 +198,7 @@ def main():
     end_mhz        = int(sys.argv[3]) if len(sys.argv) > 3 else 1700  # R820T upper limit ~1766 MHz
     step_mhz       = int(sys.argv[4]) if len(sys.argv) > 4 else 2
     scan_time      = int(sys.argv[5]) if len(sys.argv) > 5 else 1     # seconds integration per step
-    peak_threshold = int(sys.argv[6]) if len(sys.argv) > 6 else -40
+    peak_threshold = float(sys.argv[6]) if len(sys.argv) > 6 else -40.0
 
     scanner = WidebandScanner(output_dir, start_mhz, end_mhz, step_mhz, scan_time,
                               peak_threshold)

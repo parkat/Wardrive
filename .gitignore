@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# SQLite
+*.db
+*.db-wal
+*.db-shm
+
+# Logs and runtime files
+*.log
+wardrive-webapp.pid
+wardrive.pid
+
+# Capture data (raw session folders and logs are local only)
+capture/raw/
+capture/logs/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.swp
+*.swo

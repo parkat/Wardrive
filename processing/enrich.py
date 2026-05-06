@@ -107,8 +107,10 @@ CREATE TABLE IF NOT EXISTS wifi_obs (
     lon             REAL,
     FOREIGN KEY (session_id) REFERENCES sessions(session_id)
 );
-CREATE INDEX IF NOT EXISTS idx_wifi_obs_session ON wifi_obs(session_id);
-CREATE INDEX IF NOT EXISTS idx_wifi_obs_bssid   ON wifi_obs(bssid);
+CREATE INDEX IF NOT EXISTS idx_wifi_obs_session   ON wifi_obs(session_id);
+CREATE INDEX IF NOT EXISTS idx_wifi_obs_bssid     ON wifi_obs(bssid);
+CREATE INDEX IF NOT EXISTS idx_wifi_obs_timestamp ON wifi_obs(timestamp_utc);
+CREATE INDEX IF NOT EXISTS idx_wifi_obs_geo ON wifi_obs(lat, lon) WHERE lat IS NOT NULL AND lon IS NOT NULL;
 -- ── SDR / rtl_433 ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS rf_devices (
     device_id       TEXT PRIMARY KEY,
@@ -132,8 +134,10 @@ CREATE TABLE IF NOT EXISTS rf_obs (
     lon             REAL,
     FOREIGN KEY (session_id) REFERENCES sessions(session_id)
 );
-CREATE INDEX IF NOT EXISTS idx_rf_obs_session ON rf_obs(session_id);
-CREATE INDEX IF NOT EXISTS idx_rf_obs_device  ON rf_obs(device_id);
+CREATE INDEX IF NOT EXISTS idx_rf_obs_session   ON rf_obs(session_id);
+CREATE INDEX IF NOT EXISTS idx_rf_obs_device    ON rf_obs(device_id);
+CREATE INDEX IF NOT EXISTS idx_rf_obs_timestamp ON rf_obs(timestamp_utc);
+CREATE INDEX IF NOT EXISTS idx_rf_obs_geo ON rf_obs(lat, lon) WHERE lat IS NOT NULL AND lon IS NOT NULL;
 -- ── BLE / ESP32 ───────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS bt_devices (
     address                 TEXT PRIMARY KEY,
@@ -170,6 +174,7 @@ CREATE TABLE IF NOT EXISTS bt_obs (
 CREATE INDEX IF NOT EXISTS idx_bt_obs_session ON bt_obs(session_id);
 CREATE INDEX IF NOT EXISTS idx_bt_obs_addr    ON bt_obs(address);
 CREATE INDEX IF NOT EXISTS idx_bt_obs_time    ON bt_obs(timestamp_utc);
+CREATE INDEX IF NOT EXISTS idx_bt_obs_geo ON bt_obs(lat, lon) WHERE lat IS NOT NULL AND lon IS NOT NULL;
 -- ── OUI lookup (shared across WiFi + BLE) ────────────────────────────────────
 CREATE TABLE IF NOT EXISTS oui_lookup (
     prefix          TEXT PRIMARY KEY,
@@ -1485,6 +1490,7 @@ def main():
     print(f"  Flock cameras:         {flock_count}")
     print(f"  ALPR cameras:          {alpr_count}")
     print("=" * 60)
+    db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     db.close()
 
 if __name__ == "__main__":

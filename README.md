@@ -241,7 +241,7 @@ bash ~/warDrive/webapp/manage.sh restart
 
 Open **http://127.0.0.1:8000** in a browser.
 
-Logs for the background process: `tail -f /tmp/wardrive-webapp.log`
+Logs for the background process: `tail -f ~/warDrive/webapp/wardrive-webapp.log`
 
 The webapp is a FastAPI application (`webapp/main.py`) served by uvicorn on `127.0.0.1:8000`. It reads from `processing/wardrive.db` and from raw capture files directly.
 
@@ -265,7 +265,7 @@ The dashboard can start and stop `wardrive.sh` via `POST /api/collectors/start` 
 ```bash
 # Add to /etc/sudoers.d/wardrive:
 parkat ALL=(root) NOPASSWD: /home/parkat/warDrive/wardrive.sh
-parkat ALL=(root) NOPASSWD: /bin/kill
+parkat ALL=(root) NOPASSWD: /usr/bin/kill
 ```
 
 If sudoers is not configured, the UI will show a snippet with the required lines.
@@ -470,3 +470,43 @@ Planned additions (not yet implemented):
 2. **Cellular omni antenna** — passive cell tower mapping
 3. **2.4 GHz Yagi** — directional WiFi triangulation
 4. **ESP32 fleet** — additional boards at fixed properties via WiFi/MQTT
+
+---
+
+## Improvement backlog
+
+Output of a full multi-agent code audit run against the codebase. Items are prioritized by impact.
+
+### Software
+
+| Priority | Item |
+|----------|------|
+| HIGH | **Materialize session stats** — the dashboard runs `COUNT(DISTINCT)` subqueries per session on every load. Write a `session_stats` summary table at the end of each `enrich.py` run instead. Zero query-contract changes required. |
+| HIGH | **Log rotation** — session logs (`tee -a SESSION_LOG`) have no size cap. Add a `logrotate` config at `/etc/logrotate.d/wardrive` rotating `capture/logs/*.log` at 50 MB with `compress`. Without this a multi-hour drive can fill an SD card. |
+| HIGH | **Bounded live-feed query** — now that `idx_wifi_obs_timestamp` exists, add `WHERE timestamp_utc > datetime('now', '-5 minutes')` to the `/api/live/feed` queries. Turns a 240 K-row full scan (called every 30 s) into an index range scan of ~200 rows. |
+| MEDIUM | **Populate `oui_lookup` from IEEE MA-L CSV** — the table is defined in the schema but never loaded. A one-time loader that bulk-inserts the IEEE `oui.csv` (public domain) eliminates the per-lookup HTTP dependency on macvendors.com and works fully offline. |
+| MEDIUM | **systemd units per collector** — replace the bash supervisor loop in `wardrive.sh` with individual `.service` files (`Restart=on-failure`, `RestartSec=`, `StartLimitIntervalSec=`). Gives free journal logging, restart counters, `systemctl status`, and fixes the manifest update race (manifest currently not updated when collectors crash mid-session). `wardrive.sh` becomes a thin orchestrator that starts a `wardrive-session.target`. |
+| MEDIUM | **Post-session auto-enrichment** — a `systemd.path` unit watching `capture/raw/` for new `manifest.json` files can trigger `enrich.py` automatically when a session ends. Eliminates the manual enrichment step. |
+| MEDIUM | **pytest suite** — zero test coverage currently. Highest-value targets: GPS interpolation unit tests, timestamp normalization (`Z` vs `+00:00`), schema idempotency (re-running `enrich.py` on a fixture session), and one integration test that starts uvicorn and hits `/api/status`. |
+| LOW | **Vendor Chart.js locally** — copy `chart.umd.min.js` into `webapp/static/` and update the `<script>` tag in `analytics.html`. Eliminates CDN dependency for offline field use. |
+| LOW | **Implement `/api/report/summary`** — the report page currently shows a "disabled" notice. The schema has all needed data; a single query joining the device tables with per-session aggregations would make the report page functional. |
+
+### Hardware
+
+| Priority | Item |
+|----------|------|
+| HIGH | **u-blox M9N or M10 GPS module** with a Tallysman TW4721 patch antenna. The M9N provides a 10 Hz fix rate vs the typical 1 Hz of cheap pucks, which dramatically improves GPS interpolation accuracy at driving speed. Multi-constellation (GPS + GLONASS + Galileo + BeiDou) cuts cold-start acquisition time. Currently ~31 % of WiFi observations and ~25 % of BLE observations have null GPS coordinates. |
+| HIGH | **RTL-SDR V4 (R828D tuner)** — direct swap, same driver. Extends usable range to ~2.4 GHz with meaningful sensitivity improvement above 1.6 GHz (where the V3 R820T rolls off), a built-in bias tee for powered LNAs, and a hardware FM notch filter that reduces intermodulation from broadcast stations. |
+| MEDIUM | **Second RTL-SDR dongle (~$30)** — run `rtl_433` on a fixed frequency *and* `rtl_power` wideband sweeping simultaneously instead of the current time-sharing approach. Two USB dongles, split by device index (`-d 0` / `-d 1`). |
+| MEDIUM | **nRF52840 USB sniffer** (e.g. Makerdiary nRF52840 MDK USB Dongle, ~$20) running Sniffle firmware. The ESP32 BLE stack sees only advertising PDUs directed at or broadcast near it. The nRF52840 supports true promiscuous capture of all advertising PDUs on all three primary advertising channels with proper channel rotation, substantially increasing BLE observation count. |
+| LOW | **Filtered LNA for the RTL-SDR** (e.g. Nooelec LaNA or SAWbird+ 915) — adds ~15 dB of in-band sensitivity and reduces intermodulation from strong out-of-band signals (FM broadcast, cellular). Plug-and-play with the V4's built-in bias tee. |
+| LOW | **Cellular modem HAT** (e.g. Waveshare SIM7600G-H) — enables real-time Wigle enrichment during capture, remote SSH without a hotspot, and post-session rsync to a home server. Pairs with the `POST_SESSION_SYNC` operational improvement below. |
+
+### Runtime / Operations
+
+| Priority | Item |
+|----------|------|
+| HIGH | **WAL checkpoint at enrichment end** — already implemented: `PRAGMA wal_checkpoint(TRUNCATE)` is now called at the end of each `enrich.py` run. Without this, WAL frames accumulate across runs and degrade read performance. |
+| MEDIUM | **Scheduled VACUUM** — after bulk enrichment inserts, SQLite page utilization degrades. Add `PRAGMA incremental_vacuum(1000)` to `enrich.py` post-import and a weekly cron job running `PRAGMA vacuum` on the database. Extends SD card life meaningfully on a 4 GB card. |
+| MEDIUM | **`rsync` post-session backup** — add an optional `POST_SESSION_SYNC` variable to `wardrive.conf`. If set to an SSH target (`user@host:path`), trigger `rsync -az capture/raw/ $POST_SESSION_SYNC` after session teardown for automatic off-device backup. |
+| LOW | **tmux capture dashboard** — replace the single scrolling log with a `tmux` layout: one pane per collector showing `tail -f` of its log, one pane showing live DB row counts incrementing in real time. Low effort, high situational awareness while driving. |
