@@ -13,6 +13,12 @@
 
 set -euo pipefail
 
+# Parse flags before anything else
+NO_TEE=false
+for _arg in "$@"; do
+    [[ "${_arg}" == "--no-tee" ]] && NO_TEE=true
+done
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG="${SCRIPT_DIR}/config/wardrive.conf"
 
@@ -24,6 +30,10 @@ if [[ ! -f "${CONFIG}" ]]; then
 fi
 # shellcheck source=config/wardrive.conf
 source "${CONFIG}"
+
+# ── TUI command channel ────────────────────────────────────────────────────────
+PID_DIR="${SCRIPT_DIR}/capture/pids"
+CMD_FILE="${SCRIPT_DIR}/capture/wardrive.cmd"
 
 # Supervisor tunables (override in wardrive.conf if desired)
 RESTART_MAX="${RESTART_MAX:-10}"
@@ -47,7 +57,9 @@ LOG_DIR="${_CAPTURE_ROOT}/logs"
 mkdir -p "${SESSION_DIR}"/{wifi,sdr,bt,gps} "${LOG_DIR}"
 
 SESSION_LOG="${LOG_DIR}/${SESSION_NAME}.log"
-exec > >(tee -a "${SESSION_LOG}") 2>&1
+if [[ "${NO_TEE}" != "true" ]]; then
+    exec > >(tee -a "${SESSION_LOG}") 2>&1
+fi
 
 echo "[wardrive] Session: ${SESSION_NAME}"
 echo "[wardrive] Dir:     ${SESSION_DIR}"
@@ -97,6 +109,17 @@ cleanup() {
         sleep 1
         systemctl start NetworkManager 2>/dev/null || true
     fi
+
+    # Clean up TUI command channel and per-collector PID files
+    if [[ -d "${PID_DIR:-}" ]]; then
+        for _pid_f in "${PID_DIR}"/*.pid; do
+            [[ -f "${_pid_f}" ]] || continue
+            _pid_val=$(cat "${_pid_f}" 2>/dev/null) || continue
+            [[ -n "${_pid_val}" ]] && kill -KILL "${_pid_val}" 2>/dev/null || true
+        done
+        rm -rf "${PID_DIR}" 2>/dev/null || true
+    fi
+    rm -f "${CMD_FILE:-}" 2>/dev/null || true
 
     rm -f "/tmp/wardrive.pid" "${SCRIPT_DIR}/capture/wardrive.pid"
     finalize_manifest
@@ -443,9 +466,11 @@ start_gps_collector() {
     fi
     echo "[gps] Starting NMEA logger (under supervisor)"
     supervise_collector gps launch_gps_logger &
-    CHILD_PIDS+=($!)
+    _sv_pid=$!
+    CHILD_PIDS+=("${_sv_pid}")
+    printf '%d\n' "${_sv_pid}" > "${PID_DIR}/gps.pid"
     update_manifest gps true
-    echo "[gps] supervisor PID ${CHILD_PIDS[-1]}"
+    echo "[gps] supervisor PID ${_sv_pid}"
     echo "[gps] Raw NMEA → ${SESSION_DIR}/gps/nmea.log"
 }
 
@@ -560,9 +585,11 @@ start_wifi_collector() {
 
     echo "[wifi] Starting Kismet on ${MON_IFACE} (under supervisor)"
     supervise_collector wifi launch_kismet &
-    CHILD_PIDS+=($!)
+    _sv_pid=$!
+    CHILD_PIDS+=("${_sv_pid}")
+    printf '%d\n' "${_sv_pid}" > "${PID_DIR}/wifi.pid"
     update_manifest wifi true
-    echo "[wifi] supervisor PID ${CHILD_PIDS[-1]}"
+    echo "[wifi] supervisor PID ${_sv_pid}"
 }
 
 # ── SDR collector (rtl_433) ────────────────────────────────────────────────────
@@ -597,9 +624,11 @@ start_sdr_collector() {
     fi
     echo "[sdr] Starting rtl_433 on ${SDR_FREQUENCY_MHZ:-915} MHz (under supervisor)"
     supervise_collector sdr launch_rtl433 &
-    CHILD_PIDS+=($!)
+    _sv_pid=$!
+    CHILD_PIDS+=("${_sv_pid}")
+    printf '%d\n' "${_sv_pid}" > "${PID_DIR}/sdr.pid"
     update_manifest sdr true
-    echo "[sdr] supervisor PID ${CHILD_PIDS[-1]}"
+    echo "[sdr] supervisor PID ${_sv_pid}"
 }
 
 # ── Wideband SDR collector (600-6000 MHz spectrum scanner) ──────────────────
@@ -638,9 +667,11 @@ start_wideband_collector() {
     fi
     echo "[wideband] Starting spectrum scanner ${WIDEBAND_FREQ_START_MHZ:-100}-${WIDEBAND_FREQ_END_MHZ:-1700} MHz (under supervisor)"
     supervise_collector wideband launch_wideband_scanner &
-    CHILD_PIDS+=($!)
+    _sv_pid=$!
+    CHILD_PIDS+=("${_sv_pid}")
+    printf '%d\n' "${_sv_pid}" > "${PID_DIR}/wideband.pid"
     update_manifest sdr true
-    echo "[wideband] supervisor PID ${CHILD_PIDS[-1]}"
+    echo "[wideband] supervisor PID ${_sv_pid}"
 }
 
 # ── ESP32 BLE collector ────────────────────────────────────────────────────────
@@ -695,9 +726,11 @@ start_esp32_collector() {
     echo "[esp32] Starting BLE reader on ${found} (under supervisor)"
     [[ "${ENABLE_GPS}" == "true" ]] && echo "[esp32] GPS injection enabled"
     supervise_collector esp32 launch_esp32_reader &
-    CHILD_PIDS+=($!)
+    _sv_pid=$!
+    CHILD_PIDS+=("${_sv_pid}")
+    printf '%d\n' "${_sv_pid}" > "${PID_DIR}/esp32.pid"
     update_manifest esp32 true
-    echo "[esp32] supervisor PID ${CHILD_PIDS[-1]}"
+    echo "[esp32] supervisor PID ${_sv_pid}"
 }
 
 # ── Heartbeat monitor ──────────────────────────────────────────────────────────
@@ -736,11 +769,46 @@ heartbeat_monitor() {
     done
 }
 
+# ── TUI command channel listener ───────────────────────────────────────────────
+cmd_listener() {
+    local last_size=0
+    while [[ "${CLEANUP_DONE}" -eq 0 ]]; do
+        local cur_size
+        cur_size=$(wc -c < "${CMD_FILE}" 2>/dev/null || echo "${last_size}")
+        if (( cur_size > last_size )); then
+            local new_data
+            new_data=$(tail -c +$(( last_size + 1 )) "${CMD_FILE}" 2>/dev/null || true)
+            last_size="${cur_size}"
+            while IFS= read -r _cmd; do
+                [[ -z "${_cmd}" ]] && continue
+                echo "[wardrive] cmd channel: ${_cmd}"
+                handle_cmd_channel "${_cmd}"
+            done <<< "${new_data}"
+        fi
+        sleep 1
+    done
+}
+
+handle_cmd_channel() {
+    local _cmd="$1"
+    case "${_cmd}" in
+        start:wifi)      start_wifi_collector ;;
+        start:sdr)       start_sdr_collector ;;
+        start:wideband)  start_wideband_collector ;;
+        start:esp32)     start_esp32_collector ;;
+        start:gps)       start_gps_collector ;;
+        *) echo "[wardrive] Unknown command: ${_cmd}" ;;
+    esac
+}
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 init_manifest
 preflight_all
 inhibit_sleep
 inhibit_screen_blank
+
+mkdir -p "${PID_DIR}"
+printf '' > "${CMD_FILE}" 2>/dev/null || true
 
 # ── PID file for webapp stop control ───────────────────────────────────────────
 # Write to project-local capture/ instead of /tmp (which is world-writable).
@@ -768,6 +836,9 @@ echo "[wardrive] Heartbeat will log every 60 s."
 echo "[wardrive] Each collector will auto-restart up to ${RESTART_MAX} times if it crashes."
 
 heartbeat_monitor &
+CHILD_PIDS+=($!)
+
+cmd_listener &
 CHILD_PIDS+=($!)
 
 wait

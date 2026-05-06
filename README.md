@@ -168,12 +168,63 @@ RESTART_RESET_AFTER=300     # reset crash counter if a collector ran stably this
 ## Running a capture session
 
 ```bash
-sudo bash ~/warDrive/wardrive.sh
+sudo python3 ~/warDrive/wardrive_ui.py
 ```
 
-The script runs pre-flight checks (device detection, airmon-ng cleanup, GPS fix wait), then starts all enabled collectors under supervisors that auto-restart on crash with exponential backoff. `systemd-inhibit` blocks sleep and lid-close for the duration.
+This launches the interactive terminal UI, which starts `wardrive.sh` in the background and displays a multi-panel dashboard:
 
-Press **Ctrl-C** to stop. All collectors are sent SIGTERM, the WiFi monitor interface is torn down, and the session manifest is finalized.
+```
+┌ warDrive │ Session: 20260427T172720Z_wardrive │ 00:45:23 | 14:32:01 ┐
+├──────────────────────────────────────────────────────────────────────┤
+│ LIVE DATA                        │ COMMANDS                          │
+│  Duration:       00:45:23        │  q/quit      stop session & exit  │
+│                                  │  webapp on   start web explorer   │
+│  Device Counts                   │  webapp off  stop web explorer    │
+│  WiFi APs:       247             │                                   │
+│  BLE Devices:    89              │  stop wifi   stop WiFi collector  │
+│  RF Devices:     12              │  stop sdr    stop SDR collector   │
+│                                  │  stop ble    stop BLE collector   │
+│  Collectors                      │  stop gps    stop GPS collector   │
+│   ✓  WiFi    (Kismet)            │                                   │
+│   ✓  SDR     (rtl_433)          │  start wifi  restart WiFi         │
+│   ✗  Wideband SDR               │  start sdr   restart SDR          │
+│   ✓  BLE     (ESP32)            │  start ble   restart BLE          │
+│   ✓  GPS     (gpspipe)          │  start gps   restart GPS          │
+│                                  │                                   │
+│  Web Explorer                    │  enrich      run post-enrichment  │
+│   ✓  http://localhost:8000       │  ↑ / ↓       command history      │
+│                                  │  PgUp / PgDn scroll log           │
+├──────────────────────────────────────────────────────────────────────┤
+│ LOG                                                                  │
+│ [wardrive] Session: 20260427T172720Z_wardrive                        │
+│ [wifi] Starting Kismet on wlan1mon (under supervisor)               │
+│ [heartbeat] 4/4 supervisors alive — 00:45:00Z | GPS: 8 sats        │
+├──────────────────────────────────────────────────────────────────────┤
+│ CMD> _                                                               │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Panels:**
+- **LIVE DATA** — session duration, device counts (updated from the DB every 5 s), per-collector run status (read from PID files), web explorer status
+- **COMMANDS** — full command reference always visible
+- **LOG** — scrolling live output from `wardrive.sh`; scroll with PgUp/PgDn
+- **CMD>** — interactive command prompt with ↑/↓ history
+
+**Starting/stopping the web explorer from the TUI:**
+```
+CMD> webapp on     # start the explorer at http://localhost:8000
+CMD> webapp off    # stop it
+```
+
+**Pausing and resuming individual collectors:**
+```
+CMD> stop wifi     # SIGTERM the Kismet supervisor (Kismet stops cleanly)
+CMD> start wifi    # restart it without ending the session
+```
+
+`wardrive.sh` itself runs pre-flight checks (device detection, airmon-ng cleanup, GPS fix wait), then starts all enabled collectors under supervisors that auto-restart on crash with exponential backoff. `systemd-inhibit` blocks sleep and lid-close for the duration.
+
+Type `q` or `quit` at the CMD prompt to stop the session cleanly. All collectors are sent SIGTERM, the WiFi monitor interface is torn down, and the session manifest is finalized.
 
 **Session output:**
 
@@ -237,22 +288,23 @@ python3 ~/warDrive/processing/enrich.py
 
 ### Starting the webapp
 
-```bash
-# Foreground (development):
-bash ~/warDrive/webapp/run.sh
-
-# Background (managed):
-bash ~/warDrive/webapp/manage.sh start
-bash ~/warDrive/webapp/manage.sh status
-bash ~/warDrive/webapp/manage.sh stop
-bash ~/warDrive/webapp/manage.sh restart
+The preferred way is from the TUI prompt during a session:
+```
+CMD> webapp on    # starts on http://localhost:8000
+CMD> webapp off   # stops it
 ```
 
-Open **http://127.0.0.1:8000** in a browser.
+Or start it independently:
+```bash
+# Foreground:
+bash ~/warDrive/webapp/run.sh
 
-Logs for the background process: `tail -f ~/warDrive/webapp/wardrive-webapp.log`
+# Background:
+bash ~/warDrive/webapp/manage.sh start
+bash ~/warDrive/webapp/manage.sh stop
+```
 
-The webapp is a FastAPI application (`webapp/main.py`) served by uvicorn on `127.0.0.1:8000`. It reads from `processing/wardrive.db` and from raw capture files directly.
+Open **http://127.0.0.1:8000** in a browser. The webapp is a FastAPI application (`webapp/main.py`) served by uvicorn on `127.0.0.1:8000`. It reads from `processing/wardrive.db` and from raw capture files directly. It is intended for reviewing data after a drive — the live view has been removed in favour of the terminal TUI.
 
 ### Pages
 
@@ -260,25 +312,18 @@ The webapp is a FastAPI application (`webapp/main.py`) served by uvicorn on `127
 |-----|-------------|
 | `/` | **Explorer** — browse devices by session; filter by table, vendor, RSSI, date, device type |
 | `/dashboard` | **Dashboard** — aggregate stats: total unique devices, strongest device, busiest session, WiFi encryption breakdown, geographic bounds, last capture time |
-| `/live` | **Live feed** — real-time stream of observations from the last 30 seconds; falls back to raw Kismet data if not yet enriched |
 | `/map` | **Map** — Leaflet map showing all geolocated BLE, WiFi, and RF devices; GPS track overlay from NMEA log |
 | `/analytics` | **Analytics** — Chart.js visualizations: signal strength distributions (BLE + WiFi), device type breakdown, devices per hour timeline, top manufacturers, per-session comparison |
 | `/report` | **Report** — session report view (note: the `/api/report/summary` endpoint is currently disabled; use the Explorer with filters instead) |
 | `/storage` | **Storage** — disk usage overview (database size, capture files, filesystem free space); session management table with per-session device counts, duration, and disk size; individual and bulk session deletion (removes raw files + DB records); capture storage path configuration |
 
-The header on every page shows live collector status (which collectors are enabled/running) and a start/stop button for `wardrive.sh`. Starting from the UI requires sudoers configuration (see below).
-
-### Collector start/stop from the UI
-
-The dashboard can start and stop `wardrive.sh` via `POST /api/collectors/start` and `POST /api/collectors/stop`. This requires passwordless sudo for your user:
+The header on every page shows live collector status (which collectors are enabled/running) and a start/stop button for `wardrive.sh`. Starting from the UI requires sudoers configuration:
 
 ```bash
 # Add to /etc/sudoers.d/wardrive:
 parkat ALL=(root) NOPASSWD: /home/parkat/warDrive/wardrive.sh
 parkat ALL=(root) NOPASSWD: /usr/bin/kill
 ```
-
-If sudoers is not configured, the UI will show a snippet with the required lines.
 
 ---
 
@@ -391,7 +436,8 @@ ORDER BY o.timestamp_utc DESC LIMIT 50;
 
 ```
 warDrive/
-├── wardrive.sh                     # main launcher; spawns and supervises all collectors
+├── wardrive_ui.py                  # interactive TUI — entry point (sudo python3 wardrive_ui.py)
+├── wardrive.sh                     # collector launcher; spawns and supervises all collectors
 ├── setup.sh                        # one-shot dependency installer
 ├── config/
 │   └── wardrive.conf               # editable settings (sourced by wardrive.sh)
@@ -411,13 +457,15 @@ warDrive/
 │   │       ├── sdr/
 │   │       ├── bt/
 │   │       └── gps/
-│   └── logs/                       # per-session wardrive.sh logs
+│   ├── logs/                       # per-session wardrive.sh logs (non-TUI mode only)
+│   ├── pids/                       # per-collector supervisor PID files (runtime, gitignored)
+│   └── wardrive.cmd                # TUI→wardrive.sh command channel (runtime, gitignored)
 └── webapp/
-    ├── main.py                     # FastAPI application
+    ├── main.py                     # FastAPI application (post-run data explorer)
     ├── run.sh                      # foreground launcher
     ├── manage.sh                   # background start/stop/status/restart
     ├── static/                     # CSS and JS assets
-    └── templates/                  # HTML pages (index, dashboard, live, map, analytics, report, storage)
+    └── templates/                  # HTML pages (index, dashboard, map, analytics, report, storage)
 ```
 
 ---
@@ -493,7 +541,6 @@ Output of a full multi-agent code audit run against the codebase. Items are prio
 |----------|------|
 | HIGH | **Materialize session stats** — the dashboard runs `COUNT(DISTINCT)` subqueries per session on every load. Write a `session_stats` summary table at the end of each `enrich.py` run instead. Zero query-contract changes required. |
 | HIGH | **Log rotation** — session logs (`tee -a SESSION_LOG`) have no size cap. Add a `logrotate` config at `/etc/logrotate.d/wardrive` rotating `capture/logs/*.log` at 50 MB with `compress`. Without this a multi-hour drive can fill an SD card. |
-| HIGH | **Bounded live-feed query** — now that `idx_wifi_obs_timestamp` exists, add `WHERE timestamp_utc > datetime('now', '-5 minutes')` to the `/api/live/feed` queries. Turns a 240 K-row full scan (called every 30 s) into an index range scan of ~200 rows. |
 | MEDIUM | **Populate `oui_lookup` from IEEE MA-L CSV** — the table is defined in the schema but never loaded. A one-time loader that bulk-inserts the IEEE `oui.csv` (public domain) eliminates the per-lookup HTTP dependency on macvendors.com and works fully offline. |
 | MEDIUM | **systemd units per collector** — replace the bash supervisor loop in `wardrive.sh` with individual `.service` files (`Restart=on-failure`, `RestartSec=`, `StartLimitIntervalSec=`). Gives free journal logging, restart counters, `systemctl status`, and fixes the manifest update race (manifest currently not updated when collectors crash mid-session). `wardrive.sh` becomes a thin orchestrator that starts a `wardrive-session.target`. |
 | MEDIUM | **Post-session auto-enrichment** — a `systemd.path` unit watching `capture/raw/` for new `manifest.json` files can trigger `enrich.py` automatically when a session ends. Eliminates the manual enrichment step. |
@@ -519,4 +566,4 @@ Output of a full multi-agent code audit run against the codebase. Items are prio
 | HIGH | **WAL checkpoint at enrichment end** — already implemented: `PRAGMA wal_checkpoint(TRUNCATE)` is now called at the end of each `enrich.py` run. Without this, WAL frames accumulate across runs and degrade read performance. |
 | MEDIUM | **Scheduled VACUUM** — after bulk enrichment inserts, SQLite page utilization degrades. Add `PRAGMA incremental_vacuum(1000)` to `enrich.py` post-import and a weekly cron job running `PRAGMA vacuum` on the database. Extends SD card life meaningfully on a 4 GB card. |
 | MEDIUM | **`rsync` post-session backup** — add an optional `POST_SESSION_SYNC` variable to `wardrive.conf`. If set to an SSH target (`user@host:path`), trigger `rsync -az capture/raw/ $POST_SESSION_SYNC` after session teardown for automatic off-device backup. |
-| LOW | **tmux capture dashboard** — replace the single scrolling log with a `tmux` layout: one pane per collector showing `tail -f` of its log, one pane showing live DB row counts incrementing in real time. Low effort, high situational awareness while driving. |
+| LOW | **`wardrive_ui.py` log persistence** — when running via the TUI (`--no-tee` mode), `wardrive.sh` stdout is not written to `capture/logs/`. Add an option to the TUI to mirror the log panel to a file for post-session review. |

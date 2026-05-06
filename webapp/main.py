@@ -8,7 +8,7 @@ import subprocess
 import signal
 import os
 from pathlib import Path
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -109,10 +109,6 @@ app.mount("/static", StaticFiles(directory=str(WEBAPP_ROOT / "static")), name="s
 @app.get("/")
 async def index():
     return FileResponse(WEBAPP_ROOT / "templates" / "index.html")
-
-@app.get("/live")
-async def live():
-    return FileResponse(WEBAPP_ROOT / "templates" / "live.html")
 
 @app.get("/map")
 async def map_page():
@@ -748,199 +744,6 @@ async def get_map_track(session: str = None):
 
     return points
 
-
-@app.get("/api/live/session")
-async def get_live_session():
-    if not DB_PATH.exists():
-        return {"error": "Database not found"}
-
-    try:
-        with sqlite3.connect(str(DB_PATH)) as db:
-            db.row_factory = sqlite3.Row
-            # First try to find an active session (no ended_at_utc)
-            session = db.execute(
-                "SELECT * FROM sessions WHERE ended_at_utc IS NULL ORDER BY started_at_utc DESC LIMIT 1"
-            ).fetchone()
-
-            # If no active session, get the most recent finished session with data
-            if not session:
-                session = db.execute(
-                    "SELECT * FROM sessions ORDER BY started_at_utc DESC LIMIT 1"
-                ).fetchone()
-
-            if session:
-                session_dict = dict(session)
-                session_id = session_dict.get("session_id")
-
-                if session_id:
-                    bt_count = db.execute(
-                        "SELECT COUNT(DISTINCT address) FROM bt_obs WHERE session_id = ?", (session_id,)
-                    ).fetchone()[0]
-                    wifi_count = db.execute(
-                        "SELECT COUNT(DISTINCT bssid) FROM wifi_obs WHERE session_id = ?", (session_id,)
-                    ).fetchone()[0]
-                    rf_count = db.execute(
-                        "SELECT COUNT(DISTINCT device_id) FROM rf_obs WHERE session_id = ?", (session_id,)
-                    ).fetchone()[0]
-
-                    session_dict["bt_count"] = bt_count
-                    session_dict["wifi_count"] = wifi_count
-                    session_dict["rf_count"] = rf_count
-
-                    # If we have data in the database, don't fall back to raw capture
-                    if bt_count > 0 or wifi_count > 0 or rf_count > 0:
-                        return {"active_session": session_dict, "status": "enriched"}
-
-                return {"active_session": session_dict}
-
-        # Fallback: check for recent raw capture sessions
-        capture_raw = _get_capture_raw_dir()
-        if capture_raw.exists():
-            sessions = []
-            for session_dir in sorted(capture_raw.iterdir(), reverse=True):
-                if session_dir.is_dir():
-                    manifest_file = session_dir / "manifest.json"
-                    if manifest_file.exists():
-                        try:
-                            with open(manifest_file) as f:
-                                manifest = json.load(f)
-
-                                # Count devices from Kismet files
-                                wifi_count = 0
-                                bt_count = 0
-                                kismet_file = None
-                                for f in (session_dir / "wifi").glob("*.kismet") if (session_dir / "wifi").exists() else []:
-                                    kismet_file = f
-                                    break
-
-                                if kismet_file:
-                                    try:
-                                        with sqlite3.connect(str(kismet_file)) as kdb:
-                                            wifi_count = kdb.execute("SELECT COUNT(*) FROM devices WHERE devmac IS NOT NULL").fetchone()[0]
-                                    except Exception:
-                                        pass
-
-                                # Include unfinished sessions or recently finished ones
-                                sessions.append({
-                                    "session_id": manifest.get("session_id"),
-                                    "started_at_utc": manifest.get("started_at_utc"),
-                                    "ended_at_utc": manifest.get("ended_at_utc"),
-                                    "hostname": manifest.get("hostname"),
-                                    "source": "raw_capture",  # Indicates not yet enriched
-                                    "collectors": manifest.get("collectors", {}),
-                                    "bt_count": bt_count,
-                                    "wifi_count": wifi_count,
-                                    "rf_count": 0,
-                                })
-                        except Exception:
-                            pass
-
-            # Return the most recent session from raw captures
-            if sessions:
-                return {"active_session": sessions[0], "status": "raw_data_not_yet_enriched"}
-
-        return {"active_session": None}
-    except Exception as e:
-        logging.error(f"Database error in get_live_session: {e}")
-        return {"error": "Database error"}
-
-_ISO_TS_RE = re.compile(r'^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}')
-
-@app.get("/api/live/feed")
-async def get_live_feed(since: str = None, limit: int = 100, include_raw: bool = True):
-    if not DB_PATH.exists():
-        return []
-
-    limit = min(int(limit), 500)
-
-    if not since:
-        since = (datetime.now(timezone.utc) - timedelta(seconds=30)).isoformat()
-    elif not _ISO_TS_RE.match(since):
-        # Reject malformed timestamps early; the value is passed as a bind param
-        # so it won't cause SQL injection, but rejecting garbage is still good.
-        raise HTTPException(status_code=400, detail="Invalid 'since' timestamp format")
-
-    observations = []
-
-    # Try to get enriched data from main database
-    try:
-        with sqlite3.connect(str(DB_PATH)) as db:
-            db.row_factory = sqlite3.Row
-
-            query = """
-            SELECT 'ble' as type, b.timestamp_utc, b.address, d.name, d.manufacturer,
-                   d.device_type, b.rssi_dbm, b.lat, b.lon, b.session_id
-            FROM bt_obs b
-            JOIN bt_devices d ON b.address = d.address
-            WHERE b.timestamp_utc >= ?
-
-            UNION ALL
-
-            SELECT 'wifi' as type, w.timestamp_utc, a.bssid as address, a.ssid as name,
-                   a.manufacturer, a.device_type, w.signal_dbm as rssi_dbm, w.lat, w.lon, w.session_id
-            FROM wifi_obs w
-            JOIN wifi_aps a ON w.bssid = a.bssid
-            WHERE w.timestamp_utc >= ?
-
-            UNION ALL
-
-            SELECT 'rf' as type, r.timestamp_utc, d.device_id as address, d.model as name,
-                   NULL as manufacturer, d.device_type, d.max_rssi_dbm as rssi_dbm, r.lat, r.lon, r.session_id
-            FROM rf_obs r
-            JOIN rf_devices d ON r.device_id = d.device_id
-            WHERE r.timestamp_utc >= ?
-
-            ORDER BY timestamp_utc DESC
-            LIMIT ?
-            """
-
-            rows = db.execute(query, (since, since, since, limit)).fetchall()
-            observations = [dict(row) for row in rows]
-    except Exception as e:
-        logging.error(f"Database error: {e}")
-
-    # If no enriched data and include_raw is true, try raw Kismet files
-    if not observations and include_raw:
-        try:
-            capture_raw = _get_capture_raw_dir()
-            if capture_raw.exists():
-                for session_dir in sorted(capture_raw.iterdir(), reverse=True)[:3]:  # Check last 3 sessions
-                    if not session_dir.is_dir():
-                        continue
-                    kismet_file = None
-                    for f in session_dir.glob("wifi/*.kismet"):
-                        kismet_file = f
-                        break
-
-                    if kismet_file and kismet_file.exists():
-                        try:
-                            with sqlite3.connect(str(kismet_file)) as kdb:
-                                kdb.row_factory = sqlite3.Row
-                                # Query devices from Kismet
-                                dev_query = "SELECT devmac, strongest_signal, type FROM devices WHERE devmac IS NOT NULL ORDER BY last_time DESC LIMIT 200"
-                                devices = kdb.execute(dev_query).fetchall()
-
-                                for dev in devices:
-                                    observations.append({
-                                        "type": "wifi",
-                                        "address": dev["devmac"],
-                                        "name": None,
-                                        "manufacturer": None,
-                                        "device_type": dev["type"] if dev["type"] else "Unknown",
-                                        "rssi_dbm": dev["strongest_signal"] if dev["strongest_signal"] and dev["strongest_signal"] < 0 else None,
-                                        "timestamp_utc": (datetime.now(timezone.utc)).isoformat(),
-                                        "session_id": session_dir.name,
-                                        "source": "raw_kismet"
-                                    })
-                        except Exception as e:
-                            logging.debug(f"Could not read Kismet file: {e}")
-
-                    if len(observations) >= limit:
-                        break
-        except Exception as e:
-            logging.debug(f"Raw data fallback error: {e}")
-
-    return observations[:limit]
 
 @app.get("/api/report/summary")
 async def get_report_summary(session: str = None):
