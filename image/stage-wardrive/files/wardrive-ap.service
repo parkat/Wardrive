@@ -1,0 +1,27 @@
+[Unit]
+Description=Wardrive WiFi AP Fallback
+# Only start if no default route is present after network timeout
+After=network-online.target
+ConditionPathExists=!/run/wardrive-has-uplink
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/bin/bash -c '\
+    if ip route show default | grep -q default; then \
+        touch /run/wardrive-has-uplink; \
+        exit 1; \
+    fi'
+ExecStart=/bin/bash -c '\
+    rfkill unblock wifi; \
+    ip addr add 192.168.88.1/24 dev wlan0 || true; \
+    ip link set wlan0 up; \
+    systemctl start hostapd; \
+    systemctl start dnsmasq'
+ExecStop=/bin/bash -c '\
+    systemctl stop hostapd; \
+    systemctl stop dnsmasq; \
+    ip addr del 192.168.88.1/24 dev wlan0 || true'
+
+[Install]
+WantedBy=multi-user.target

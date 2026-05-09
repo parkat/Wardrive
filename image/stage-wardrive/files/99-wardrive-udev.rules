@@ -1,0 +1,34 @@
+# Wardrive udev rules
+# Grant the wardrive group access to all collector hardware without needing root.
+
+# RTL-SDR (RTL2832U / RTL2838)
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="2832", \
+    GROUP="wardrive", MODE="0660", TAG+="wardrive_sdr"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="2838", \
+    GROUP="wardrive", MODE="0660", TAG+="wardrive_sdr"
+
+# HackRF One
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="6089", \
+    GROUP="wardrive", MODE="0660", TAG+="wardrive_hackrf", SYMLINK+="hackrf0"
+
+# ESP32 via CP2102 (Silicon Labs)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", \
+    GROUP="wardrive", MODE="0660", SYMLINK+="esp32_ble"
+
+# ESP32 via CH340/CH341
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", \
+    GROUP="wardrive", MODE="0660", SYMLINK+="esp32_ble"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d4", \
+    GROUP="wardrive", MODE="0660", SYMLINK+="esp32_ble"
+
+# ESP32 via FTDI FT232
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", \
+    GROUP="wardrive", MODE="0660"
+
+# u-blox GPS (multiple product IDs)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1546", \
+    GROUP="wardrive", MODE="0660", SYMLINK+="gps_puck"
+
+# Generic NMEA GPS (common USB-serial adapters used as GPS)
+SUBSYSTEM=="tty", ATTRS{idVendor}=="067b", ATTRS{idProduct}=="2303", \
+    GROUP="wardrive", MODE="0660"
