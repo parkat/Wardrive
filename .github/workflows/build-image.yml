@@ -42,6 +42,7 @@ jobs:
           cp wardrive/image/pigen-config pi-gen/config
           # Embed app source directly into rootfs — no internet needed during chroot
           ROOTFS=pi-gen/stage-wardrive/01-wardrive/rootfs/opt/wardrive
+          mkdir -p "$ROOTFS"
           cp -r wardrive/supervisor wardrive/webapp wardrive/processing wardrive/config "$ROOTFS/"
 
       - name: Build image
