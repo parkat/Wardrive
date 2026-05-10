@@ -22,18 +22,25 @@ jobs:
           git clone --depth=1 -b arm64 \
             https://github.com/RPi-Distro/pi-gen.git pi-gen
 
+      - name: Install pi-gen build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            quilt parted qemu-user-static debootstrap zerofree zip \
+            dosfstools libarchive-tools libcap2-bin rsync xz-utils \
+            file curl bc gpg pigz arch-test binfmt-support \
+            debian-archive-keyring
+
       - name: Copy wardrive stage into pi-gen
         run: |
           cp -r wardrive/image/stage-wardrive pi-gen/stage-wardrive
           chmod +x pi-gen/stage-wardrive/01-wardrive/00-run.sh
           cp wardrive/image/pigen-config pi-gen/config
 
-      - name: Build image with Docker
+      - name: Build image
         run: |
           cd pi-gen
-          ./build-docker.sh
-        env:
-          PRESERVE_CONTAINER: 0
+          sudo bash build.sh
 
       - name: Upload image artifact
         uses: actions/upload-artifact@v4
