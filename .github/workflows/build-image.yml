@@ -22,26 +22,16 @@ jobs:
           git clone --depth=1 -b arm64 \
             https://github.com/RPi-Distro/pi-gen.git pi-gen
 
+      - name: Set up QEMU for ARM64
+        run: |
+          sudo apt-get install -y qemu-user-static
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
       - name: Copy wardrive stage into pi-gen
         run: |
           cp -r wardrive/image/stage-wardrive pi-gen/stage-wardrive
           chmod +x pi-gen/stage-wardrive/01-wardrive/00-run.sh
-
-      - name: Write pi-gen config
-        run: |
-          cat > pi-gen/config << 'EOF'
-          IMG_NAME="wardrive-pi"
-          RELEASE=bookworm
-          DEPLOY_COMPRESSION=xz
-          LOCALE_DEFAULT=en_US.UTF-8
-          TARGET_HOSTNAME=wardrive
-          KEYBOARD_LAYOUT="English (US)"
-          TIMEZONE_DEFAULT=America/New_York
-          FIRST_USER_NAME=wardrive
-          FIRST_USER_PASS=wardrive
-          ENABLE_SSH=1
-          STAGE_LIST="stage0 stage1 stage2 stage-wardrive"
-          EOF
+          cp wardrive/image/pigen-config pi-gen/config
 
       - name: Build image with Docker
         run: |
