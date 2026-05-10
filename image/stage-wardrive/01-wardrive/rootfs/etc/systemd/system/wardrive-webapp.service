@@ -1,0 +1,34 @@
+[Unit]
+Description=Wardrive Web UI and API
+Documentation=https://github.com/parkat/Wardrive
+After=network.target wardrive-supervisor.service
+Wants=wardrive-supervisor.service
+
+[Service]
+Type=simple
+User=wardrive
+Group=wardrive
+
+WorkingDirectory=/opt/wardrive/webapp
+ExecStart=/usr/bin/python3 -m uvicorn main:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --log-level info \
+    --no-access-log
+
+Restart=always
+RestartSec=5s
+TimeoutStopSec=15s
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wardrive-webapp
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+Environment="PYTHONPATH=/opt/wardrive"
+Environment="PYTHONUNBUFFERED=1"
+
+[Install]
+WantedBy=multi-user.target

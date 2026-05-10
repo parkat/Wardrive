@@ -27,3 +27,8 @@ capture/logs/
 .vscode/
 *.swp
 *.swo
+.*.kate-swp
+
+# Local build artifacts
+image/pi-gen/
+package-lock.json

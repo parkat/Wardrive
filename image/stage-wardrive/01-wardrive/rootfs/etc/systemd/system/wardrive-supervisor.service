@@ -1,0 +1,45 @@
+[Unit]
+Description=Wardrive Collector Supervisor
+Documentation=https://github.com/parkat/Wardrive
+After=network.target gpsd.service
+Wants=gpsd.service
+# Ensure we start after USB subsystem is settled
+After=systemd-udev-settle.service
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=wardrive
+Group=wardrive
+
+ExecStart=/opt/wardrive/supervisor/main.py
+
+# Restart unconditionally — supervisor is designed to never exit cleanly
+# except on SIGTERM from systemd
+Restart=always
+RestartSec=5s
+
+# systemd watchdog — supervisor must send WATCHDOG=1 every 45s or we're killed
+WatchdogSec=60s
+TimeoutStopSec=30s
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wardrive-supervisor
+
+# Capabilities needed for monitor mode and raw socket access
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
+
+# Restrict what the supervisor can do
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+# Give access to USB devices and serial ports
+SupplementaryGroups=dialout plugdev netdev
+
+Environment="PYTHONPATH=/opt/wardrive"
+Environment="PYTHONUNBUFFERED=1"
+
+[Install]
+WantedBy=multi-user.target
