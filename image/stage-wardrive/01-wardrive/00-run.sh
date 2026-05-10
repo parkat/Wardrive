@@ -13,9 +13,6 @@ useradd -r -s /usr/sbin/nologin \
 git clone https://github.com/parkat/Wardrive /opt/wardrive
 chown -R wardrive:wardrive /opt/wardrive
 
-# ── Python dependencies not in apt ────────────────────────────────────────────
-pip3 install --break-system-packages pyudev aiofiles
-
 # ── Make supervisor executable ────────────────────────────────────────────────
 chmod +x /opt/wardrive/supervisor/main.py
 
