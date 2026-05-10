@@ -1,0 +1,11 @@
+IMG_NAME="wardrive-pi"
+RELEASE=bookworm
+DEPLOY_COMPRESSION=xz
+LOCALE_DEFAULT=en_US.UTF-8
+TARGET_HOSTNAME=wardrive
+KEYBOARD_LAYOUT="English (US)"
+TIMEZONE_DEFAULT=America/New_York
+FIRST_USER_NAME=wardrive
+FIRST_USER_PASS=wardrive
+ENABLE_SSH=1
+STAGE_LIST="stage0 stage1 stage2 stage-wardrive"

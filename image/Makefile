@@ -16,23 +16,8 @@ PIGEN_BRANCH := arm64
 
 build: clone-pigen
 	@echo "Building wardrive Pi image (Pi 3B, 64-bit Raspberry Pi OS Lite)..."
-	# Copy our custom stage into pi-gen
 	cp -r $(CURDIR)/stage-wardrive $(PIGEN_DIR)/stage-wardrive
-	# Write config
-	cat > $(PIGEN_DIR)/config << 'CONFIG'
-IMG_NAME="$(IMAGE_NAME)"
-RELEASE=bookworm
-DEPLOY_COMPRESSION=xz
-LOCALE_DEFAULT=en_US.UTF-8
-TARGET_HOSTNAME=wardrive
-KEYBOARD_LAYOUT="English (US)"
-TIMEZONE_DEFAULT=America/New_York
-FIRST_USER_NAME=wardrive
-FIRST_USER_PASS=wardrive
-ENABLE_SSH=1
-STAGE_LIST="stage0 stage1 stage2 stage-wardrive"
-CONFIG
-	# Run the Docker builder
+	cp $(CURDIR)/pigen-config $(PIGEN_DIR)/config
 	cd $(PIGEN_DIR) && ./build-docker.sh
 	@echo ""
 	@echo "Image ready: $(DEPLOY_DIR)/$(IMAGE_NAME)*.img.xz"
