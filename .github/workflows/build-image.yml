@@ -22,10 +22,11 @@ jobs:
           git clone --depth=1 -b arm64 \
             https://github.com/RPi-Distro/pi-gen.git pi-gen
 
-      - name: Set up QEMU for ARM64
-        run: |
-          sudo apt-get install -y qemu-user qemu-user-static
-          sudo update-binfmts --enable qemu-aarch64 || true
+      - name: Set up QEMU (kernel binfmt registration)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Install QEMU host binaries
+        run: sudo apt-get install -y qemu-user qemu-user-static
 
       - name: Copy wardrive stage into pi-gen
         run: |
